@@ -1,0 +1,418 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccM9k199.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"bsp_adc.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.adcx_get_chx_value,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	adcx_get_chx_value:
+  26              	.LVL0:
+  27              	.LFB130:
+  28              		.file 1 "Bsp/bsp_adc.c"
+   1:Bsp/bsp_adc.c **** #include "bsp_adc.h"
+   2:Bsp/bsp_adc.c **** #include "main.h"
+   3:Bsp/bsp_adc.c **** extern ADC_HandleTypeDef hadc1;
+   4:Bsp/bsp_adc.c **** extern ADC_HandleTypeDef hadc3;
+   5:Bsp/bsp_adc.c **** 
+   6:Bsp/bsp_adc.c **** volatile float voltage_vrefint_proportion = 8.0586080586080586080586080586081e-4f;
+   7:Bsp/bsp_adc.c **** 
+   8:Bsp/bsp_adc.c **** static uint16_t adcx_get_chx_value(ADC_HandleTypeDef *ADCx, uint32_t ch)
+   9:Bsp/bsp_adc.c **** {
+  29              		.loc 1 9 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 9 1 is_stmt 0 view .LVU1
+  34 0000 10B5     		push	{r4, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 8
+  37              		.cfi_offset 4, -8
+  38              		.cfi_offset 14, -4
+  39 0002 0446     		mov	r4, r0
+  10:Bsp/bsp_adc.c ****     static ADC_ChannelConfTypeDef sConfig = {0};
+  40              		.loc 1 10 5 is_stmt 1 view .LVU2
+  11:Bsp/bsp_adc.c ****     sConfig.Channel = ch;
+  41              		.loc 1 11 5 view .LVU3
+  42              		.loc 1 11 21 is_stmt 0 view .LVU4
+  43 0004 0C4B     		ldr	r3, .L5
+  44 0006 1960     		str	r1, [r3]
+  12:Bsp/bsp_adc.c ****     sConfig.Rank = 1;
+  45              		.loc 1 12 5 is_stmt 1 view .LVU5
+  46              		.loc 1 12 18 is_stmt 0 view .LVU6
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccM9k199.s 			page 2
+
+
+  47 0008 0122     		movs	r2, #1
+  48 000a 5A60     		str	r2, [r3, #4]
+  13:Bsp/bsp_adc.c ****     sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES; //ADC_SAMPLETIME_3CYCLES;
+  49              		.loc 1 13 5 is_stmt 1 view .LVU7
+  50              		.loc 1 13 26 is_stmt 0 view .LVU8
+  51 000c 0022     		movs	r2, #0
+  52 000e 9A60     		str	r2, [r3, #8]
+  14:Bsp/bsp_adc.c **** 
+  15:Bsp/bsp_adc.c ****     if (HAL_ADC_ConfigChannel(ADCx, &sConfig) != HAL_OK)
+  53              		.loc 1 15 5 is_stmt 1 view .LVU9
+  54              		.loc 1 15 9 is_stmt 0 view .LVU10
+  55 0010 1946     		mov	r1, r3
+  56              	.LVL1:
+  57              		.loc 1 15 9 view .LVU11
+  58 0012 FFF7FEFF 		bl	HAL_ADC_ConfigChannel
+  59              	.LVL2:
+  60              		.loc 1 15 8 view .LVU12
+  61 0016 58B9     		cbnz	r0, .L4
+  62              	.L2:
+  16:Bsp/bsp_adc.c ****     {
+  17:Bsp/bsp_adc.c ****         Error_Handler();
+  18:Bsp/bsp_adc.c ****     }
+  19:Bsp/bsp_adc.c **** 
+  20:Bsp/bsp_adc.c ****     HAL_ADC_Start(ADCx);
+  63              		.loc 1 20 5 is_stmt 1 view .LVU13
+  64 0018 2046     		mov	r0, r4
+  65 001a FFF7FEFF 		bl	HAL_ADC_Start
+  66              	.LVL3:
+  21:Bsp/bsp_adc.c **** 
+  22:Bsp/bsp_adc.c ****     HAL_ADC_PollForConversion(ADCx, 10);
+  67              		.loc 1 22 5 view .LVU14
+  68 001e 0A21     		movs	r1, #10
+  69 0020 2046     		mov	r0, r4
+  70 0022 FFF7FEFF 		bl	HAL_ADC_PollForConversion
+  71              	.LVL4:
+  23:Bsp/bsp_adc.c ****     return (uint16_t)HAL_ADC_GetValue(ADCx);
+  72              		.loc 1 23 5 view .LVU15
+  73              		.loc 1 23 22 is_stmt 0 view .LVU16
+  74 0026 2046     		mov	r0, r4
+  75 0028 FFF7FEFF 		bl	HAL_ADC_GetValue
+  76              	.LVL5:
+  24:Bsp/bsp_adc.c **** }
+  77              		.loc 1 24 1 view .LVU17
+  78 002c 80B2     		uxth	r0, r0
+  79 002e 10BD     		pop	{r4, pc}
+  80              	.LVL6:
+  81              	.L4:
+  17:Bsp/bsp_adc.c ****     }
+  82              		.loc 1 17 9 is_stmt 1 view .LVU18
+  83 0030 FFF7FEFF 		bl	Error_Handler
+  84              	.LVL7:
+  85 0034 F0E7     		b	.L2
+  86              	.L6:
+  87 0036 00BF     		.align	2
+  88              	.L5:
+  89 0038 00000000 		.word	.LANCHOR0
+  90              		.cfi_endproc
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccM9k199.s 			page 3
+
+
+  91              	.LFE130:
+  93              		.section	.text.init_vrefint_reciprocal,"ax",%progbits
+  94              		.align	1
+  95              		.global	init_vrefint_reciprocal
+  96              		.syntax unified
+  97              		.thumb
+  98              		.thumb_func
+ 100              	init_vrefint_reciprocal:
+ 101              	.LFB131:
+  25:Bsp/bsp_adc.c **** void init_vrefint_reciprocal(void)
+  26:Bsp/bsp_adc.c **** {
+ 102              		.loc 1 26 1 view -0
+ 103              		.cfi_startproc
+ 104              		@ args = 0, pretend = 0, frame = 0
+ 105              		@ frame_needed = 0, uses_anonymous_args = 0
+ 106 0000 38B5     		push	{r3, r4, r5, lr}
+ 107              	.LCFI1:
+ 108              		.cfi_def_cfa_offset 16
+ 109              		.cfi_offset 3, -16
+ 110              		.cfi_offset 4, -12
+ 111              		.cfi_offset 5, -8
+ 112              		.cfi_offset 14, -4
+  27:Bsp/bsp_adc.c ****     uint8_t i = 0;
+ 113              		.loc 1 27 5 view .LVU20
+ 114              	.LVL8:
+  28:Bsp/bsp_adc.c ****     uint32_t total_adc = 0;
+ 115              		.loc 1 28 5 view .LVU21
+  29:Bsp/bsp_adc.c ****     for (i = 0; i < 200; i++)
+ 116              		.loc 1 29 5 view .LVU22
+  28:Bsp/bsp_adc.c ****     uint32_t total_adc = 0;
+ 117              		.loc 1 28 14 is_stmt 0 view .LVU23
+ 118 0002 0025     		movs	r5, #0
+ 119              		.loc 1 29 12 view .LVU24
+ 120 0004 2C46     		mov	r4, r5
+ 121              		.loc 1 29 5 view .LVU25
+ 122 0006 06E0     		b	.L8
+ 123              	.LVL9:
+ 124              	.L9:
+  30:Bsp/bsp_adc.c ****     {
+  31:Bsp/bsp_adc.c ****         total_adc += adcx_get_chx_value(&hadc1, ADC_CHANNEL_VREFINT);
+ 125              		.loc 1 31 9 is_stmt 1 discriminator 3 view .LVU26
+ 126              		.loc 1 31 22 is_stmt 0 discriminator 3 view .LVU27
+ 127 0008 1121     		movs	r1, #17
+ 128 000a 0A48     		ldr	r0, .L11
+ 129 000c FFF7FEFF 		bl	adcx_get_chx_value
+ 130              	.LVL10:
+ 131              		.loc 1 31 19 discriminator 3 view .LVU28
+ 132 0010 0544     		add	r5, r5, r0
+ 133              	.LVL11:
+  29:Bsp/bsp_adc.c ****     for (i = 0; i < 200; i++)
+ 134              		.loc 1 29 26 is_stmt 1 discriminator 3 view .LVU29
+  29:Bsp/bsp_adc.c ****     for (i = 0; i < 200; i++)
+ 135              		.loc 1 29 27 is_stmt 0 discriminator 3 view .LVU30
+ 136 0012 0134     		adds	r4, r4, #1
+ 137              	.LVL12:
+  29:Bsp/bsp_adc.c ****     for (i = 0; i < 200; i++)
+ 138              		.loc 1 29 27 discriminator 3 view .LVU31
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccM9k199.s 			page 4
+
+
+ 139 0014 E4B2     		uxtb	r4, r4
+ 140              	.LVL13:
+ 141              	.L8:
+  29:Bsp/bsp_adc.c ****     for (i = 0; i < 200; i++)
+ 142              		.loc 1 29 17 is_stmt 1 discriminator 1 view .LVU32
+  29:Bsp/bsp_adc.c ****     for (i = 0; i < 200; i++)
+ 143              		.loc 1 29 5 is_stmt 0 discriminator 1 view .LVU33
+ 144 0016 C72C     		cmp	r4, #199
+ 145 0018 F6D9     		bls	.L9
+  32:Bsp/bsp_adc.c ****     }
+  33:Bsp/bsp_adc.c **** 
+  34:Bsp/bsp_adc.c ****     voltage_vrefint_proportion = 200 * 1.2f / total_adc;
+ 146              		.loc 1 34 5 is_stmt 1 view .LVU34
+ 147              		.loc 1 34 45 is_stmt 0 view .LVU35
+ 148 001a 07EE905A 		vmov	s15, r5	@ int
+ 149 001e F8EE677A 		vcvt.f32.u32	s15, s15
+ 150 0022 DFED056A 		vldr.32	s13, .L11+4
+ 151 0026 86EEA77A 		vdiv.f32	s14, s13, s15
+ 152              		.loc 1 34 32 view .LVU36
+ 153 002a 044B     		ldr	r3, .L11+8
+ 154 002c 83ED007A 		vstr.32	s14, [r3]
+  35:Bsp/bsp_adc.c **** }
+ 155              		.loc 1 35 1 view .LVU37
+ 156 0030 38BD     		pop	{r3, r4, r5, pc}
+ 157              	.LVL14:
+ 158              	.L12:
+ 159              		.loc 1 35 1 view .LVU38
+ 160 0032 00BF     		.align	2
+ 161              	.L11:
+ 162 0034 00000000 		.word	hadc1
+ 163 0038 01007043 		.word	1131413505
+ 164 003c 00000000 		.word	.LANCHOR1
+ 165              		.cfi_endproc
+ 166              	.LFE131:
+ 168              		.section	.text.get_temprate,"ax",%progbits
+ 169              		.align	1
+ 170              		.global	get_temprate
+ 171              		.syntax unified
+ 172              		.thumb
+ 173              		.thumb_func
+ 175              	get_temprate:
+ 176              	.LFB132:
+  36:Bsp/bsp_adc.c **** float get_temprate(void)
+  37:Bsp/bsp_adc.c **** {
+ 177              		.loc 1 37 1 is_stmt 1 view -0
+ 178              		.cfi_startproc
+ 179              		@ args = 0, pretend = 0, frame = 0
+ 180              		@ frame_needed = 0, uses_anonymous_args = 0
+ 181 0000 08B5     		push	{r3, lr}
+ 182              	.LCFI2:
+ 183              		.cfi_def_cfa_offset 8
+ 184              		.cfi_offset 3, -8
+ 185              		.cfi_offset 14, -4
+  38:Bsp/bsp_adc.c ****     uint16_t adcx = 0;
+ 186              		.loc 1 38 5 view .LVU40
+ 187              	.LVL15:
+  39:Bsp/bsp_adc.c ****     float temperate;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccM9k199.s 			page 5
+
+
+ 188              		.loc 1 39 5 view .LVU41
+  40:Bsp/bsp_adc.c **** 
+  41:Bsp/bsp_adc.c ****     adcx = adcx_get_chx_value(&hadc1, ADC_CHANNEL_TEMPSENSOR);
+ 189              		.loc 1 41 5 view .LVU42
+ 190              		.loc 1 41 12 is_stmt 0 view .LVU43
+ 191 0002 1021     		movs	r1, #16
+ 192 0004 0C48     		ldr	r0, .L15
+ 193 0006 FFF7FEFF 		bl	adcx_get_chx_value
+ 194              	.LVL16:
+ 195 000a 07EE900A 		vmov	s15, r0	@ int
+ 196              	.LVL17:
+  42:Bsp/bsp_adc.c ****     temperate = (float)adcx * voltage_vrefint_proportion;
+ 197              		.loc 1 42 5 is_stmt 1 view .LVU44
+ 198              		.loc 1 42 17 is_stmt 0 view .LVU45
+ 199 000e F8EE677A 		vcvt.f32.u32	s15, s15
+ 200              	.LVL18:
+ 201              		.loc 1 42 29 view .LVU46
+ 202 0012 0A4B     		ldr	r3, .L15+4
+ 203 0014 93ED000A 		vldr.32	s0, [r3]
+ 204              		.loc 1 42 15 view .LVU47
+ 205 0018 67EE807A 		vmul.f32	s15, s15, s0
+ 206              	.LVL19:
+  43:Bsp/bsp_adc.c ****     temperate = (temperate - 0.76f) * 400.0f + 25.0f;
+ 207              		.loc 1 43 5 is_stmt 1 view .LVU48
+ 208              		.loc 1 43 28 is_stmt 0 view .LVU49
+ 209 001c 9FED080A 		vldr.32	s0, .L15+8
+ 210 0020 77EEC07A 		vsub.f32	s15, s15, s0
+ 211              	.LVL20:
+ 212              		.loc 1 43 37 view .LVU50
+ 213 0024 9FED070A 		vldr.32	s0, .L15+12
+ 214 0028 67EE807A 		vmul.f32	s15, s15, s0
+ 215              	.LVL21:
+  44:Bsp/bsp_adc.c **** 
+  45:Bsp/bsp_adc.c ****     return temperate;
+ 216              		.loc 1 45 5 is_stmt 1 view .LVU51
+  46:Bsp/bsp_adc.c **** }
+ 217              		.loc 1 46 1 is_stmt 0 view .LVU52
+ 218 002c B3EE090A 		vmov.f32	s0, #2.5e+1
+ 219 0030 37EE800A 		vadd.f32	s0, s15, s0
+ 220              	.LVL22:
+ 221              		.loc 1 46 1 view .LVU53
+ 222 0034 08BD     		pop	{r3, pc}
+ 223              	.L16:
+ 224 0036 00BF     		.align	2
+ 225              	.L15:
+ 226 0038 00000000 		.word	hadc1
+ 227 003c 00000000 		.word	.LANCHOR1
+ 228 0040 5C8F423F 		.word	1061326684
+ 229 0044 0000C843 		.word	1137180672
+ 230              		.cfi_endproc
+ 231              	.LFE132:
+ 233              		.section	.text.get_battery_voltage,"ax",%progbits
+ 234              		.align	1
+ 235              		.global	get_battery_voltage
+ 236              		.syntax unified
+ 237              		.thumb
+ 238              		.thumb_func
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccM9k199.s 			page 6
+
+
+ 240              	get_battery_voltage:
+ 241              	.LFB133:
+  47:Bsp/bsp_adc.c **** 
+  48:Bsp/bsp_adc.c **** float get_battery_voltage(void)
+  49:Bsp/bsp_adc.c **** {
+ 242              		.loc 1 49 1 is_stmt 1 view -0
+ 243              		.cfi_startproc
+ 244              		@ args = 0, pretend = 0, frame = 0
+ 245              		@ frame_needed = 0, uses_anonymous_args = 0
+ 246 0000 08B5     		push	{r3, lr}
+ 247              	.LCFI3:
+ 248              		.cfi_def_cfa_offset 8
+ 249              		.cfi_offset 3, -8
+ 250              		.cfi_offset 14, -4
+  50:Bsp/bsp_adc.c ****     float voltage;
+ 251              		.loc 1 50 5 view .LVU55
+  51:Bsp/bsp_adc.c ****     uint16_t adcx = 0;
+ 252              		.loc 1 51 5 view .LVU56
+ 253              	.LVL23:
+  52:Bsp/bsp_adc.c **** 
+  53:Bsp/bsp_adc.c ****     adcx = adcx_get_chx_value(&hadc3, ADC_CHANNEL_8);
+ 254              		.loc 1 53 5 view .LVU57
+ 255              		.loc 1 53 12 is_stmt 0 view .LVU58
+ 256 0002 0821     		movs	r1, #8
+ 257 0004 0848     		ldr	r0, .L19
+ 258 0006 FFF7FEFF 		bl	adcx_get_chx_value
+ 259              	.LVL24:
+ 260 000a 07EE900A 		vmov	s15, r0	@ int
+ 261              	.LVL25:
+  54:Bsp/bsp_adc.c ****     //(22K ¦¸ + 200K ¦¸)  / 22K ¦¸ = 10.090909090909090909090909090909
+  55:Bsp/bsp_adc.c ****     voltage = (float)adcx * voltage_vrefint_proportion * 10.090909090909090909090909090909f;
+ 262              		.loc 1 55 5 is_stmt 1 view .LVU59
+ 263              		.loc 1 55 15 is_stmt 0 view .LVU60
+ 264 000e F8EE677A 		vcvt.f32.u32	s15, s15
+ 265              	.LVL26:
+ 266              		.loc 1 55 27 view .LVU61
+ 267 0012 064B     		ldr	r3, .L19+4
+ 268 0014 93ED000A 		vldr.32	s0, [r3]
+ 269 0018 67EE807A 		vmul.f32	s15, s15, s0
+ 270              	.LVL27:
+  56:Bsp/bsp_adc.c **** 
+  57:Bsp/bsp_adc.c ****     return voltage;
+ 271              		.loc 1 57 5 is_stmt 1 view .LVU62
+  58:Bsp/bsp_adc.c **** }
+ 272              		.loc 1 58 1 is_stmt 0 view .LVU63
+ 273 001c 9FED040A 		vldr.32	s0, .L19+8
+ 274 0020 27EE800A 		vmul.f32	s0, s15, s0
+ 275              	.LVL28:
+ 276              		.loc 1 58 1 view .LVU64
+ 277 0024 08BD     		pop	{r3, pc}
+ 278              	.L20:
+ 279 0026 00BF     		.align	2
+ 280              	.L19:
+ 281 0028 00000000 		.word	hadc3
+ 282 002c 00000000 		.word	.LANCHOR1
+ 283 0030 5D742141 		.word	1092711517
+ 284              		.cfi_endproc
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccM9k199.s 			page 7
+
+
+ 285              	.LFE133:
+ 287              		.global	voltage_vrefint_proportion
+ 288              		.section	.bss.sConfig.0,"aw",%nobits
+ 289              		.align	2
+ 290              		.set	.LANCHOR0,. + 0
+ 293              	sConfig.0:
+ 294 0000 00000000 		.space	16
+ 294      00000000 
+ 294      00000000 
+ 294      00000000 
+ 295              		.section	.data.voltage_vrefint_proportion,"aw"
+ 296              		.align	2
+ 297              		.set	.LANCHOR1,. + 0
+ 300              	voltage_vrefint_proportion:
+ 301 0000 6740533A 		.word	978534503
+ 302              		.text
+ 303              	.Letext0:
+ 304              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 305              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 306              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 307              		.file 5 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 308              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 309              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 310              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h"
+ 311              		.file 9 "Inc/main.h"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccM9k199.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 bsp_adc.c
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:20     .text.adcx_get_chx_value:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:25     .text.adcx_get_chx_value:00000000 adcx_get_chx_value
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:89     .text.adcx_get_chx_value:00000038 $d
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:94     .text.init_vrefint_reciprocal:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:100    .text.init_vrefint_reciprocal:00000000 init_vrefint_reciprocal
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:162    .text.init_vrefint_reciprocal:00000034 $d
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:169    .text.get_temprate:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:175    .text.get_temprate:00000000 get_temprate
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:226    .text.get_temprate:00000038 $d
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:234    .text.get_battery_voltage:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:240    .text.get_battery_voltage:00000000 get_battery_voltage
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:281    .text.get_battery_voltage:00000028 $d
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:300    .data.voltage_vrefint_proportion:00000000 voltage_vrefint_proportion
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:289    .bss.sConfig.0:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:293    .bss.sConfig.0:00000000 sConfig.0
+C:\Users\86152\AppData\Local\Temp\ccM9k199.s:296    .data.voltage_vrefint_proportion:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_ADC_ConfigChannel
+HAL_ADC_Start
+HAL_ADC_PollForConversion
+HAL_ADC_GetValue
+Error_Handler
+hadc1
+hadc3

@@ -1,0 +1,145 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"gimbal_task.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Gimbal_Init,"ax",%progbits
+  20              		.align	1
+  21              		.global	Gimbal_Init
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	Gimbal_Init:
+  27              	.LFB171:
+  28              		.file 1 "Application/gimbal_task.c"
+   1:Application/gimbal_task.c **** 
+   2:Application/gimbal_task.c **** #include "gimbal_task.h"
+   3:Application/gimbal_task.c **** #include "remote_control.h"
+   4:Application/gimbal_task.c **** #include "includes.h"
+   5:Application/gimbal_task.c **** #include "math.h"
+   6:Application/gimbal_task.c **** 
+   7:Application/gimbal_task.c **** Gimbal_t Gimbal = {0};
+   8:Application/gimbal_task.c **** Gimbal_Data_t Gimbal_Data = {0};
+   9:Application/gimbal_task.c **** void Gimbal_Init(void)
+  10:Application/gimbal_task.c **** {
+  29              		.loc 1 10 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  11:Application/gimbal_task.c **** 	Gimbal.YawMotor.zero_offset = YAW_MOTOR_ZERO_OFFSET;
+  34              		.loc 1 11 2 view .LVU1
+  35              		.loc 1 11 30 is_stmt 0 view .LVU2
+  36 0000 094B     		ldr	r3, .L4
+  37 0002 48F60152 		movw	r2, #36097
+  38 0006 9A86     		strh	r2, [r3, #52]	@ movhi
+  12:Application/gimbal_task.c **** 	Gimbal.PitchMotor.zero_offset = PITCH_MOTOR_ZERO_OFFSET;
+  39              		.loc 1 12 2 is_stmt 1 view .LVU3
+  40              		.loc 1 12 32 is_stmt 0 view .LVU4
+  41 0008 40F27552 		movw	r2, #1397
+  42 000c A3F81C25 		strh	r2, [r3, #1308]	@ movhi
+  13:Application/gimbal_task.c **** 
+  14:Application/gimbal_task.c **** 	//    Gimbal.PitchMotor.Direction = NEGATIVE;
+  15:Application/gimbal_task.c **** 	//				Gimbal.YawMotor.Direction = NEGATIVE;
+  16:Application/gimbal_task.c **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s 			page 2
+
+
+  17:Application/gimbal_task.c **** 	if (robot_state.robot_id <= 7)
+  43              		.loc 1 17 2 is_stmt 1 view .LVU5
+  44              		.loc 1 17 17 is_stmt 0 view .LVU6
+  45 0010 064B     		ldr	r3, .L4+4
+  46 0012 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  47              		.loc 1 17 5 view .LVU7
+  48 0014 072B     		cmp	r3, #7
+  49 0016 03D8     		bhi	.L2
+  18:Application/gimbal_task.c **** 		Gimbal_Data.myteam = RED;
+  50              		.loc 1 18 3 is_stmt 1 view .LVU8
+  51              		.loc 1 18 22 is_stmt 0 view .LVU9
+  52 0018 054B     		ldr	r3, .L4+8
+  53 001a 0222     		movs	r2, #2
+  54 001c DA71     		strb	r2, [r3, #7]
+  55 001e 7047     		bx	lr
+  56              	.L2:
+  19:Application/gimbal_task.c **** 	else
+  20:Application/gimbal_task.c **** 		Gimbal_Data.myteam = BLUE;
+  57              		.loc 1 20 3 is_stmt 1 view .LVU10
+  58              		.loc 1 20 22 is_stmt 0 view .LVU11
+  59 0020 034B     		ldr	r3, .L4+8
+  60 0022 0122     		movs	r2, #1
+  61 0024 DA71     		strb	r2, [r3, #7]
+  21:Application/gimbal_task.c **** }
+  62              		.loc 1 21 1 view .LVU12
+  63 0026 7047     		bx	lr
+  64              	.L5:
+  65              		.align	2
+  66              	.L4:
+  67 0028 00000000 		.word	.LANCHOR0
+  68 002c 00000000 		.word	robot_state
+  69 0030 00000000 		.word	.LANCHOR1
+  70              		.cfi_endproc
+  71              	.LFE171:
+  73              		.global	Gimbal_Data
+  74              		.global	Gimbal
+  75              		.section	.bss.Gimbal,"aw",%nobits
+  76              		.align	3
+  77              		.set	.LANCHOR0,. + 0
+  80              	Gimbal:
+  81 0000 00000000 		.space	2768
+  81      00000000 
+  81      00000000 
+  81      00000000 
+  81      00000000 
+  82              		.section	.bss.Gimbal_Data,"aw",%nobits
+  83              		.align	2
+  84              		.set	.LANCHOR1,. + 0
+  87              	Gimbal_Data:
+  88 0000 00000000 		.space	20
+  88      00000000 
+  88      00000000 
+  88      00000000 
+  88      00000000 
+  89              		.text
+  90              	.Letext0:
+  91              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s 			page 3
+
+
+  92              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+  93              		.file 4 "Components/user_lib.h"
+  94              		.file 5 "Components/Controller/controller.h"
+  95              		.file 6 "Application/motor.h"
+  96              		.file 7 "Application/detect_task.h"
+  97              		.file 8 "Application/judgement_info.h"
+  98              		.file 9 "Application/gimbal_task.h"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 gimbal_task.c
+C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s:20     .text.Gimbal_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s:26     .text.Gimbal_Init:00000000 Gimbal_Init
+C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s:67     .text.Gimbal_Init:00000028 $d
+C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s:87     .bss.Gimbal_Data:00000000 Gimbal_Data
+C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s:80     .bss.Gimbal:00000000 Gimbal
+C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s:76     .bss.Gimbal:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccm7NoHy.s:83     .bss.Gimbal_Data:00000000 $d
+
+UNDEFINED SYMBOLS
+robot_state

@@ -1,0 +1,3866 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"ui_task.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Layer1,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Layer1:
+  26              	.LVL0:
+  27              	.LFB174:
+  28              		.file 1 "Application/ui_task.c"
+   1:Application/ui_task.c **** #include "ui_task.h"
+   2:Application/ui_task.c **** 
+   3:Application/ui_task.c **** static void Show_UI_Init(void);
+   4:Application/ui_task.c **** static void Show_UI(void);
+   5:Application/ui_task.c **** 
+   6:Application/ui_task.c **** static void Layer1(uint8_t operate);
+   7:Application/ui_task.c **** static void Layer2(uint8_t operate);
+   8:Application/ui_task.c **** static void Layer3(uint8_t operate);
+   9:Application/ui_task.c **** static void Layer4(uint8_t operate);
+  10:Application/ui_task.c **** static void Layer5(uint8_t operate);
+  11:Application/ui_task.c **** static void Layer6(uint8_t operate);
+  12:Application/ui_task.c **** static void Layer7(uint8_t operate);
+  13:Application/ui_task.c **** 
+  14:Application/ui_task.c **** graphic_data_struct_t graphic[7];
+  15:Application/ui_task.c **** client_frame_t Char;
+  16:Application/ui_task.c **** client_char_t Char2;
+  17:Application/ui_task.c **** client_frame_t Char3;
+  18:Application/ui_task.c **** client_frame_t Char4;
+  19:Application/ui_task.c **** static float dt = 0, t = 0;
+  20:Application/ui_task.c **** float uiCostTime = 0, uiTimeStamp = 0;
+  21:Application/ui_task.c **** uint32_t UI_DWT_Count = 0, ui_DWT_Cost = 0;
+  22:Application/ui_task.c **** 
+  23:Application/ui_task.c **** int8_t flg = 0;
+  24:Application/ui_task.c **** 
+  25:Application/ui_task.c **** uint16_t remain_HP;
+  26:Application/ui_task.c **** uint8_t hunt_buff;
+  27:Application/ui_task.c **** uint8_t client_send_buff[30];
+  28:Application/ui_task.c **** uint8_t client_send_buff_0[30];
+  29:Application/ui_task.c **** uint16_t x[3], y[3], end_x[2], end_y[2];
+  30:Application/ui_task.c **** uint16_t width;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 2
+
+
+  31:Application/ui_task.c **** uint8_t color;
+  32:Application/ui_task.c **** uint16_t rect_startX = 706;
+  33:Application/ui_task.c **** uint16_t rect_startY = 820;
+  34:Application/ui_task.c **** uint16_t rect_endX = 1214;
+  35:Application/ui_task.c **** uint16_t rect_endY = 840;
+  36:Application/ui_task.c **** uint16_t HP_startX = 710;
+  37:Application/ui_task.c **** uint16_t HP_startY = 830;
+  38:Application/ui_task.c **** uint16_t HP_endX = 890;
+  39:Application/ui_task.c **** uint16_t HP_endY = 830;
+  40:Application/ui_task.c **** uint16_t HIT_startX = 890;
+  41:Application/ui_task.c **** uint16_t HIT_startY = 830;
+  42:Application/ui_task.c **** uint16_t HIT_endX = 890 - 100;
+  43:Application/ui_task.c **** uint16_t HIT_endY = 830;
+  44:Application/ui_task.c **** uint8_t HP_Width = 12;
+  45:Application/ui_task.c **** uint8_t HIT_Width = 8;
+  46:Application/ui_task.c **** 
+  47:Application/ui_task.c **** uint16_t rect_Aim_startX = 0;
+  48:Application/ui_task.c **** uint16_t rect_Aim_startY = 0;
+  49:Application/ui_task.c **** uint16_t rect_Aim_endX = 0;
+  50:Application/ui_task.c **** uint16_t rect_Aim_endY = 0;
+  51:Application/ui_task.c **** uint16_t rect_Aimpre_startX = 0;
+  52:Application/ui_task.c **** uint16_t rect_Aimpre_startY = 0;
+  53:Application/ui_task.c **** uint16_t rect_Aimpre_endX = 0;
+  54:Application/ui_task.c **** uint16_t rect_Aimpre_endY = 0;
+  55:Application/ui_task.c **** 
+  56:Application/ui_task.c **** uint16_t robot_state_startX[5] = {1550, 1550, 1550, 0, 0};
+  57:Application/ui_task.c **** uint16_t robot_state_startY[5] = {590, 560, 530, 0, 0};
+  58:Application/ui_task.c **** uint16_t robot_state_endX[5] = {1620, 1600, 1580, 0, 0};
+  59:Application/ui_task.c **** uint16_t robot_state_endY[5] = {590, 560, 530, 0, 0};
+  60:Application/ui_task.c **** uint8_t robot_width[3] = {0, 0, 0};
+  61:Application/ui_task.c **** #if INFANTRY_ID == 1
+  62:Application/ui_task.c **** 
+  63:Application/ui_task.c **** uint16_t Start_x1[7] = {900, 850, 900, 945, 1000, 1050, 0};
+  64:Application/ui_task.c **** uint16_t Start_y1[7] = {400, 400, 400, 400, 400, 400, 0};
+  65:Application/ui_task.c **** uint16_t End_x1[7] = {1050, 850, 900, 945, 1000, 1050, 0};
+  66:Application/ui_task.c **** uint16_t End_y1[7] = {400, 410, 410, 410, 410, 410, 0};
+  67:Application/ui_task.c **** 
+  68:Application/ui_task.c **** uint16_t Start_x2[7] = {750, 750, 850, 945, 1050, 1150, 0};
+  69:Application/ui_task.c **** uint16_t Start_y2[7] = {350, 350, 350, 350, 350, 350, 0};
+  70:Application/ui_task.c **** uint16_t End_x2[7] = {1150, 750, 850, 945, 1050, 1150, 0};
+  71:Application/ui_task.c **** uint16_t End_y2[7] = {350, 360, 360, 360, 360, 360, 0};
+  72:Application/ui_task.c **** 
+  73:Application/ui_task.c **** uint16_t Center_x_15[5] = {960, 960, 960, 960, 960};
+  74:Application/ui_task.c **** uint16_t Center_y_15[5] = {430, 420, 400, 290, 245};
+  75:Application/ui_task.c **** uint16_t Radius_15[5] = {3, 3, 3, 3, 3}; // 3
+  76:Application/ui_task.c **** 
+  77:Application/ui_task.c **** uint16_t Center_x_30[5] = {945, 945, 945, 945, 945};
+  78:Application/ui_task.c **** uint16_t Center_y_30[5] = {430, 420, 400, 290, 245};
+  79:Application/ui_task.c **** uint16_t Radius_30[5] = {3, 3, 3, 3, 3}; // 3
+  80:Application/ui_task.c **** 
+  81:Application/ui_task.c **** #elif INFANTRY_ID == 2
+  82:Application/ui_task.c **** uint16_t Start_x1[7] = {850, 850, 900, 945, 1000, 1050, 0};
+  83:Application/ui_task.c **** uint16_t Start_y1[7] = {400, 400, 400, 400, 400, 400, 0};
+  84:Application/ui_task.c **** uint16_t End_x1[7] = {1050, 850, 900, 945, 1000, 1050, 0};
+  85:Application/ui_task.c **** uint16_t End_y1[7] = {400, 410, 410, 410, 410, 410, 0};
+  86:Application/ui_task.c **** 
+  87:Application/ui_task.c **** uint16_t Start_x2[7] = {750, 750, 850, 945, 1050, 1150, 0};
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 3
+
+
+  88:Application/ui_task.c **** uint16_t Start_y2[7] = {350, 350, 350, 350, 350, 350, 0};
+  89:Application/ui_task.c **** uint16_t End_x2[7] = {1150, 750, 850, 945, 1050, 1150, 0};
+  90:Application/ui_task.c **** uint16_t End_y2[7] = {350, 360, 360, 360, 360, 360, 0};
+  91:Application/ui_task.c **** 
+  92:Application/ui_task.c **** uint16_t Center_x_15[5] = {960, 960, 960, 960, 960};
+  93:Application/ui_task.c **** uint16_t Center_y_15[5] = {430, 420, 400, 290, 245};
+  94:Application/ui_task.c **** uint16_t Radius_15[5] = {3, 3, 3, 3, 3}; // 3
+  95:Application/ui_task.c **** 
+  96:Application/ui_task.c **** uint16_t Center_x_30[5] = {945, 945, 945, 945, 945};
+  97:Application/ui_task.c **** uint16_t Center_y_30[5] = {430, 420, 400, 290, 245};
+  98:Application/ui_task.c **** uint16_t Radius_30[5] = {3, 3, 3, 3, 3}; // 3
+  99:Application/ui_task.c **** #elif INFANTRY_ID == 3
+ 100:Application/ui_task.c **** uint16_t Start_x1[7] = {850, 850, 900, 945, 1000, 1050, 0};
+ 101:Application/ui_task.c **** uint16_t Start_y1[7] = {400, 400, 400, 400, 400, 400, 0};
+ 102:Application/ui_task.c **** uint16_t End_x1[7] = {1050, 850, 900, 945, 1000, 1050, 0};
+ 103:Application/ui_task.c **** uint16_t End_y1[7] = {400, 410, 410, 410, 410, 410, 0};
+ 104:Application/ui_task.c **** 
+ 105:Application/ui_task.c **** uint16_t Start_x2[7] = {750, 750, 850, 945, 1050, 1150, 0};
+ 106:Application/ui_task.c **** uint16_t Start_y2[7] = {350, 350, 350, 350, 350, 350, 0};
+ 107:Application/ui_task.c **** uint16_t End_x2[7] = {1150, 750, 850, 945, 1050, 1150, 0};
+ 108:Application/ui_task.c **** uint16_t End_y2[7] = {350, 360, 360, 360, 360, 360, 0};
+ 109:Application/ui_task.c **** 
+ 110:Application/ui_task.c **** uint16_t Center_x_15[5] = {960, 960, 960, 960, 960};
+ 111:Application/ui_task.c **** uint16_t Center_y_15[5] = {430, 420, 400, 290, 245};
+ 112:Application/ui_task.c **** uint16_t Radius_15[5] = {3, 3, 3, 3, 3}; // 3
+ 113:Application/ui_task.c **** 
+ 114:Application/ui_task.c **** uint16_t Center_x_30[5] = {945, 945, 945, 945, 945};
+ 115:Application/ui_task.c **** uint16_t Center_y_30[5] = {430, 420, 400, 290, 245};
+ 116:Application/ui_task.c **** uint16_t Radius_30[5] = {3, 3, 3, 3, 3}; // 3
+ 117:Application/ui_task.c **** #elif INFANTRY_ID == 4
+ 118:Application/ui_task.c **** uint16_t Start_x1[7] = {850, 850, 900, 945, 1000, 1050, 0};
+ 119:Application/ui_task.c **** uint16_t Start_y1[7] = {400, 400, 400, 400, 400, 400, 0};
+ 120:Application/ui_task.c **** uint16_t End_x1[7] = {1050, 850, 900, 945, 1000, 1050, 0};
+ 121:Application/ui_task.c **** uint16_t End_y1[7] = {400, 410, 410, 410, 410, 410, 0};
+ 122:Application/ui_task.c **** 
+ 123:Application/ui_task.c **** uint16_t Start_x2[7] = {750, 750, 850, 945, 1050, 1150, 0};
+ 124:Application/ui_task.c **** uint16_t Start_y2[7] = {350, 350, 350, 350, 350, 350, 0};
+ 125:Application/ui_task.c **** uint16_t End_x2[7] = {1150, 750, 850, 945, 1050, 1150, 0};
+ 126:Application/ui_task.c **** uint16_t End_y2[7] = {350, 360, 360, 360, 360, 360, 0};
+ 127:Application/ui_task.c **** 
+ 128:Application/ui_task.c **** uint16_t Center_x_15[5] = {960, 960, 960, 960, 960};
+ 129:Application/ui_task.c **** uint16_t Center_y_15[5] = {430, 420, 400, 290, 245};
+ 130:Application/ui_task.c **** uint16_t Radius_15[5] = {3, 3, 3, 3, 3}; // 3
+ 131:Application/ui_task.c **** 
+ 132:Application/ui_task.c **** uint16_t Center_x_30[5] = {945, 945, 945, 945, 945};
+ 133:Application/ui_task.c **** uint16_t Center_y_30[5] = {430, 420, 400, 290, 245};
+ 134:Application/ui_task.c **** uint16_t Radius_30[5] = {3, 3, 3, 3, 3}; // 3
+ 135:Application/ui_task.c **** #endif
+ 136:Application/ui_task.c **** 
+ 137:Application/ui_task.c **** void UI_Task(void)
+ 138:Application/ui_task.c **** {
+ 139:Application/ui_task.c **** 	dt = DWT_GetDeltaT(&UI_DWT_Count);
+ 140:Application/ui_task.c **** 	t += dt;
+ 141:Application/ui_task.c **** 	uiTimeStamp = DWT_GetDeltaT(&ui_DWT_Cost);
+ 142:Application/ui_task.c **** 
+ 143:Application/ui_task.c **** 	static uint8_t state = 0;
+ 144:Application/ui_task.c **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 4
+
+
+ 145:Application/ui_task.c **** 	switch (state)
+ 146:Application/ui_task.c **** 	{
+ 147:Application/ui_task.c **** 	case 0:
+ 148:Application/ui_task.c **** 		state++;
+ 149:Application/ui_task.c **** 		Show_UI_Init();
+ 150:Application/ui_task.c **** 		break;
+ 151:Application/ui_task.c **** 
+ 152:Application/ui_task.c **** 	case 1:
+ 153:Application/ui_task.c **** 		state = 0;
+ 154:Application/ui_task.c **** 		Show_UI();
+ 155:Application/ui_task.c **** 		break;
+ 156:Application/ui_task.c **** 
+ 157:Application/ui_task.c **** 	default:
+ 158:Application/ui_task.c **** 		state = 0;
+ 159:Application/ui_task.c **** 		break;
+ 160:Application/ui_task.c **** 	}
+ 161:Application/ui_task.c **** 
+ 162:Application/ui_task.c **** 	uiTimeStamp = DWT_GetDeltaT(&ui_DWT_Cost);
+ 163:Application/ui_task.c **** 	uiCostTime = uiTimeStamp;
+ 164:Application/ui_task.c **** }
+ 165:Application/ui_task.c **** 
+ 166:Application/ui_task.c **** static void Show_UI_Init(void)
+ 167:Application/ui_task.c **** {
+ 168:Application/ui_task.c **** 	static uint8_t state = 0;
+ 169:Application/ui_task.c **** 
+ 170:Application/ui_task.c **** 	switch (state)
+ 171:Application/ui_task.c **** 	{
+ 172:Application/ui_task.c **** 	case 0:
+ 173:Application/ui_task.c **** 		state++;
+ 174:Application/ui_task.c **** 		Layer1(GRAPHIC_ADD);
+ 175:Application/ui_task.c **** 		break;
+ 176:Application/ui_task.c **** 
+ 177:Application/ui_task.c **** 	case 1:
+ 178:Application/ui_task.c **** 		state++;
+ 179:Application/ui_task.c **** 		Layer2(GRAPHIC_ADD);
+ 180:Application/ui_task.c **** 		break;
+ 181:Application/ui_task.c **** 
+ 182:Application/ui_task.c **** 	case 2:
+ 183:Application/ui_task.c **** 		state++;
+ 184:Application/ui_task.c **** 		Layer3(GRAPHIC_ADD);
+ 185:Application/ui_task.c **** 		break;
+ 186:Application/ui_task.c **** 
+ 187:Application/ui_task.c **** 	case 3:
+ 188:Application/ui_task.c **** 		state++;
+ 189:Application/ui_task.c **** 		Layer4(GRAPHIC_ADD);
+ 190:Application/ui_task.c **** 		break;
+ 191:Application/ui_task.c **** 
+ 192:Application/ui_task.c **** 	case 4:
+ 193:Application/ui_task.c **** 		state++;
+ 194:Application/ui_task.c **** 		Layer5(GRAPHIC_ADD);
+ 195:Application/ui_task.c **** 		break;
+ 196:Application/ui_task.c **** 
+ 197:Application/ui_task.c **** 	case 5:
+ 198:Application/ui_task.c **** 		state++;
+ 199:Application/ui_task.c **** 		Layer6(GRAPHIC_ADD);
+ 200:Application/ui_task.c **** 		break;
+ 201:Application/ui_task.c **** 	case 6:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 5
+
+
+ 202:Application/ui_task.c **** 		state = 0;
+ 203:Application/ui_task.c **** 		Layer7(GRAPHIC_ADD);
+ 204:Application/ui_task.c **** 
+ 205:Application/ui_task.c **** 		break;
+ 206:Application/ui_task.c **** 
+ 207:Application/ui_task.c **** 	default:
+ 208:Application/ui_task.c **** 		state = 0;
+ 209:Application/ui_task.c **** 		break;
+ 210:Application/ui_task.c **** 	}
+ 211:Application/ui_task.c **** }
+ 212:Application/ui_task.c **** 
+ 213:Application/ui_task.c **** static void Show_UI(void)
+ 214:Application/ui_task.c **** {
+ 215:Application/ui_task.c **** 	static uint8_t state = 0;
+ 216:Application/ui_task.c **** 	switch (state)
+ 217:Application/ui_task.c **** 	{
+ 218:Application/ui_task.c **** 	case 0:
+ 219:Application/ui_task.c **** 		state++;
+ 220:Application/ui_task.c **** 		Layer1(GRAPHIC_MODIFY);
+ 221:Application/ui_task.c **** 		break;
+ 222:Application/ui_task.c **** 
+ 223:Application/ui_task.c **** 	case 1:
+ 224:Application/ui_task.c **** 		state++;
+ 225:Application/ui_task.c **** 		Layer2(GRAPHIC_MODIFY);
+ 226:Application/ui_task.c **** 		break;
+ 227:Application/ui_task.c **** 
+ 228:Application/ui_task.c **** 	case 2:
+ 229:Application/ui_task.c **** 		state++;
+ 230:Application/ui_task.c **** 		Layer3(GRAPHIC_MODIFY);
+ 231:Application/ui_task.c **** 		break;
+ 232:Application/ui_task.c **** 	case 3:
+ 233:Application/ui_task.c **** 		state++;
+ 234:Application/ui_task.c **** 		Layer4(GRAPHIC_MODIFY);
+ 235:Application/ui_task.c **** 
+ 236:Application/ui_task.c **** 		break;
+ 237:Application/ui_task.c **** 	case 4:
+ 238:Application/ui_task.c **** 		state = 0;
+ 239:Application/ui_task.c **** 		if (flg > 10)
+ 240:Application/ui_task.c **** 		{
+ 241:Application/ui_task.c **** 			flg = 0;
+ 242:Application/ui_task.c **** 		}
+ 243:Application/ui_task.c **** 		Layer5(GRAPHIC_MODIFY);
+ 244:Application/ui_task.c **** 		flg++;
+ 245:Application/ui_task.c **** 		break;
+ 246:Application/ui_task.c **** 
+ 247:Application/ui_task.c **** 	default:
+ 248:Application/ui_task.c **** 		state = 0;
+ 249:Application/ui_task.c **** 		break;
+ 250:Application/ui_task.c **** 	}
+ 251:Application/ui_task.c **** }
+ 252:Application/ui_task.c **** 
+ 253:Application/ui_task.c **** static void Layer1(uint8_t operate)
+ 254:Application/ui_task.c **** {
+  29              		.loc 1 254 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 6
+
+
+  33              		.loc 1 254 1 is_stmt 0 view .LVU1
+  34 0000 30B5     		push	{r4, r5, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 12
+  37              		.cfi_offset 4, -12
+  38              		.cfi_offset 5, -8
+  39              		.cfi_offset 14, -4
+  40 0002 87B0     		sub	sp, sp, #28
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 40
+  43 0004 0546     		mov	r5, r0
+ 255:Application/ui_task.c **** 
+ 256:Application/ui_task.c **** 	if (Gimbal_Data.isFricOn == 1)
+  44              		.loc 1 256 2 is_stmt 1 view .LVU2
+  45              		.loc 1 256 17 is_stmt 0 view .LVU3
+  46 0006 274B     		ldr	r3, .L13
+  47 0008 5B79     		ldrb	r3, [r3, #5]	@ zero_extendqisi2
+  48              		.loc 1 256 5 view .LVU4
+  49 000a 012B     		cmp	r3, #1
+  50 000c 11D0     		beq	.L11
+ 257:Application/ui_task.c **** 	{
+ 258:Application/ui_task.c **** 		robot_width[0] = 8;
+ 259:Application/ui_task.c **** 	}
+ 260:Application/ui_task.c **** 	else
+ 261:Application/ui_task.c **** 	{
+ 262:Application/ui_task.c **** 		robot_width[0] = 0;
+  51              		.loc 1 262 3 is_stmt 1 view .LVU5
+  52              		.loc 1 262 18 is_stmt 0 view .LVU6
+  53 000e 264B     		ldr	r3, .L13+4
+  54 0010 0022     		movs	r2, #0
+  55 0012 1A70     		strb	r2, [r3]
+  56              	.L3:
+ 263:Application/ui_task.c **** 	}
+ 264:Application/ui_task.c **** 	if (Gimbal_Data.isLidOpen == 0)
+  57              		.loc 1 264 2 is_stmt 1 view .LVU7
+  58              		.loc 1 264 17 is_stmt 0 view .LVU8
+  59 0014 234B     		ldr	r3, .L13
+  60 0016 9B79     		ldrb	r3, [r3, #6]	@ zero_extendqisi2
+  61              		.loc 1 264 5 view .LVU9
+  62 0018 7BB9     		cbnz	r3, .L4
+ 265:Application/ui_task.c **** 	{
+ 266:Application/ui_task.c **** 		robot_width[1] = 8;
+  63              		.loc 1 266 3 is_stmt 1 view .LVU10
+  64              		.loc 1 266 18 is_stmt 0 view .LVU11
+  65 001a 234B     		ldr	r3, .L13+4
+  66 001c 0822     		movs	r2, #8
+  67 001e 5A70     		strb	r2, [r3, #1]
+  68              	.L5:
+ 267:Application/ui_task.c **** 	}
+ 268:Application/ui_task.c **** 	else
+ 269:Application/ui_task.c **** 	{
+ 270:Application/ui_task.c **** 		robot_width[1] = 0;
+ 271:Application/ui_task.c **** 	}
+ 272:Application/ui_task.c **** 	if (Gimbal_Data.MiniPC_state == 1)
+  69              		.loc 1 272 2 is_stmt 1 view .LVU12
+  70              		.loc 1 272 17 is_stmt 0 view .LVU13
+  71 0020 204B     		ldr	r3, .L13
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 7
+
+
+  72 0022 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  73              		.loc 1 272 5 view .LVU14
+  74 0024 012B     		cmp	r3, #1
+  75 0026 0CD0     		beq	.L12
+ 273:Application/ui_task.c **** 	{
+ 274:Application/ui_task.c **** 		robot_width[2] = 8;
+ 275:Application/ui_task.c **** 	}
+ 276:Application/ui_task.c **** 	else
+ 277:Application/ui_task.c **** 	{
+ 278:Application/ui_task.c **** 		robot_width[2] = 0;
+  76              		.loc 1 278 3 is_stmt 1 view .LVU15
+  77              		.loc 1 278 18 is_stmt 0 view .LVU16
+  78 0028 1F4B     		ldr	r3, .L13+4
+  79 002a 0022     		movs	r2, #0
+  80 002c 9A70     		strb	r2, [r3, #2]
+  81              	.L8:
+ 254:Application/ui_task.c **** 
+  82              		.loc 1 254 1 discriminator 1 view .LVU17
+  83 002e 0024     		movs	r4, #0
+  84 0030 29E0     		b	.L7
+  85              	.L11:
+ 258:Application/ui_task.c **** 	}
+  86              		.loc 1 258 3 is_stmt 1 view .LVU18
+ 258:Application/ui_task.c **** 	}
+  87              		.loc 1 258 18 is_stmt 0 view .LVU19
+  88 0032 1D4B     		ldr	r3, .L13+4
+  89 0034 0822     		movs	r2, #8
+  90 0036 1A70     		strb	r2, [r3]
+  91 0038 ECE7     		b	.L3
+  92              	.L4:
+ 270:Application/ui_task.c **** 	}
+  93              		.loc 1 270 3 is_stmt 1 view .LVU20
+ 270:Application/ui_task.c **** 	}
+  94              		.loc 1 270 18 is_stmt 0 view .LVU21
+  95 003a 1B4B     		ldr	r3, .L13+4
+  96 003c 0022     		movs	r2, #0
+  97 003e 5A70     		strb	r2, [r3, #1]
+  98 0040 EEE7     		b	.L5
+  99              	.L12:
+ 274:Application/ui_task.c **** 	}
+ 100              		.loc 1 274 3 is_stmt 1 view .LVU22
+ 274:Application/ui_task.c **** 	}
+ 101              		.loc 1 274 18 is_stmt 0 view .LVU23
+ 102 0042 194B     		ldr	r3, .L13+4
+ 103 0044 0822     		movs	r2, #8
+ 104 0046 9A70     		strb	r2, [r3, #2]
+ 105 0048 F1E7     		b	.L8
+ 106              	.LVL1:
+ 107              	.L9:
+ 108              	.LBB2:
+ 279:Application/ui_task.c **** 	}
+ 280:Application/ui_task.c **** 
+ 281:Application/ui_task.c **** 	for (int i = 0; i < 3; i++)
+ 282:Application/ui_task.c **** 	{
+ 283:Application/ui_task.c **** 
+ 284:Application/ui_task.c **** 		Line_Generate(&graphic[i], 1, i, operate, robot_state_startX[i], robot_state_startY[i], robot_sta
+ 109              		.loc 1 284 3 is_stmt 1 discriminator 3 view .LVU24
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 8
+
+
+ 110 004a 0423     		movs	r3, #4
+ 111 004c 0593     		str	r3, [sp, #20]
+ 112 004e 164B     		ldr	r3, .L13+4
+ 113 0050 1B5D     		ldrb	r3, [r3, r4]	@ zero_extendqisi2
+ 114 0052 0493     		str	r3, [sp, #16]
+ 115 0054 154B     		ldr	r3, .L13+8
+ 116 0056 33F81430 		ldrh	r3, [r3, r4, lsl #1]
+ 117 005a 0393     		str	r3, [sp, #12]
+ 118 005c 144B     		ldr	r3, .L13+12
+ 119 005e 33F81430 		ldrh	r3, [r3, r4, lsl #1]
+ 120 0062 0293     		str	r3, [sp, #8]
+ 121 0064 134B     		ldr	r3, .L13+16
+ 122 0066 33F81430 		ldrh	r3, [r3, r4, lsl #1]
+ 123 006a 0193     		str	r3, [sp, #4]
+ 124 006c 124B     		ldr	r3, .L13+20
+ 125 006e 33F81430 		ldrh	r3, [r3, r4, lsl #1]
+ 126 0072 0093     		str	r3, [sp]
+ 127 0074 2B46     		mov	r3, r5
+ 128 0076 E2B2     		uxtb	r2, r4
+ 129 0078 0121     		movs	r1, #1
+ 130 007a 1048     		ldr	r0, .L13+24
+ 131 007c 00EB0410 		add	r0, r0, r4, lsl #4
+ 132 0080 FFF7FEFF 		bl	Line_Generate
+ 133              	.LVL2:
+ 281:Application/ui_task.c **** 	{
+ 134              		.loc 1 281 25 discriminator 3 view .LVU25
+ 281:Application/ui_task.c **** 	{
+ 135              		.loc 1 281 26 is_stmt 0 discriminator 3 view .LVU26
+ 136 0084 0134     		adds	r4, r4, #1
+ 137              	.LVL3:
+ 138              	.L7:
+ 281:Application/ui_task.c **** 	{
+ 139              		.loc 1 281 18 is_stmt 1 discriminator 1 view .LVU27
+ 281:Application/ui_task.c **** 	{
+ 140              		.loc 1 281 2 is_stmt 0 discriminator 1 view .LVU28
+ 141 0086 022C     		cmp	r4, #2
+ 142 0088 DFDD     		ble	.L9
+ 143              	.LBE2:
+ 285:Application/ui_task.c **** 	}
+ 286:Application/ui_task.c **** 	client_draw(JudgeUSART, 7, graphic, robot_state.robot_id, robot_state.robot_id + 256);
+ 144              		.loc 1 286 2 is_stmt 1 view .LVU29
+ 145 008a 0D4B     		ldr	r3, .L13+28
+ 146 008c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 147 008e 03F58072 		add	r2, r3, #256
+ 148 0092 0092     		str	r2, [sp]
+ 149 0094 094A     		ldr	r2, .L13+24
+ 150 0096 0721     		movs	r1, #7
+ 151 0098 0A48     		ldr	r0, .L13+32
+ 152 009a 0068     		ldr	r0, [r0]
+ 153 009c FFF7FEFF 		bl	client_draw
+ 154              	.LVL4:
+ 287:Application/ui_task.c **** }
+ 155              		.loc 1 287 1 is_stmt 0 view .LVU30
+ 156 00a0 07B0     		add	sp, sp, #28
+ 157              	.LCFI2:
+ 158              		.cfi_def_cfa_offset 12
+ 159              		@ sp needed
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 9
+
+
+ 160 00a2 30BD     		pop	{r4, r5, pc}
+ 161              	.LVL5:
+ 162              	.L14:
+ 163              		.loc 1 287 1 view .LVU31
+ 164              		.align	2
+ 165              	.L13:
+ 166 00a4 00000000 		.word	Gimbal_Data
+ 167 00a8 00000000 		.word	.LANCHOR0
+ 168 00ac 00000000 		.word	.LANCHOR2
+ 169 00b0 00000000 		.word	.LANCHOR3
+ 170 00b4 00000000 		.word	.LANCHOR4
+ 171 00b8 00000000 		.word	.LANCHOR5
+ 172 00bc 00000000 		.word	.LANCHOR1
+ 173 00c0 00000000 		.word	robot_state
+ 174 00c4 00000000 		.word	JudgeUSART
+ 175              		.cfi_endproc
+ 176              	.LFE174:
+ 178              		.section	.text.Layer2,"ax",%progbits
+ 179              		.align	1
+ 180              		.syntax unified
+ 181              		.thumb
+ 182              		.thumb_func
+ 184              	Layer2:
+ 185              	.LVL6:
+ 186              	.LFB175:
+ 288:Application/ui_task.c **** static void Layer2(uint8_t operate)
+ 289:Application/ui_task.c **** {
+ 187              		.loc 1 289 1 is_stmt 1 view -0
+ 188              		.cfi_startproc
+ 189              		@ args = 0, pretend = 0, frame = 0
+ 190              		@ frame_needed = 0, uses_anonymous_args = 0
+ 191              		.loc 1 289 1 is_stmt 0 view .LVU33
+ 192 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 193              	.LCFI3:
+ 194              		.cfi_def_cfa_offset 36
+ 195              		.cfi_offset 4, -36
+ 196              		.cfi_offset 5, -32
+ 197              		.cfi_offset 6, -28
+ 198              		.cfi_offset 7, -24
+ 199              		.cfi_offset 8, -20
+ 200              		.cfi_offset 9, -16
+ 201              		.cfi_offset 10, -12
+ 202              		.cfi_offset 11, -8
+ 203              		.cfi_offset 14, -4
+ 204 0004 2DED068B 		vpush.64	{d8, d9, d10}
+ 205              	.LCFI4:
+ 206              		.cfi_def_cfa_offset 60
+ 207              		.cfi_offset 80, -60
+ 208              		.cfi_offset 81, -56
+ 209              		.cfi_offset 82, -52
+ 210              		.cfi_offset 83, -48
+ 211              		.cfi_offset 84, -44
+ 212              		.cfi_offset 85, -40
+ 213 0008 87B0     		sub	sp, sp, #28
+ 214              	.LCFI5:
+ 215              		.cfi_def_cfa_offset 88
+ 216 000a 0546     		mov	r5, r0
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 10
+
+
+ 290:Application/ui_task.c **** 	memset(client_send_buff, 0, sizeof(client_send_buff));
+ 217              		.loc 1 290 2 is_stmt 1 view .LVU34
+ 218 000c 1E22     		movs	r2, #30
+ 219 000e 0021     		movs	r1, #0
+ 220 0010 A448     		ldr	r0, .L35
+ 221              	.LVL7:
+ 222              		.loc 1 290 2 is_stmt 0 view .LVU35
+ 223 0012 FFF7FEFF 		bl	memset
+ 224              	.LVL8:
+ 291:Application/ui_task.c **** 
+ 292:Application/ui_task.c **** 	Line_Generate(&graphic[0], 2, 0, operate,
+ 225              		.loc 1 292 2 is_stmt 1 view .LVU36
+ 293:Application/ui_task.c **** 				  (uint16_t)(960 - 80 * arm_sin_f32(Chassis.FollowTheta / RADIAN_COEF)), (uint16_t)(540 + 80 * 
+ 226              		.loc 1 293 48 is_stmt 0 view .LVU37
+ 227 0016 A44C     		ldr	r4, .L35+4
+ 228 0018 94ED7B0A 		vldr.32	s0, [r4, #492]
+ 229              		.loc 1 293 29 view .LVU38
+ 230 001c DFEDA39A 		vldr.32	s19, .L35+8
+ 231 0020 80EE290A 		vdiv.f32	s0, s0, s19
+ 232 0024 FFF7FEFF 		bl	arm_sin_f32
+ 233              	.LVL9:
+ 234              		.loc 1 293 27 view .LVU39
+ 235 0028 9FEDA18A 		vldr.32	s16, .L35+12
+ 236 002c 20EE089A 		vmul.f32	s18, s0, s16
+ 237              		.loc 1 293 22 view .LVU40
+ 238 0030 DFEDA08A 		vldr.32	s17, .L35+16
+ 239 0034 38EEC99A 		vsub.f32	s18, s17, s18
+ 240              		.loc 1 293 119 view .LVU41
+ 241 0038 94ED7B0A 		vldr.32	s0, [r4, #492]
+ 242              		.loc 1 293 100 view .LVU42
+ 243 003c 80EE290A 		vdiv.f32	s0, s0, s19
+ 244 0040 FFF7FEFF 		bl	arm_cos_f32
+ 245              	.LVL10:
+ 246              		.loc 1 293 98 view .LVU43
+ 247 0044 20EE088A 		vmul.f32	s16, s0, s16
+ 248              		.loc 1 293 93 view .LVU44
+ 249 0048 9FED9BAA 		vldr.32	s20, .L35+20
+ 250 004c 38EE0A8A 		vadd.f32	s16, s16, s20
+ 294:Application/ui_task.c **** 				  (uint16_t)(960 - 150 * arm_sin_f32(Chassis.FollowTheta / RADIAN_COEF)), (uint16_t)(540 + 150 
+ 251              		.loc 1 294 49 view .LVU45
+ 252 0050 94ED7B0A 		vldr.32	s0, [r4, #492]
+ 253              		.loc 1 294 30 view .LVU46
+ 254 0054 80EE290A 		vdiv.f32	s0, s0, s19
+ 255 0058 FFF7FEFF 		bl	arm_sin_f32
+ 256              	.LVL11:
+ 257              		.loc 1 294 28 view .LVU47
+ 258 005c DFED97AA 		vldr.32	s21, .L35+24
+ 259 0060 20EE2A0A 		vmul.f32	s0, s0, s21
+ 260              		.loc 1 294 22 view .LVU48
+ 261 0064 78EEC08A 		vsub.f32	s17, s17, s0
+ 262              		.loc 1 294 121 view .LVU49
+ 263 0068 94ED7B0A 		vldr.32	s0, [r4, #492]
+ 264              		.loc 1 294 102 view .LVU50
+ 265 006c 80EE290A 		vdiv.f32	s0, s0, s19
+ 266 0070 FFF7FEFF 		bl	arm_cos_f32
+ 267              	.LVL12:
+ 268              		.loc 1 294 100 view .LVU51
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 11
+
+
+ 269 0074 20EE2A0A 		vmul.f32	s0, s0, s21
+ 270              		.loc 1 294 94 view .LVU52
+ 271 0078 30EE0A0A 		vadd.f32	s0, s0, s20
+ 292:Application/ui_task.c **** 				  (uint16_t)(960 - 80 * arm_sin_f32(Chassis.FollowTheta / RADIAN_COEF)), (uint16_t)(540 + 80 * 
+ 272              		.loc 1 292 2 view .LVU53
+ 273 007c 0022     		movs	r2, #0
+ 274 007e 0592     		str	r2, [sp, #20]
+ 275 0080 0221     		movs	r1, #2
+ 276 0082 0491     		str	r1, [sp, #16]
+ 277 0084 BCEEC00A 		vcvt.u32.f32	s0, s0
+ 278 0088 10EE103A 		vmov	r3, s0	@ int
+ 279 008c 9BB2     		uxth	r3, r3
+ 280 008e 0393     		str	r3, [sp, #12]
+ 281 0090 FCEEE88A 		vcvt.u32.f32	s17, s17
+ 282 0094 18EE903A 		vmov	r3, s17	@ int
+ 283 0098 9BB2     		uxth	r3, r3
+ 284 009a 0293     		str	r3, [sp, #8]
+ 285 009c BCEEC88A 		vcvt.u32.f32	s16, s16
+ 286 00a0 18EE103A 		vmov	r3, s16	@ int
+ 287 00a4 9BB2     		uxth	r3, r3
+ 288 00a6 0193     		str	r3, [sp, #4]
+ 289 00a8 BCEEC99A 		vcvt.u32.f32	s18, s18
+ 290 00ac 19EE103A 		vmov	r3, s18	@ int
+ 291 00b0 9BB2     		uxth	r3, r3
+ 292 00b2 0093     		str	r3, [sp]
+ 293 00b4 2B46     		mov	r3, r5
+ 294 00b6 8248     		ldr	r0, .L35+28
+ 295 00b8 FFF7FEFF 		bl	Line_Generate
+ 296              	.LVL13:
+ 295:Application/ui_task.c **** 				  2, CLIENT_RedOrBlue);
+ 296:Application/ui_task.c **** 
+ 297:Application/ui_task.c **** 	if (Gimbal_Data.myteam == RED)
+ 297              		.loc 1 297 2 is_stmt 1 view .LVU54
+ 298              		.loc 1 297 17 is_stmt 0 view .LVU55
+ 299 00bc 814B     		ldr	r3, .L35+32
+ 300 00be DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 301              		.loc 1 297 5 view .LVU56
+ 302 00c0 022B     		cmp	r3, #2
+ 303 00c2 00F0A680 		beq	.L33
+ 298:Application/ui_task.c **** 	{
+ 299:Application/ui_task.c **** 		switch (Gimbal_Data.tgt_ID)
+ 300:Application/ui_task.c **** 		{
+ 301:Application/ui_task.c **** 		case 0:
+ 302:Application/ui_task.c **** 			remain_HP = 0;
+ 303:Application/ui_task.c **** 			break;
+ 304:Application/ui_task.c **** 		case 1:
+ 305:Application/ui_task.c **** 			remain_HP = game_robot_HP.blue_1_robot_HP;
+ 306:Application/ui_task.c **** 			break;
+ 307:Application/ui_task.c **** 		case 2:
+ 308:Application/ui_task.c **** 			remain_HP = game_robot_HP.blue_2_robot_HP;
+ 309:Application/ui_task.c **** 			break;
+ 310:Application/ui_task.c **** 		case 3:
+ 311:Application/ui_task.c **** 			remain_HP = game_robot_HP.blue_3_robot_HP;
+ 312:Application/ui_task.c **** 			break;
+ 313:Application/ui_task.c **** 		case 4:
+ 314:Application/ui_task.c **** 			remain_HP = game_robot_HP.blue_4_robot_HP;
+ 315:Application/ui_task.c **** 			break;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 12
+
+
+ 316:Application/ui_task.c **** 		case 5:
+ 317:Application/ui_task.c **** 			remain_HP = game_robot_HP.blue_5_robot_HP;
+ 318:Application/ui_task.c **** 			break;
+ 319:Application/ui_task.c **** 		default:
+ 320:Application/ui_task.c **** 			break;
+ 321:Application/ui_task.c **** 		}
+ 322:Application/ui_task.c **** 	}
+ 323:Application/ui_task.c **** 	else if (Gimbal_Data.myteam == BLUE)
+ 304              		.loc 1 323 7 is_stmt 1 view .LVU57
+ 305              		.loc 1 323 10 is_stmt 0 view .LVU58
+ 306 00c6 012B     		cmp	r3, #1
+ 307 00c8 00F0CA80 		beq	.L34
+ 308              	.L17:
+ 324:Application/ui_task.c **** 	{
+ 325:Application/ui_task.c **** 		switch (Gimbal_Data.tgt_ID)
+ 326:Application/ui_task.c **** 		{
+ 327:Application/ui_task.c **** 		case 0:
+ 328:Application/ui_task.c **** 			remain_HP = 0;
+ 329:Application/ui_task.c **** 			break;
+ 330:Application/ui_task.c **** 		case 1:
+ 331:Application/ui_task.c **** 			remain_HP = game_robot_HP.red_1_robot_HP;
+ 332:Application/ui_task.c **** 			break;
+ 333:Application/ui_task.c **** 		case 2:
+ 334:Application/ui_task.c **** 			remain_HP = game_robot_HP.red_2_robot_HP;
+ 335:Application/ui_task.c **** 			break;
+ 336:Application/ui_task.c **** 		case 3:
+ 337:Application/ui_task.c **** 			remain_HP = game_robot_HP.red_3_robot_HP;
+ 338:Application/ui_task.c **** 			break;
+ 339:Application/ui_task.c **** 		case 4:
+ 340:Application/ui_task.c **** 			remain_HP = game_robot_HP.red_4_robot_HP;
+ 341:Application/ui_task.c **** 			break;
+ 342:Application/ui_task.c **** 		case 5:
+ 343:Application/ui_task.c **** 			remain_HP = game_robot_HP.red_5_robot_HP;
+ 344:Application/ui_task.c **** 			break;
+ 345:Application/ui_task.c **** 		default:
+ 346:Application/ui_task.c **** 			break;
+ 347:Application/ui_task.c **** 		}
+ 348:Application/ui_task.c **** 	}
+ 349:Application/ui_task.c **** 	if ((event_data.event_type & (0x01 << 4)) == 1)
+ 309              		.loc 1 349 2 is_stmt 1 view .LVU59
+ 350:Application/ui_task.c **** 	{
+ 351:Application/ui_task.c **** 		hunt_buff = 5;
+ 352:Application/ui_task.c **** 	}
+ 353:Application/ui_task.c **** 	else if ((event_data.event_type & (0x01 << 5)) == 1)
+ 310              		.loc 1 353 7 view .LVU60
+ 354:Application/ui_task.c **** 	{
+ 355:Application/ui_task.c **** 		hunt_buff = 10;
+ 356:Application/ui_task.c **** 	}
+ 357:Application/ui_task.c **** 	else
+ 358:Application/ui_task.c **** 	{
+ 359:Application/ui_task.c **** 		hunt_buff = 0;
+ 311              		.loc 1 359 3 view .LVU61
+ 312              		.loc 1 359 13 is_stmt 0 view .LVU62
+ 313 00cc 7E4B     		ldr	r3, .L35+36
+ 314 00ce 4FF00002 		mov	r2, #0
+ 315 00d2 1A70     		strb	r2, [r3]
+ 360:Application/ui_task.c **** 	}
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 13
+
+
+ 361:Application/ui_task.c **** 	HP_endX = HP_startX + remain_HP;
+ 316              		.loc 1 361 2 is_stmt 1 view .LVU63
+ 317              		.loc 1 361 22 is_stmt 0 view .LVU64
+ 318 00d4 7D4B     		ldr	r3, .L35+40
+ 319 00d6 1B88     		ldrh	r3, [r3]
+ 320 00d8 7D4A     		ldr	r2, .L35+44
+ 321 00da 1288     		ldrh	r2, [r2]
+ 322 00dc 1344     		add	r3, r3, r2
+ 323 00de 9BB2     		uxth	r3, r3
+ 324              		.loc 1 361 10 view .LVU65
+ 325 00e0 7C4A     		ldr	r2, .L35+48
+ 326 00e2 1380     		strh	r3, [r2]	@ movhi
+ 362:Application/ui_task.c **** 	HIT_startX = HP_endX;
+ 327              		.loc 1 362 2 is_stmt 1 view .LVU66
+ 328              		.loc 1 362 13 is_stmt 0 view .LVU67
+ 329 00e4 7C49     		ldr	r1, .L35+52
+ 330 00e6 0B80     		strh	r3, [r1]	@ movhi
+ 363:Application/ui_task.c **** 	HIT_endX = HIT_startX - power_heat_data_t.shooter_id1_17mm_cooling_heat / 10 *
+ 331              		.loc 1 363 2 is_stmt 1 view .LVU68
+ 332              		.loc 1 363 43 is_stmt 0 view .LVU69
+ 333 00e8 7C4A     		ldr	r2, .L35+56
+ 334 00ea 5289     		ldrh	r2, [r2, #10]
+ 335              		.loc 1 363 24 view .LVU70
+ 336 00ec 7C49     		ldr	r1, .L35+60
+ 337 00ee A1FB0202 		umull	r0, r2, r1, r2
+ 338 00f2 D208     		lsrs	r2, r2, #3
+ 339 00f4 02EB8202 		add	r2, r2, r2, lsl #2
+ 340 00f8 A3EB4203 		sub	r3, r3, r2, lsl #1
+ 341              		.loc 1 363 11 view .LVU71
+ 342 00fc 7948     		ldr	r0, .L35+64
+ 343 00fe 0380     		strh	r3, [r0]	@ movhi
+ 364:Application/ui_task.c **** 								(10 + hunt_buff * (buff_musk.power_rune_buff & (0x01 << 3)));
+ 365:Application/ui_task.c **** 	rect_Generate(&graphic[1], 2, 1, operate, rect_startX, rect_startY, rect_endX, rect_endY, 3, CLIEN
+ 344              		.loc 1 365 2 is_stmt 1 view .LVU72
+ 345 0100 6F4E     		ldr	r6, .L35+28
+ 346 0102 0224     		movs	r4, #2
+ 347 0104 0594     		str	r4, [sp, #20]
+ 348 0106 0327     		movs	r7, #3
+ 349 0108 0497     		str	r7, [sp, #16]
+ 350 010a DFF800B2 		ldr	fp, .L35+104
+ 351 010e BBF80030 		ldrh	r3, [fp]
+ 352 0112 0393     		str	r3, [sp, #12]
+ 353 0114 DFF8F8A1 		ldr	r10, .L35+108
+ 354 0118 BAF80030 		ldrh	r3, [r10]
+ 355 011c 0293     		str	r3, [sp, #8]
+ 356 011e DFF8F491 		ldr	r9, .L35+112
+ 357 0122 B9F80030 		ldrh	r3, [r9]
+ 358 0126 0193     		str	r3, [sp, #4]
+ 359 0128 DFF8EC81 		ldr	r8, .L35+116
+ 360 012c B8F80030 		ldrh	r3, [r8]
+ 361 0130 0093     		str	r3, [sp]
+ 362 0132 2B46     		mov	r3, r5
+ 363 0134 0122     		movs	r2, #1
+ 364 0136 2146     		mov	r1, r4
+ 365 0138 06F11000 		add	r0, r6, #16
+ 366 013c FFF7FEFF 		bl	rect_Generate
+ 367              	.LVL14:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 14
+
+
+ 366:Application/ui_task.c **** 	Line_Generate(&graphic[2], 2, 2, operate, HP_startX, HP_startY, HP_endX, HP_endY, HP_Width, CLIENT
+ 368              		.loc 1 366 2 view .LVU73
+ 369 0140 0594     		str	r4, [sp, #20]
+ 370 0142 694B     		ldr	r3, .L35+68
+ 371 0144 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 372 0146 0493     		str	r3, [sp, #16]
+ 373 0148 684B     		ldr	r3, .L35+72
+ 374 014a 1B88     		ldrh	r3, [r3]
+ 375 014c 0393     		str	r3, [sp, #12]
+ 376 014e 614A     		ldr	r2, .L35+48
+ 377 0150 1388     		ldrh	r3, [r2]
+ 378 0152 0293     		str	r3, [sp, #8]
+ 379 0154 664B     		ldr	r3, .L35+76
+ 380 0156 1B88     		ldrh	r3, [r3]
+ 381 0158 0193     		str	r3, [sp, #4]
+ 382 015a 5C4B     		ldr	r3, .L35+40
+ 383 015c 1B88     		ldrh	r3, [r3]
+ 384 015e 0093     		str	r3, [sp]
+ 385 0160 2B46     		mov	r3, r5
+ 386 0162 2246     		mov	r2, r4
+ 387 0164 2146     		mov	r1, r4
+ 388 0166 06F12000 		add	r0, r6, #32
+ 389 016a FFF7FEFF 		bl	Line_Generate
+ 390              	.LVL15:
+ 367:Application/ui_task.c **** 	Line_Generate(&graphic[3], 2, 3, operate, HIT_startX, HIT_startY, HIT_endX, HIT_endY, HIT_Width, C
+ 391              		.loc 1 367 2 view .LVU74
+ 392 016e 0023     		movs	r3, #0
+ 393 0170 0593     		str	r3, [sp, #20]
+ 394 0172 604B     		ldr	r3, .L35+80
+ 395 0174 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 396 0176 0493     		str	r3, [sp, #16]
+ 397 0178 5F4B     		ldr	r3, .L35+84
+ 398 017a 1B88     		ldrh	r3, [r3]
+ 399 017c 0393     		str	r3, [sp, #12]
+ 400 017e 5948     		ldr	r0, .L35+64
+ 401 0180 0388     		ldrh	r3, [r0]
+ 402 0182 0293     		str	r3, [sp, #8]
+ 403 0184 5D4B     		ldr	r3, .L35+88
+ 404 0186 1B88     		ldrh	r3, [r3]
+ 405 0188 0193     		str	r3, [sp, #4]
+ 406 018a 5349     		ldr	r1, .L35+52
+ 407 018c 0B88     		ldrh	r3, [r1]
+ 408 018e 0093     		str	r3, [sp]
+ 409 0190 2B46     		mov	r3, r5
+ 410 0192 3A46     		mov	r2, r7
+ 411 0194 2146     		mov	r1, r4
+ 412 0196 06F13000 		add	r0, r6, #48
+ 413 019a FFF7FEFF 		bl	Line_Generate
+ 414              	.LVL16:
+ 368:Application/ui_task.c **** 	rect_Generate(&graphic[4], 2, 4, operate, rect_startX, rect_startY, rect_endX, rect_endY, 3, CLIEN
+ 415              		.loc 1 368 2 view .LVU75
+ 416 019e 0594     		str	r4, [sp, #20]
+ 417 01a0 0497     		str	r7, [sp, #16]
+ 418 01a2 BBF80030 		ldrh	r3, [fp]
+ 419 01a6 0393     		str	r3, [sp, #12]
+ 420 01a8 BAF80030 		ldrh	r3, [r10]
+ 421 01ac 0293     		str	r3, [sp, #8]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 15
+
+
+ 422 01ae B9F80030 		ldrh	r3, [r9]
+ 423 01b2 0193     		str	r3, [sp, #4]
+ 424 01b4 B8F80030 		ldrh	r3, [r8]
+ 425 01b8 0093     		str	r3, [sp]
+ 426 01ba 2B46     		mov	r3, r5
+ 427 01bc 0422     		movs	r2, #4
+ 428 01be 2146     		mov	r1, r4
+ 429 01c0 06F14000 		add	r0, r6, #64
+ 430 01c4 FFF7FEFF 		bl	rect_Generate
+ 431              	.LVL17:
+ 369:Application/ui_task.c **** 	rect_Generate(&graphic[5], 2, 5, operate, rect_startX, rect_startY, rect_endX, rect_endY, 3, CLIEN
+ 432              		.loc 1 369 2 view .LVU76
+ 433 01c8 0594     		str	r4, [sp, #20]
+ 434 01ca 0497     		str	r7, [sp, #16]
+ 435 01cc BBF80030 		ldrh	r3, [fp]
+ 436 01d0 0393     		str	r3, [sp, #12]
+ 437 01d2 BAF80030 		ldrh	r3, [r10]
+ 438 01d6 0293     		str	r3, [sp, #8]
+ 439 01d8 B9F80030 		ldrh	r3, [r9]
+ 440 01dc 0193     		str	r3, [sp, #4]
+ 441 01de B8F80030 		ldrh	r3, [r8]
+ 442 01e2 0093     		str	r3, [sp]
+ 443 01e4 2B46     		mov	r3, r5
+ 444 01e6 0522     		movs	r2, #5
+ 445 01e8 2146     		mov	r1, r4
+ 446 01ea 06F15000 		add	r0, r6, #80
+ 447 01ee FFF7FEFF 		bl	rect_Generate
+ 448              	.LVL18:
+ 370:Application/ui_task.c **** #if INFANTRY_ID == 4
+ 371:Application/ui_task.c **** 	switch (Gimbal_Date.shooter_id)
+ 372:Application/ui_task.c **** 	{
+ 373:Application/ui_task.c **** 	case 0:
+ 374:Application/ui_task.c **** 	{
+ 375:Application/ui_task.c **** 		rect_Generate(&graphic[6], 2, 6, operate, 0, 0, 0, 0, 0, CLIENT_RedOrBlue);
+ 376:Application/ui_task.c **** 	}
+ 377:Application/ui_task.c **** 	case 1:
+ 378:Application/ui_task.c **** 	{
+ 379:Application/ui_task.c **** 		// shooter1
+ 380:Application/ui_task.c **** 		rect_Generate(&graphic[6], 2, 6, operate, 450, 475, 570, 605, 2, CLIENT_RedOrBlue);
+ 381:Application/ui_task.c **** 		break;
+ 382:Application/ui_task.c **** 	}
+ 383:Application/ui_task.c **** 	case 2:
+ 384:Application/ui_task.c **** 	{
+ 385:Application/ui_task.c **** 		// shooter2
+ 386:Application/ui_task.c **** 		rect_Generate(&graphic[6], 2, 6, operate, 1460, 475, 1350, 605, 2, CLIENT_RedOrBlue);
+ 387:Application/ui_task.c **** 	}
+ 388:Application/ui_task.c **** 	}
+ 389:Application/ui_task.c **** #endif
+ 390:Application/ui_task.c **** 	client_draw(JudgeUSART, 7, graphic, robot_state.robot_id, robot_state.robot_id + 256);
+ 449              		.loc 1 390 2 view .LVU77
+ 450 01f2 434B     		ldr	r3, .L35+92
+ 451 01f4 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 452 01f6 03F58072 		add	r2, r3, #256
+ 453 01fa 0092     		str	r2, [sp]
+ 454 01fc 3246     		mov	r2, r6
+ 455 01fe 0721     		movs	r1, #7
+ 456 0200 4048     		ldr	r0, .L35+96
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 16
+
+
+ 457 0202 0068     		ldr	r0, [r0]
+ 458 0204 FFF7FEFF 		bl	client_draw
+ 459              	.LVL19:
+ 391:Application/ui_task.c **** }
+ 460              		.loc 1 391 1 is_stmt 0 view .LVU78
+ 461 0208 07B0     		add	sp, sp, #28
+ 462              	.LCFI6:
+ 463              		.cfi_remember_state
+ 464              		.cfi_def_cfa_offset 60
+ 465              		@ sp needed
+ 466 020a BDEC068B 		vldm	sp!, {d8-d10}
+ 467              	.LCFI7:
+ 468              		.cfi_restore 84
+ 469              		.cfi_restore 85
+ 470              		.cfi_restore 82
+ 471              		.cfi_restore 83
+ 472              		.cfi_restore 80
+ 473              		.cfi_restore 81
+ 474              		.cfi_def_cfa_offset 36
+ 475 020e BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 476              	.L33:
+ 477              	.LCFI8:
+ 478              		.cfi_restore_state
+ 299:Application/ui_task.c **** 		{
+ 479              		.loc 1 299 3 is_stmt 1 view .LVU79
+ 299:Application/ui_task.c **** 		{
+ 480              		.loc 1 299 22 is_stmt 0 view .LVU80
+ 481 0212 2C4B     		ldr	r3, .L35+32
+ 482 0214 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 299:Application/ui_task.c **** 		{
+ 483              		.loc 1 299 3 view .LVU81
+ 484 0216 052B     		cmp	r3, #5
+ 485 0218 3FF658AF 		bhi	.L17
+ 486 021c DFE803F0 		tbb	[pc, r3]
+ 487              	.L19:
+ 488 0220 03       		.byte	(.L24-.L19)/2
+ 489 0221 07       		.byte	(.L23-.L19)/2
+ 490 0222 0C       		.byte	(.L22-.L19)/2
+ 491 0223 11       		.byte	(.L21-.L19)/2
+ 492 0224 16       		.byte	(.L20-.L19)/2
+ 493 0225 1B       		.byte	(.L18-.L19)/2
+ 494              		.p2align 1
+ 495              	.L24:
+ 302:Application/ui_task.c **** 			break;
+ 496              		.loc 1 302 4 is_stmt 1 view .LVU82
+ 302:Application/ui_task.c **** 			break;
+ 497              		.loc 1 302 14 is_stmt 0 view .LVU83
+ 498 0226 2A4B     		ldr	r3, .L35+44
+ 499 0228 0022     		movs	r2, #0
+ 500 022a 1A80     		strh	r2, [r3]	@ movhi
+ 303:Application/ui_task.c **** 		case 1:
+ 501              		.loc 1 303 4 is_stmt 1 view .LVU84
+ 502 022c 4EE7     		b	.L17
+ 503              	.L23:
+ 305:Application/ui_task.c **** 			break;
+ 504              		.loc 1 305 4 view .LVU85
+ 305:Application/ui_task.c **** 			break;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 17
+
+
+ 505              		.loc 1 305 29 is_stmt 0 view .LVU86
+ 506 022e 364B     		ldr	r3, .L35+100
+ 507 0230 1A8A     		ldrh	r2, [r3, #16]
+ 305:Application/ui_task.c **** 			break;
+ 508              		.loc 1 305 14 view .LVU87
+ 509 0232 274B     		ldr	r3, .L35+44
+ 510 0234 1A80     		strh	r2, [r3]	@ movhi
+ 306:Application/ui_task.c **** 		case 2:
+ 511              		.loc 1 306 4 is_stmt 1 view .LVU88
+ 512 0236 49E7     		b	.L17
+ 513              	.L22:
+ 308:Application/ui_task.c **** 			break;
+ 514              		.loc 1 308 4 view .LVU89
+ 308:Application/ui_task.c **** 			break;
+ 515              		.loc 1 308 29 is_stmt 0 view .LVU90
+ 516 0238 334B     		ldr	r3, .L35+100
+ 517 023a 5A8A     		ldrh	r2, [r3, #18]
+ 308:Application/ui_task.c **** 			break;
+ 518              		.loc 1 308 14 view .LVU91
+ 519 023c 244B     		ldr	r3, .L35+44
+ 520 023e 1A80     		strh	r2, [r3]	@ movhi
+ 309:Application/ui_task.c **** 		case 3:
+ 521              		.loc 1 309 4 is_stmt 1 view .LVU92
+ 522 0240 44E7     		b	.L17
+ 523              	.L21:
+ 311:Application/ui_task.c **** 			break;
+ 524              		.loc 1 311 4 view .LVU93
+ 311:Application/ui_task.c **** 			break;
+ 525              		.loc 1 311 29 is_stmt 0 view .LVU94
+ 526 0242 314B     		ldr	r3, .L35+100
+ 527 0244 9A8A     		ldrh	r2, [r3, #20]
+ 311:Application/ui_task.c **** 			break;
+ 528              		.loc 1 311 14 view .LVU95
+ 529 0246 224B     		ldr	r3, .L35+44
+ 530 0248 1A80     		strh	r2, [r3]	@ movhi
+ 312:Application/ui_task.c **** 		case 4:
+ 531              		.loc 1 312 4 is_stmt 1 view .LVU96
+ 532 024a 3FE7     		b	.L17
+ 533              	.L20:
+ 314:Application/ui_task.c **** 			break;
+ 534              		.loc 1 314 4 view .LVU97
+ 314:Application/ui_task.c **** 			break;
+ 535              		.loc 1 314 29 is_stmt 0 view .LVU98
+ 536 024c 2E4B     		ldr	r3, .L35+100
+ 537 024e DA8A     		ldrh	r2, [r3, #22]
+ 314:Application/ui_task.c **** 			break;
+ 538              		.loc 1 314 14 view .LVU99
+ 539 0250 1F4B     		ldr	r3, .L35+44
+ 540 0252 1A80     		strh	r2, [r3]	@ movhi
+ 315:Application/ui_task.c **** 		case 5:
+ 541              		.loc 1 315 4 is_stmt 1 view .LVU100
+ 542 0254 3AE7     		b	.L17
+ 543              	.L18:
+ 317:Application/ui_task.c **** 			break;
+ 544              		.loc 1 317 4 view .LVU101
+ 317:Application/ui_task.c **** 			break;
+ 545              		.loc 1 317 29 is_stmt 0 view .LVU102
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 18
+
+
+ 546 0256 2C4B     		ldr	r3, .L35+100
+ 547 0258 1A8B     		ldrh	r2, [r3, #24]
+ 317:Application/ui_task.c **** 			break;
+ 548              		.loc 1 317 14 view .LVU103
+ 549 025a 1D4B     		ldr	r3, .L35+44
+ 550 025c 1A80     		strh	r2, [r3]	@ movhi
+ 318:Application/ui_task.c **** 		default:
+ 551              		.loc 1 318 4 is_stmt 1 view .LVU104
+ 552 025e 35E7     		b	.L17
+ 553              	.L34:
+ 325:Application/ui_task.c **** 		{
+ 554              		.loc 1 325 3 view .LVU105
+ 325:Application/ui_task.c **** 		{
+ 555              		.loc 1 325 22 is_stmt 0 view .LVU106
+ 556 0260 184B     		ldr	r3, .L35+32
+ 557 0262 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 325:Application/ui_task.c **** 		{
+ 558              		.loc 1 325 3 view .LVU107
+ 559 0264 052B     		cmp	r3, #5
+ 560 0266 3FF631AF 		bhi	.L17
+ 561 026a DFE803F0 		tbb	[pc, r3]
+ 562              	.L26:
+ 563 026e 03       		.byte	(.L31-.L26)/2
+ 564 026f 07       		.byte	(.L30-.L26)/2
+ 565 0270 0C       		.byte	(.L29-.L26)/2
+ 566 0271 11       		.byte	(.L28-.L26)/2
+ 567 0272 16       		.byte	(.L27-.L26)/2
+ 568 0273 57       		.byte	(.L25-.L26)/2
+ 569              		.p2align 1
+ 570              	.L31:
+ 328:Application/ui_task.c **** 			break;
+ 571              		.loc 1 328 4 is_stmt 1 view .LVU108
+ 328:Application/ui_task.c **** 			break;
+ 572              		.loc 1 328 14 is_stmt 0 view .LVU109
+ 573 0274 164B     		ldr	r3, .L35+44
+ 574 0276 0022     		movs	r2, #0
+ 575 0278 1A80     		strh	r2, [r3]	@ movhi
+ 329:Application/ui_task.c **** 		case 1:
+ 576              		.loc 1 329 4 is_stmt 1 view .LVU110
+ 577 027a 27E7     		b	.L17
+ 578              	.L30:
+ 331:Application/ui_task.c **** 			break;
+ 579              		.loc 1 331 4 view .LVU111
+ 331:Application/ui_task.c **** 			break;
+ 580              		.loc 1 331 29 is_stmt 0 view .LVU112
+ 581 027c 224B     		ldr	r3, .L35+100
+ 582 027e 1A88     		ldrh	r2, [r3]
+ 331:Application/ui_task.c **** 			break;
+ 583              		.loc 1 331 14 view .LVU113
+ 584 0280 134B     		ldr	r3, .L35+44
+ 585 0282 1A80     		strh	r2, [r3]	@ movhi
+ 332:Application/ui_task.c **** 		case 2:
+ 586              		.loc 1 332 4 is_stmt 1 view .LVU114
+ 587 0284 22E7     		b	.L17
+ 588              	.L29:
+ 334:Application/ui_task.c **** 			break;
+ 589              		.loc 1 334 4 view .LVU115
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 19
+
+
+ 334:Application/ui_task.c **** 			break;
+ 590              		.loc 1 334 29 is_stmt 0 view .LVU116
+ 591 0286 204B     		ldr	r3, .L35+100
+ 592 0288 5A88     		ldrh	r2, [r3, #2]
+ 334:Application/ui_task.c **** 			break;
+ 593              		.loc 1 334 14 view .LVU117
+ 594 028a 114B     		ldr	r3, .L35+44
+ 595 028c 1A80     		strh	r2, [r3]	@ movhi
+ 335:Application/ui_task.c **** 		case 3:
+ 596              		.loc 1 335 4 is_stmt 1 view .LVU118
+ 597 028e 1DE7     		b	.L17
+ 598              	.L28:
+ 337:Application/ui_task.c **** 			break;
+ 599              		.loc 1 337 4 view .LVU119
+ 337:Application/ui_task.c **** 			break;
+ 600              		.loc 1 337 29 is_stmt 0 view .LVU120
+ 601 0290 1D4B     		ldr	r3, .L35+100
+ 602 0292 9A88     		ldrh	r2, [r3, #4]
+ 337:Application/ui_task.c **** 			break;
+ 603              		.loc 1 337 14 view .LVU121
+ 604 0294 0E4B     		ldr	r3, .L35+44
+ 605 0296 1A80     		strh	r2, [r3]	@ movhi
+ 338:Application/ui_task.c **** 		case 4:
+ 606              		.loc 1 338 4 is_stmt 1 view .LVU122
+ 607 0298 18E7     		b	.L17
+ 608              	.L27:
+ 340:Application/ui_task.c **** 			break;
+ 609              		.loc 1 340 4 view .LVU123
+ 340:Application/ui_task.c **** 			break;
+ 610              		.loc 1 340 29 is_stmt 0 view .LVU124
+ 611 029a 1B4B     		ldr	r3, .L35+100
+ 612 029c DA88     		ldrh	r2, [r3, #6]
+ 340:Application/ui_task.c **** 			break;
+ 613              		.loc 1 340 14 view .LVU125
+ 614 029e 0C4B     		ldr	r3, .L35+44
+ 615 02a0 1A80     		strh	r2, [r3]	@ movhi
+ 341:Application/ui_task.c **** 		case 5:
+ 616              		.loc 1 341 4 is_stmt 1 view .LVU126
+ 617 02a2 13E7     		b	.L17
+ 618              	.L36:
+ 619              		.align	2
+ 620              	.L35:
+ 621 02a4 00000000 		.word	.LANCHOR6
+ 622 02a8 00000000 		.word	Chassis
+ 623 02ac E12E6542 		.word	1113927393
+ 624 02b0 0000A042 		.word	1117782016
+ 625 02b4 00007044 		.word	1148190720
+ 626 02b8 00000744 		.word	1141309440
+ 627 02bc 00001643 		.word	1125515264
+ 628 02c0 00000000 		.word	.LANCHOR1
+ 629 02c4 00000000 		.word	Gimbal_Data
+ 630 02c8 00000000 		.word	.LANCHOR8
+ 631 02cc 00000000 		.word	.LANCHOR9
+ 632 02d0 00000000 		.word	.LANCHOR7
+ 633 02d4 00000000 		.word	.LANCHOR10
+ 634 02d8 00000000 		.word	.LANCHOR11
+ 635 02dc 00000000 		.word	power_heat_data_t
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 20
+
+
+ 636 02e0 CDCCCCCC 		.word	-858993459
+ 637 02e4 00000000 		.word	.LANCHOR12
+ 638 02e8 00000000 		.word	.LANCHOR17
+ 639 02ec 00000000 		.word	.LANCHOR18
+ 640 02f0 00000000 		.word	.LANCHOR19
+ 641 02f4 00000000 		.word	.LANCHOR20
+ 642 02f8 00000000 		.word	.LANCHOR21
+ 643 02fc 00000000 		.word	.LANCHOR22
+ 644 0300 00000000 		.word	robot_state
+ 645 0304 00000000 		.word	JudgeUSART
+ 646 0308 00000000 		.word	game_robot_HP
+ 647 030c 00000000 		.word	.LANCHOR13
+ 648 0310 00000000 		.word	.LANCHOR14
+ 649 0314 00000000 		.word	.LANCHOR15
+ 650 0318 00000000 		.word	.LANCHOR16
+ 651              	.L25:
+ 343:Application/ui_task.c **** 			break;
+ 652              		.loc 1 343 4 view .LVU127
+ 343:Application/ui_task.c **** 			break;
+ 653              		.loc 1 343 29 is_stmt 0 view .LVU128
+ 654 031c 024B     		ldr	r3, .L37
+ 655 031e 1A89     		ldrh	r2, [r3, #8]
+ 343:Application/ui_task.c **** 			break;
+ 656              		.loc 1 343 14 view .LVU129
+ 657 0320 024B     		ldr	r3, .L37+4
+ 658 0322 1A80     		strh	r2, [r3]	@ movhi
+ 344:Application/ui_task.c **** 		default:
+ 659              		.loc 1 344 4 is_stmt 1 view .LVU130
+ 660 0324 D2E6     		b	.L17
+ 661              	.L38:
+ 662 0326 00BF     		.align	2
+ 663              	.L37:
+ 664 0328 00000000 		.word	game_robot_HP
+ 665 032c 00000000 		.word	.LANCHOR7
+ 666              		.cfi_endproc
+ 667              	.LFE175:
+ 669              		.section	.rodata.Layer3.str1.4,"aMS",%progbits,1
+ 670              		.align	2
+ 671              	.LC0:
+ 672 0000 466F6C6C 		.ascii	"Follow\012\000"
+ 672      6F770A00 
+ 673              		.align	2
+ 674              	.LC1:
+ 675 0008 53696C65 		.ascii	"Silence\012\000"
+ 675      6E63650A 
+ 675      00
+ 676 0011 000000   		.align	2
+ 677              	.LC2:
+ 678 0014 5370696E 		.ascii	"Spinning\012\000"
+ 678      6E696E67 
+ 678      0A00
+ 679 001e 0000     		.align	2
+ 680              	.LC3:
+ 681 0020 53696465 		.ascii	"Side\012\000"
+ 681      0A00
+ 682 0026 0000     		.align	2
+ 683              	.LC4:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 21
+
+
+ 684 0028 4E4F5F41 		.ascii	"NO_AIM\012\000"
+ 684      494D0A00 
+ 685              		.align	2
+ 686              	.LC5:
+ 687 0030 4155544F 		.ascii	"AUTO_AIM\012\000"
+ 687      5F41494D 
+ 687      0A00
+ 688 003a 0000     		.align	2
+ 689              	.LC6:
+ 690 003c 52554E45 		.ascii	"RUNE_MIN\012\000"
+ 690      5F4D494E 
+ 690      0A00
+ 691 0046 0000     		.align	2
+ 692              	.LC7:
+ 693 0048 4D41585F 		.ascii	"MAX_RUNE\012\000"
+ 693      52554E45 
+ 693      0A00
+ 694 0052 0000     		.align	2
+ 695              	.LC8:
+ 696 0054 4C6F770A 		.ascii	"Low\012\000"
+ 696      00
+ 697 0059 000000   		.align	2
+ 698              	.LC9:
+ 699 005c 48696768 		.ascii	"High\012\000"
+ 699      0A00
+ 700 0062 0000     		.align	2
+ 701              	.LC10:
+ 702 0064 4E6F0A00 		.ascii	"No\012\000"
+ 703              		.section	.text.Layer3,"ax",%progbits
+ 704              		.align	1
+ 705              		.syntax unified
+ 706              		.thumb
+ 707              		.thumb_func
+ 709              	Layer3:
+ 710              	.LVL20:
+ 711              	.LFB176:
+ 392:Application/ui_task.c **** static void Layer3(uint8_t operate)
+ 393:Application/ui_task.c **** {
+ 712              		.loc 1 393 1 view -0
+ 713              		.cfi_startproc
+ 714              		@ args = 0, pretend = 0, frame = 8
+ 715              		@ frame_needed = 0, uses_anonymous_args = 0
+ 716              		.loc 1 393 1 is_stmt 0 view .LVU132
+ 717 0000 70B5     		push	{r4, r5, r6, lr}
+ 718              	.LCFI9:
+ 719              		.cfi_def_cfa_offset 16
+ 720              		.cfi_offset 4, -16
+ 721              		.cfi_offset 5, -12
+ 722              		.cfi_offset 6, -8
+ 723              		.cfi_offset 14, -4
+ 724 0002 8AB0     		sub	sp, sp, #40
+ 725              	.LCFI10:
+ 726              		.cfi_def_cfa_offset 56
+ 727 0004 0446     		mov	r4, r0
+ 394:Application/ui_task.c **** 	uint8_t
+ 728              		.loc 1 394 2 is_stmt 1 view .LVU133
+ 395:Application/ui_task.c **** 		lens[3];
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 22
+
+
+ 396:Application/ui_task.c **** 
+ 397:Application/ui_task.c **** 	memset(client_send_buff, 0, sizeof(client_send_buff));
+ 729              		.loc 1 397 2 view .LVU134
+ 730 0006 1E22     		movs	r2, #30
+ 731 0008 0021     		movs	r1, #0
+ 732 000a 7C48     		ldr	r0, .L60
+ 733              	.LVL21:
+ 734              		.loc 1 397 2 is_stmt 0 view .LVU135
+ 735 000c FFF7FEFF 		bl	memset
+ 736              	.LVL22:
+ 398:Application/ui_task.c **** 
+ 399:Application/ui_task.c **** 	switch (Chassis.Mode)
+ 737              		.loc 1 399 2 is_stmt 1 view .LVU136
+ 738              		.loc 1 399 17 is_stmt 0 view .LVU137
+ 739 0010 7B4B     		ldr	r3, .L60+4
+ 740 0012 93F8D431 		ldrb	r3, [r3, #468]	@ zero_extendqisi2
+ 741              		.loc 1 399 2 view .LVU138
+ 742 0016 032B     		cmp	r3, #3
+ 743 0018 0ED8     		bhi	.L40
+ 744 001a DFE803F0 		tbb	[pc, r3]
+ 745              	.L42:
+ 746 001e 02       		.byte	(.L45-.L42)/2
+ 747 001f 1E       		.byte	(.L44-.L42)/2
+ 748 0020 27       		.byte	(.L43-.L42)/2
+ 749 0021 15       		.byte	(.L41-.L42)/2
+ 750              		.p2align 1
+ 751              	.L45:
+ 400:Application/ui_task.c **** 	{
+ 401:Application/ui_task.c **** 	case Follow_Mode:
+ 402:Application/ui_task.c **** 		memcpy(client_send_buff, "Follow\n", strlen("Follow\n"));
+ 752              		.loc 1 402 3 is_stmt 1 view .LVU139
+ 753 0022 764B     		ldr	r3, .L60
+ 754 0024 774A     		ldr	r2, .L60+8
+ 755 0026 92E80300 		ldm	r2, {r0, r1}
+ 756 002a 1860     		str	r0, [r3]
+ 757 002c 9980     		strh	r1, [r3, #4]	@ movhi
+ 758 002e 090C     		lsrs	r1, r1, #16
+ 759 0030 9971     		strb	r1, [r3, #6]
+ 403:Application/ui_task.c **** 		lens[0] = strlen("Follow\n");
+ 760              		.loc 1 403 3 view .LVU140
+ 761              		.loc 1 403 11 is_stmt 0 view .LVU141
+ 762 0032 0723     		movs	r3, #7
+ 763 0034 8DF82430 		strb	r3, [sp, #36]
+ 404:Application/ui_task.c **** 		break;
+ 764              		.loc 1 404 3 is_stmt 1 view .LVU142
+ 765              	.L40:
+ 405:Application/ui_task.c **** 
+ 406:Application/ui_task.c **** 	case Silence_Mode:
+ 407:Application/ui_task.c **** 		memcpy(client_send_buff, "Silence\n", strlen("Silencen\n"));
+ 408:Application/ui_task.c **** 
+ 409:Application/ui_task.c **** 		lens[0] = strlen("Silencen\n");
+ 410:Application/ui_task.c **** 		break;
+ 411:Application/ui_task.c **** 
+ 412:Application/ui_task.c **** 	case Spinning_Mode:
+ 413:Application/ui_task.c **** 		memcpy(client_send_buff, "Spinning\n", strlen("Spinning\n"));
+ 414:Application/ui_task.c **** 		lens[0] = strlen("Spinning\n");
+ 415:Application/ui_task.c **** 		break;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 23
+
+
+ 416:Application/ui_task.c **** 
+ 417:Application/ui_task.c **** 	case Side_Mode:
+ 418:Application/ui_task.c **** 		memcpy(client_send_buff, "Side\n", strlen("Side\n"));
+ 419:Application/ui_task.c **** 		lens[0] = strlen("Side\n");
+ 420:Application/ui_task.c **** 		break;
+ 421:Application/ui_task.c **** 	}
+ 422:Application/ui_task.c **** 	switch (Gimbal_Data.Gimbal_mode)
+ 766              		.loc 1 422 2 view .LVU143
+ 767              		.loc 1 422 21 is_stmt 0 view .LVU144
+ 768 0038 734B     		ldr	r3, .L60+12
+ 769 003a 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 770              		.loc 1 422 2 view .LVU145
+ 771 003c 032B     		cmp	r3, #3
+ 772 003e 2DD8     		bhi	.L46
+ 773 0040 DFE803F0 		tbb	[pc, r3]
+ 774              	.L48:
+ 775 0044 1E       		.byte	(.L51-.L48)/2
+ 776 0045 75       		.byte	(.L50-.L48)/2
+ 777 0046 83       		.byte	(.L49-.L48)/2
+ 778 0047 91       		.byte	(.L47-.L48)/2
+ 779              		.p2align 1
+ 780              	.L41:
+ 407:Application/ui_task.c **** 
+ 781              		.loc 1 407 3 is_stmt 1 view .LVU146
+ 782 0048 704A     		ldr	r2, .L60+16
+ 783 004a 6C4B     		ldr	r3, .L60
+ 784 004c 07CA     		ldm	r2, {r0, r1, r2}
+ 785 004e 03C3     		stmia	r3!, {r0, r1}
+ 786 0050 1A70     		strb	r2, [r3]
+ 409:Application/ui_task.c **** 		break;
+ 787              		.loc 1 409 3 view .LVU147
+ 409:Application/ui_task.c **** 		break;
+ 788              		.loc 1 409 11 is_stmt 0 view .LVU148
+ 789 0052 0923     		movs	r3, #9
+ 790 0054 8DF82430 		strb	r3, [sp, #36]
+ 410:Application/ui_task.c **** 
+ 791              		.loc 1 410 3 is_stmt 1 view .LVU149
+ 792 0058 EEE7     		b	.L40
+ 793              	.L44:
+ 413:Application/ui_task.c **** 		lens[0] = strlen("Spinning\n");
+ 794              		.loc 1 413 3 view .LVU150
+ 795 005a 6D4A     		ldr	r2, .L60+20
+ 796 005c 674B     		ldr	r3, .L60
+ 797 005e 07CA     		ldm	r2, {r0, r1, r2}
+ 798 0060 03C3     		stmia	r3!, {r0, r1}
+ 799 0062 1A70     		strb	r2, [r3]
+ 414:Application/ui_task.c **** 		break;
+ 800              		.loc 1 414 3 view .LVU151
+ 414:Application/ui_task.c **** 		break;
+ 801              		.loc 1 414 11 is_stmt 0 view .LVU152
+ 802 0064 0923     		movs	r3, #9
+ 803 0066 8DF82430 		strb	r3, [sp, #36]
+ 415:Application/ui_task.c **** 
+ 804              		.loc 1 415 3 is_stmt 1 view .LVU153
+ 805 006a E5E7     		b	.L40
+ 806              	.L43:
+ 418:Application/ui_task.c **** 		lens[0] = strlen("Side\n");
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 24
+
+
+ 807              		.loc 1 418 3 view .LVU154
+ 808 006c 634B     		ldr	r3, .L60
+ 809 006e 694A     		ldr	r2, .L60+24
+ 810 0070 92E80300 		ldm	r2, {r0, r1}
+ 811 0074 1860     		str	r0, [r3]
+ 812 0076 1971     		strb	r1, [r3, #4]
+ 419:Application/ui_task.c **** 		break;
+ 813              		.loc 1 419 3 view .LVU155
+ 419:Application/ui_task.c **** 		break;
+ 814              		.loc 1 419 11 is_stmt 0 view .LVU156
+ 815 0078 0523     		movs	r3, #5
+ 816 007a 8DF82430 		strb	r3, [sp, #36]
+ 420:Application/ui_task.c **** 	}
+ 817              		.loc 1 420 3 is_stmt 1 view .LVU157
+ 818 007e DBE7     		b	.L40
+ 819              	.L51:
+ 423:Application/ui_task.c **** 	{
+ 424:Application/ui_task.c **** 	case 0:
+ 425:Application/ui_task.c **** 	{
+ 426:Application/ui_task.c **** 		lens[1] = strlen("NO_AIM\n");
+ 820              		.loc 1 426 3 view .LVU158
+ 821              		.loc 1 426 11 is_stmt 0 view .LVU159
+ 822 0080 0723     		movs	r3, #7
+ 823 0082 8DF82530 		strb	r3, [sp, #37]
+ 427:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "NO_AIM\n", strlen("NO_AIM\n"));
+ 824              		.loc 1 427 3 is_stmt 1 view .LVU160
+ 825              		.loc 1 427 33 is_stmt 0 view .LVU161
+ 826 0086 9DF82410 		ldrb	r1, [sp, #36]	@ zero_extendqisi2
+ 827              		.loc 1 427 3 view .LVU162
+ 828 008a 5C4D     		ldr	r5, .L60
+ 829 008c 6A18     		adds	r2, r5, r1
+ 830 008e 624B     		ldr	r3, .L60+28
+ 831 0090 1868     		ldr	r0, [r3]
+ 832 0092 6850     		str	r0, [r5, r1]	@ unaligned
+ 833 0094 9988     		ldrh	r1, [r3, #4]	@ unaligned
+ 834 0096 9B79     		ldrb	r3, [r3, #6]	@ zero_extendqisi2
+ 835 0098 9180     		strh	r1, [r2, #4]	@ unaligned
+ 836 009a 9371     		strb	r3, [r2, #6]
+ 428:Application/ui_task.c **** 		break;
+ 837              		.loc 1 428 3 is_stmt 1 view .LVU163
+ 838              	.L46:
+ 429:Application/ui_task.c **** 	}
+ 430:Application/ui_task.c **** 	case 1:
+ 431:Application/ui_task.c **** 	{
+ 432:Application/ui_task.c **** 		lens[1] = strlen("AUTO_AIM\n");
+ 433:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "AUTO_AIM\n", strlen("AUTO_AIM\n"));
+ 434:Application/ui_task.c **** 		break;
+ 435:Application/ui_task.c **** 	}
+ 436:Application/ui_task.c **** 	case 2:
+ 437:Application/ui_task.c **** 	{
+ 438:Application/ui_task.c **** 		lens[1] = strlen("RUNE_MIN\n");
+ 439:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "RUNE_MIN\n", strlen("RUNE_MIN\n"));
+ 440:Application/ui_task.c **** 		break;
+ 441:Application/ui_task.c **** 	}
+ 442:Application/ui_task.c **** 	case 3:
+ 443:Application/ui_task.c **** 	{
+ 444:Application/ui_task.c **** 		lens[1] = strlen("MAX_RUNE\n");
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 25
+
+
+ 445:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "MAX_RUNE\n", strlen("MAX_RUNE\n"));
+ 446:Application/ui_task.c **** 		break;
+ 447:Application/ui_task.c **** 	}
+ 448:Application/ui_task.c **** 	}
+ 449:Application/ui_task.c **** 	if (Chassis.Mode == Follow_Mode)
+ 839              		.loc 1 449 2 view .LVU164
+ 840              		.loc 1 449 13 is_stmt 0 view .LVU165
+ 841 009c 584B     		ldr	r3, .L60+4
+ 842 009e 93F8D431 		ldrb	r3, [r3, #468]	@ zero_extendqisi2
+ 843              		.loc 1 449 5 view .LVU166
+ 844 00a2 002B     		cmp	r3, #0
+ 845 00a4 7CD1     		bne	.L52
+ 450:Application/ui_task.c **** 	{
+ 451:Application/ui_task.c **** 		if (abs(Chassis.HeadingFlag) == 1)
+ 846              		.loc 1 451 3 is_stmt 1 view .LVU167
+ 847              		.loc 1 451 7 is_stmt 0 view .LVU168
+ 848 00a6 564B     		ldr	r3, .L60+4
+ 849 00a8 93F9F421 		ldrsb	r2, [r3, #500]
+ 850 00ac 002A     		cmp	r2, #0
+ 851 00ae B8BF     		it	lt
+ 852 00b0 5242     		rsblt	r2, r2, #0
+ 853 00b2 D2B2     		uxtb	r2, r2
+ 854              		.loc 1 451 6 view .LVU169
+ 855 00b4 012A     		cmp	r2, #1
+ 856 00b6 66D0     		beq	.L58
+ 452:Application/ui_task.c **** 		{
+ 453:Application/ui_task.c **** 			lens[2] = strlen("Low\n");
+ 454:Application/ui_task.c **** 			memcpy(client_send_buff + lens[0] + lens[1], "Low\n", strlen("Low\n"));
+ 455:Application/ui_task.c **** 		}
+ 456:Application/ui_task.c **** 		else
+ 457:Application/ui_task.c **** 		{
+ 458:Application/ui_task.c **** 			lens[2] = strlen("High\n");
+ 857              		.loc 1 458 4 is_stmt 1 view .LVU170
+ 858              		.loc 1 458 12 is_stmt 0 view .LVU171
+ 859 00b8 0523     		movs	r3, #5
+ 860 00ba 8DF82630 		strb	r3, [sp, #38]
+ 459:Application/ui_task.c **** 			memcpy(client_send_buff + lens[0] + lens[1], "High\n", strlen("High\n"));
+ 861              		.loc 1 459 4 is_stmt 1 view .LVU172
+ 862              		.loc 1 459 34 is_stmt 0 view .LVU173
+ 863 00be 9DF82430 		ldrb	r3, [sp, #36]	@ zero_extendqisi2
+ 864              		.loc 1 459 44 view .LVU174
+ 865 00c2 9DF82520 		ldrb	r2, [sp, #37]	@ zero_extendqisi2
+ 866              		.loc 1 459 38 view .LVU175
+ 867 00c6 1344     		add	r3, r3, r2
+ 868              		.loc 1 459 4 view .LVU176
+ 869 00c8 4C49     		ldr	r1, .L60
+ 870 00ca 01EB030C 		add	ip, r1, r3
+ 871 00ce 534A     		ldr	r2, .L60+32
+ 872 00d0 1068     		ldr	r0, [r2]
+ 873 00d2 C850     		str	r0, [r1, r3]	@ unaligned
+ 874 00d4 1379     		ldrb	r3, [r2, #4]	@ zero_extendqisi2
+ 875 00d6 8CF80430 		strb	r3, [ip, #4]
+ 876              	.L54:
+ 460:Application/ui_task.c **** 		}
+ 461:Application/ui_task.c **** 	}
+ 462:Application/ui_task.c **** 	else
+ 463:Application/ui_task.c **** 	{
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 26
+
+
+ 464:Application/ui_task.c **** 		lens[2] = strlen("No\n");
+ 465:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0] + lens[1], "No\n", strlen("No\n"));
+ 466:Application/ui_task.c **** 	}
+ 467:Application/ui_task.c **** 	if ((Chassis.Mode == Spinning_Mode) &&
+ 877              		.loc 1 467 2 is_stmt 1 view .LVU177
+ 878              		.loc 1 467 14 is_stmt 0 view .LVU178
+ 879 00da 494B     		ldr	r3, .L60+4
+ 880 00dc 93F8D431 		ldrb	r3, [r3, #468]	@ zero_extendqisi2
+ 881              		.loc 1 467 5 view .LVU179
+ 882 00e0 012B     		cmp	r3, #1
+ 883 00e2 07D1     		bne	.L55
+ 468:Application/ui_task.c **** 		((remote_control.key_code & Key_SHIFT) || (remote_control.key_code & Key_CTRL)) &&
+ 884              		.loc 1 468 19 discriminator 1 view .LVU180
+ 885 00e4 4E4B     		ldr	r3, .L60+36
+ 886 00e6 DB8A     		ldrh	r3, [r3, #22]
+ 467:Application/ui_task.c **** 		((remote_control.key_code & Key_SHIFT) || (remote_control.key_code & Key_CTRL)) &&
+ 887              		.loc 1 467 38 discriminator 1 view .LVU181
+ 888 00e8 13F0300F 		tst	r3, #48
+ 889 00ec 02D0     		beq	.L55
+ 890              		.loc 1 468 83 view .LVU182
+ 891 00ee 13F00F0F 		tst	r3, #15
+ 892 00f2 67D1     		bne	.L59
+ 893              	.L55:
+ 469:Application/ui_task.c **** 		((remote_control.key_code & Key_W) || (remote_control.key_code & Key_A) || (remote_control.key_co
+ 470:Application/ui_task.c **** 		client_draw_char(JudgeUSART, &Char2, 3, operate, 600, 580, 20, robot_state.robot_id, robot_state.
+ 471:Application/ui_task.c **** 	else
+ 472:Application/ui_task.c **** 		client_draw_char(JudgeUSART, &Char2, 3, operate, 600, 580, 20, robot_state.robot_id, robot_state.
+ 894              		.loc 1 472 3 is_stmt 1 view .LVU183
+ 895 00f4 4B4B     		ldr	r3, .L60+40
+ 896 00f6 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 897 00f8 0022     		movs	r2, #0
+ 898 00fa 0792     		str	r2, [sp, #28]
+ 899 00fc 1E22     		movs	r2, #30
+ 900 00fe 0692     		str	r2, [sp, #24]
+ 901 0100 3E4A     		ldr	r2, .L60
+ 902 0102 0592     		str	r2, [sp, #20]
+ 903 0104 03F58072 		add	r2, r3, #256
+ 904 0108 0492     		str	r2, [sp, #16]
+ 905 010a 0393     		str	r3, [sp, #12]
+ 906 010c 1423     		movs	r3, #20
+ 907 010e 0293     		str	r3, [sp, #8]
+ 908 0110 4FF41173 		mov	r3, #580
+ 909 0114 0193     		str	r3, [sp, #4]
+ 910 0116 4FF41673 		mov	r3, #600
+ 911 011a 0093     		str	r3, [sp]
+ 912 011c 2346     		mov	r3, r4
+ 913 011e 0322     		movs	r2, #3
+ 914 0120 4149     		ldr	r1, .L60+44
+ 915 0122 4248     		ldr	r0, .L60+48
+ 916 0124 0068     		ldr	r0, [r0]
+ 917 0126 FFF7FEFF 		bl	client_draw_char
+ 918              	.LVL23:
+ 919              	.L39:
+ 473:Application/ui_task.c **** }
+ 920              		.loc 1 473 1 is_stmt 0 view .LVU184
+ 921 012a 0AB0     		add	sp, sp, #40
+ 922              	.LCFI11:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 27
+
+
+ 923              		.cfi_remember_state
+ 924              		.cfi_def_cfa_offset 16
+ 925              		@ sp needed
+ 926 012c 70BD     		pop	{r4, r5, r6, pc}
+ 927              	.L50:
+ 928              	.LCFI12:
+ 929              		.cfi_restore_state
+ 432:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "AUTO_AIM\n", strlen("AUTO_AIM\n"));
+ 930              		.loc 1 432 3 is_stmt 1 view .LVU185
+ 432:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "AUTO_AIM\n", strlen("AUTO_AIM\n"));
+ 931              		.loc 1 432 11 is_stmt 0 view .LVU186
+ 932 012e 0923     		movs	r3, #9
+ 933 0130 8DF82530 		strb	r3, [sp, #37]
+ 433:Application/ui_task.c **** 		break;
+ 934              		.loc 1 433 3 is_stmt 1 view .LVU187
+ 433:Application/ui_task.c **** 		break;
+ 935              		.loc 1 433 33 is_stmt 0 view .LVU188
+ 936 0134 9DF82450 		ldrb	r5, [sp, #36]	@ zero_extendqisi2
+ 433:Application/ui_task.c **** 		break;
+ 937              		.loc 1 433 3 view .LVU189
+ 938 0138 304E     		ldr	r6, .L60
+ 939 013a 7219     		adds	r2, r6, r5
+ 940 013c 3C4B     		ldr	r3, .L60+52
+ 941 013e 03CB     		ldmia	r3!, {r0, r1}
+ 942 0140 7051     		str	r0, [r6, r5]	@ unaligned
+ 943 0142 5160     		str	r1, [r2, #4]	@ unaligned
+ 944 0144 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 945 0146 1372     		strb	r3, [r2, #8]
+ 434:Application/ui_task.c **** 	}
+ 946              		.loc 1 434 3 is_stmt 1 view .LVU190
+ 947 0148 A8E7     		b	.L46
+ 948              	.L49:
+ 438:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "RUNE_MIN\n", strlen("RUNE_MIN\n"));
+ 949              		.loc 1 438 3 view .LVU191
+ 438:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "RUNE_MIN\n", strlen("RUNE_MIN\n"));
+ 950              		.loc 1 438 11 is_stmt 0 view .LVU192
+ 951 014a 0923     		movs	r3, #9
+ 952 014c 8DF82530 		strb	r3, [sp, #37]
+ 439:Application/ui_task.c **** 		break;
+ 953              		.loc 1 439 3 is_stmt 1 view .LVU193
+ 439:Application/ui_task.c **** 		break;
+ 954              		.loc 1 439 33 is_stmt 0 view .LVU194
+ 955 0150 9DF82450 		ldrb	r5, [sp, #36]	@ zero_extendqisi2
+ 439:Application/ui_task.c **** 		break;
+ 956              		.loc 1 439 3 view .LVU195
+ 957 0154 294E     		ldr	r6, .L60
+ 958 0156 7219     		adds	r2, r6, r5
+ 959 0158 364B     		ldr	r3, .L60+56
+ 960 015a 03CB     		ldmia	r3!, {r0, r1}
+ 961 015c 7051     		str	r0, [r6, r5]	@ unaligned
+ 962 015e 5160     		str	r1, [r2, #4]	@ unaligned
+ 963 0160 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 964 0162 1372     		strb	r3, [r2, #8]
+ 440:Application/ui_task.c **** 	}
+ 965              		.loc 1 440 3 is_stmt 1 view .LVU196
+ 966 0164 9AE7     		b	.L46
+ 967              	.L47:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 28
+
+
+ 444:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "MAX_RUNE\n", strlen("MAX_RUNE\n"));
+ 968              		.loc 1 444 3 view .LVU197
+ 444:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0], "MAX_RUNE\n", strlen("MAX_RUNE\n"));
+ 969              		.loc 1 444 11 is_stmt 0 view .LVU198
+ 970 0166 0923     		movs	r3, #9
+ 971 0168 8DF82530 		strb	r3, [sp, #37]
+ 445:Application/ui_task.c **** 		break;
+ 972              		.loc 1 445 3 is_stmt 1 view .LVU199
+ 445:Application/ui_task.c **** 		break;
+ 973              		.loc 1 445 33 is_stmt 0 view .LVU200
+ 974 016c 9DF824C0 		ldrb	ip, [sp, #36]	@ zero_extendqisi2
+ 445:Application/ui_task.c **** 		break;
+ 975              		.loc 1 445 3 view .LVU201
+ 976 0170 224D     		ldr	r5, .L60
+ 977 0172 05EB0C02 		add	r2, r5, ip
+ 978 0176 304B     		ldr	r3, .L60+60
+ 979 0178 03CB     		ldmia	r3!, {r0, r1}
+ 980 017a 45F80C00 		str	r0, [r5, ip]	@ unaligned
+ 981 017e 5160     		str	r1, [r2, #4]	@ unaligned
+ 982 0180 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 983 0182 1372     		strb	r3, [r2, #8]
+ 446:Application/ui_task.c **** 	}
+ 984              		.loc 1 446 3 is_stmt 1 view .LVU202
+ 985 0184 8AE7     		b	.L46
+ 986              	.L58:
+ 453:Application/ui_task.c **** 			memcpy(client_send_buff + lens[0] + lens[1], "Low\n", strlen("Low\n"));
+ 987              		.loc 1 453 4 view .LVU203
+ 453:Application/ui_task.c **** 			memcpy(client_send_buff + lens[0] + lens[1], "Low\n", strlen("Low\n"));
+ 988              		.loc 1 453 12 is_stmt 0 view .LVU204
+ 989 0186 0423     		movs	r3, #4
+ 990 0188 8DF82630 		strb	r3, [sp, #38]
+ 454:Application/ui_task.c **** 		}
+ 991              		.loc 1 454 4 is_stmt 1 view .LVU205
+ 454:Application/ui_task.c **** 		}
+ 992              		.loc 1 454 34 is_stmt 0 view .LVU206
+ 993 018c 9DF82430 		ldrb	r3, [sp, #36]	@ zero_extendqisi2
+ 454:Application/ui_task.c **** 		}
+ 994              		.loc 1 454 44 view .LVU207
+ 995 0190 9DF82520 		ldrb	r2, [sp, #37]	@ zero_extendqisi2
+ 454:Application/ui_task.c **** 		}
+ 996              		.loc 1 454 38 view .LVU208
+ 997 0194 1344     		add	r3, r3, r2
+ 454:Application/ui_task.c **** 		}
+ 998              		.loc 1 454 4 view .LVU209
+ 999 0196 294A     		ldr	r2, .L60+64
+ 1000 0198 1068     		ldr	r0, [r2]
+ 1001 019a 184A     		ldr	r2, .L60
+ 1002 019c D050     		str	r0, [r2, r3]	@ unaligned
+ 1003 019e 9CE7     		b	.L54
+ 1004              	.L52:
+ 464:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0] + lens[1], "No\n", strlen("No\n"));
+ 1005              		.loc 1 464 3 is_stmt 1 view .LVU210
+ 464:Application/ui_task.c **** 		memcpy(client_send_buff + lens[0] + lens[1], "No\n", strlen("No\n"));
+ 1006              		.loc 1 464 11 is_stmt 0 view .LVU211
+ 1007 01a0 0323     		movs	r3, #3
+ 1008 01a2 8DF82630 		strb	r3, [sp, #38]
+ 465:Application/ui_task.c **** 	}
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 29
+
+
+ 1009              		.loc 1 465 3 is_stmt 1 view .LVU212
+ 465:Application/ui_task.c **** 	}
+ 1010              		.loc 1 465 33 is_stmt 0 view .LVU213
+ 1011 01a6 9DF82430 		ldrb	r3, [sp, #36]	@ zero_extendqisi2
+ 465:Application/ui_task.c **** 	}
+ 1012              		.loc 1 465 43 view .LVU214
+ 1013 01aa 9DF82520 		ldrb	r2, [sp, #37]	@ zero_extendqisi2
+ 465:Application/ui_task.c **** 	}
+ 1014              		.loc 1 465 37 view .LVU215
+ 1015 01ae 1344     		add	r3, r3, r2
+ 465:Application/ui_task.c **** 	}
+ 1016              		.loc 1 465 3 view .LVU216
+ 1017 01b0 124A     		ldr	r2, .L60
+ 1018 01b2 D018     		adds	r0, r2, r3
+ 1019 01b4 2249     		ldr	r1, .L60+68
+ 1020 01b6 B1F800C0 		ldrh	ip, [r1]	@ unaligned
+ 1021 01ba 8978     		ldrb	r1, [r1, #2]	@ zero_extendqisi2
+ 1022 01bc 22F803C0 		strh	ip, [r2, r3]	@ unaligned
+ 1023 01c0 8170     		strb	r1, [r0, #2]
+ 1024 01c2 8AE7     		b	.L54
+ 1025              	.L59:
+ 470:Application/ui_task.c **** 	else
+ 1026              		.loc 1 470 3 is_stmt 1 view .LVU217
+ 1027 01c4 174B     		ldr	r3, .L60+40
+ 1028 01c6 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1029 01c8 0422     		movs	r2, #4
+ 1030 01ca 0792     		str	r2, [sp, #28]
+ 1031 01cc 1E22     		movs	r2, #30
+ 1032 01ce 0692     		str	r2, [sp, #24]
+ 1033 01d0 0A4A     		ldr	r2, .L60
+ 1034 01d2 0592     		str	r2, [sp, #20]
+ 1035 01d4 03F58072 		add	r2, r3, #256
+ 1036 01d8 0492     		str	r2, [sp, #16]
+ 1037 01da 0393     		str	r3, [sp, #12]
+ 1038 01dc 1423     		movs	r3, #20
+ 1039 01de 0293     		str	r3, [sp, #8]
+ 1040 01e0 4FF41173 		mov	r3, #580
+ 1041 01e4 0193     		str	r3, [sp, #4]
+ 1042 01e6 4FF41673 		mov	r3, #600
+ 1043 01ea 0093     		str	r3, [sp]
+ 1044 01ec 2346     		mov	r3, r4
+ 1045 01ee 0322     		movs	r2, #3
+ 1046 01f0 0D49     		ldr	r1, .L60+44
+ 1047 01f2 0E48     		ldr	r0, .L60+48
+ 1048 01f4 0068     		ldr	r0, [r0]
+ 1049 01f6 FFF7FEFF 		bl	client_draw_char
+ 1050              	.LVL24:
+ 1051 01fa 96E7     		b	.L39
+ 1052              	.L61:
+ 1053              		.align	2
+ 1054              	.L60:
+ 1055 01fc 00000000 		.word	.LANCHOR6
+ 1056 0200 00000000 		.word	Chassis
+ 1057 0204 00000000 		.word	.LC0
+ 1058 0208 00000000 		.word	Gimbal_Data
+ 1059 020c 08000000 		.word	.LC1
+ 1060 0210 14000000 		.word	.LC2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 30
+
+
+ 1061 0214 20000000 		.word	.LC3
+ 1062 0218 28000000 		.word	.LC4
+ 1063 021c 5C000000 		.word	.LC9
+ 1064 0220 00000000 		.word	remote_control
+ 1065 0224 00000000 		.word	robot_state
+ 1066 0228 00000000 		.word	.LANCHOR23
+ 1067 022c 00000000 		.word	JudgeUSART
+ 1068 0230 30000000 		.word	.LC5
+ 1069 0234 3C000000 		.word	.LC6
+ 1070 0238 48000000 		.word	.LC7
+ 1071 023c 54000000 		.word	.LC8
+ 1072 0240 64000000 		.word	.LC10
+ 1073              		.cfi_endproc
+ 1074              	.LFE176:
+ 1076              		.global	__aeabi_f2d
+ 1077              		.section	.rodata.Layer4.str1.4,"aMS",%progbits,1
+ 1078              		.align	2
+ 1079              	.LC11:
+ 1080 0000 43415020 		.ascii	"CAP %.1f\012Pit %.1f\012Pwr %.1f\012\000"
+ 1080      252E3166 
+ 1080      0A506974 
+ 1080      20252E31 
+ 1080      660A5077 
+ 1081              		.section	.text.Layer4,"ax",%progbits
+ 1082              		.align	1
+ 1083              		.syntax unified
+ 1084              		.thumb
+ 1085              		.thumb_func
+ 1087              	Layer4:
+ 1088              	.LVL25:
+ 1089              	.LFB177:
+ 474:Application/ui_task.c **** static void Layer4(uint8_t operate)
+ 475:Application/ui_task.c **** {
+ 1090              		.loc 1 475 1 view -0
+ 1091              		.cfi_startproc
+ 1092              		@ args = 0, pretend = 0, frame = 0
+ 1093              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1094              		.loc 1 475 1 is_stmt 0 view .LVU219
+ 1095 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 1096              	.LCFI13:
+ 1097              		.cfi_def_cfa_offset 32
+ 1098              		.cfi_offset 4, -32
+ 1099              		.cfi_offset 5, -28
+ 1100              		.cfi_offset 6, -24
+ 1101              		.cfi_offset 7, -20
+ 1102              		.cfi_offset 8, -16
+ 1103              		.cfi_offset 9, -12
+ 1104              		.cfi_offset 10, -8
+ 1105              		.cfi_offset 14, -4
+ 1106 0004 88B0     		sub	sp, sp, #32
+ 1107              	.LCFI14:
+ 1108              		.cfi_def_cfa_offset 64
+ 1109 0006 0446     		mov	r4, r0
+ 476:Application/ui_task.c **** 	memset(client_send_buff, 0, sizeof(client_send_buff));
+ 1110              		.loc 1 476 2 is_stmt 1 view .LVU220
+ 1111 0008 1E26     		movs	r6, #30
+ 1112 000a 3246     		mov	r2, r6
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 31
+
+
+ 1113 000c 0021     		movs	r1, #0
+ 1114 000e 1F48     		ldr	r0, .L64
+ 1115              	.LVL26:
+ 1116              		.loc 1 476 2 is_stmt 0 view .LVU221
+ 1117 0010 FFF7FEFF 		bl	memset
+ 1118              	.LVL27:
+ 477:Application/ui_task.c **** 
+ 478:Application/ui_task.c **** 	memset(client_send_buff_0, 0, sizeof(client_send_buff_0));
+ 1119              		.loc 1 478 2 is_stmt 1 view .LVU222
+ 1120 0014 1E4D     		ldr	r5, .L64+4
+ 1121 0016 3246     		mov	r2, r6
+ 1122 0018 0021     		movs	r1, #0
+ 1123 001a 2846     		mov	r0, r5
+ 1124 001c FFF7FEFF 		bl	memset
+ 1125              	.LVL28:
+ 479:Application/ui_task.c **** 	sprintf((char *)client_send_buff_0, "CAP %.1f\nPit %.1f\nPwr %.1f\n", ina226[0].Bus_Voltage, Gimba
+ 1126              		.loc 1 479 2 view .LVU223
+ 1127              		.loc 1 479 112 is_stmt 0 view .LVU224
+ 1128 0020 1C4B     		ldr	r3, .L64+8
+ 1129 0022 1F68     		ldr	r7, [r3]	@ float
+ 1130              		.loc 1 479 148 view .LVU225
+ 1131 0024 1C4B     		ldr	r3, .L64+12
+ 1132 0026 D3F828A2 		ldr	r10, [r3, #552]	@ float
+ 1133              		.loc 1 479 2 view .LVU226
+ 1134 002a 1C4B     		ldr	r3, .L64+16
+ 1135 002c 1868     		ldr	r0, [r3]	@ float
+ 1136 002e FFF7FEFF 		bl	__aeabi_f2d
+ 1137              	.LVL29:
+ 1138 0032 8046     		mov	r8, r0
+ 1139 0034 8946     		mov	r9, r1
+ 1140 0036 5046     		mov	r0, r10	@ float
+ 1141 0038 FFF7FEFF 		bl	__aeabi_f2d
+ 1142              	.LVL30:
+ 1143 003c CDE90201 		strd	r0, [sp, #8]
+ 1144 0040 3846     		mov	r0, r7	@ float
+ 1145 0042 FFF7FEFF 		bl	__aeabi_f2d
+ 1146              	.LVL31:
+ 1147 0046 CDE90001 		strd	r0, [sp]
+ 1148 004a 4246     		mov	r2, r8
+ 1149 004c 4B46     		mov	r3, r9
+ 1150 004e 1449     		ldr	r1, .L64+20
+ 1151 0050 2846     		mov	r0, r5
+ 1152 0052 FFF7FEFF 		bl	sprintf
+ 1153              	.LVL32:
+ 480:Application/ui_task.c **** 	client_draw_char_2(JudgeUSART, &Char3, 1, operate, 180, 600, 20, robot_state.robot_id, robot_state
+ 1154              		.loc 1 480 2 is_stmt 1 view .LVU227
+ 1155 0056 134B     		ldr	r3, .L64+24
+ 1156 0058 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1157 005a 0022     		movs	r2, #0
+ 1158 005c 0792     		str	r2, [sp, #28]
+ 1159 005e 0696     		str	r6, [sp, #24]
+ 1160 0060 0595     		str	r5, [sp, #20]
+ 1161 0062 03F58072 		add	r2, r3, #256
+ 1162 0066 0492     		str	r2, [sp, #16]
+ 1163 0068 0393     		str	r3, [sp, #12]
+ 1164 006a 1423     		movs	r3, #20
+ 1165 006c 0293     		str	r3, [sp, #8]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 32
+
+
+ 1166 006e 4FF41673 		mov	r3, #600
+ 1167 0072 0193     		str	r3, [sp, #4]
+ 1168 0074 B423     		movs	r3, #180
+ 1169 0076 0093     		str	r3, [sp]
+ 1170 0078 2346     		mov	r3, r4
+ 1171 007a 0122     		movs	r2, #1
+ 1172 007c 0A49     		ldr	r1, .L64+28
+ 1173 007e 0B48     		ldr	r0, .L64+32
+ 1174 0080 0068     		ldr	r0, [r0]
+ 1175 0082 FFF7FEFF 		bl	client_draw_char_2
+ 1176              	.LVL33:
+ 481:Application/ui_task.c **** }
+ 1177              		.loc 1 481 1 is_stmt 0 view .LVU228
+ 1178 0086 08B0     		add	sp, sp, #32
+ 1179              	.LCFI15:
+ 1180              		.cfi_def_cfa_offset 32
+ 1181              		@ sp needed
+ 1182 0088 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 1183              	.L65:
+ 1184              		.align	2
+ 1185              	.L64:
+ 1186 008c 00000000 		.word	.LANCHOR6
+ 1187 0090 00000000 		.word	.LANCHOR24
+ 1188 0094 08050000 		.word	Gimbal+1288
+ 1189 0098 00000000 		.word	Chassis
+ 1190 009c 00000000 		.word	ina226
+ 1191 00a0 00000000 		.word	.LC11
+ 1192 00a4 00000000 		.word	robot_state
+ 1193 00a8 00000000 		.word	.LANCHOR25
+ 1194 00ac 00000000 		.word	JudgeUSART
+ 1195              		.cfi_endproc
+ 1196              	.LFE177:
+ 1198              		.section	.rodata.Layer5.str1.4,"aMS",%progbits,1
+ 1199              		.align	2
+ 1200              	.LC12:
+ 1201 0000 456E656D 		.ascii	"EnemyID \000"
+ 1201      79494420 
+ 1201      00
+ 1202 0009 000000   		.align	2
+ 1203              	.LC13:
+ 1204 000c 46726963 		.ascii	"Fric\012\000"
+ 1204      0A00
+ 1205 0012 0000     		.align	2
+ 1206              	.LC14:
+ 1207 0014 4C69640A 		.ascii	"Lid\012\000"
+ 1207      00
+ 1208 0019 000000   		.align	2
+ 1209              	.LC15:
+ 1210 001c 50430A00 		.ascii	"PC\012\000"
+ 1211              		.section	.text.Layer5,"ax",%progbits
+ 1212              		.align	1
+ 1213              		.syntax unified
+ 1214              		.thumb
+ 1215              		.thumb_func
+ 1217              	Layer5:
+ 1218              	.LVL34:
+ 1219              	.LFB178:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 33
+
+
+ 482:Application/ui_task.c **** static void Layer5(uint8_t operate)
+ 483:Application/ui_task.c **** {
+ 1220              		.loc 1 483 1 is_stmt 1 view -0
+ 1221              		.cfi_startproc
+ 1222              		@ args = 0, pretend = 0, frame = 0
+ 1223              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1224              		.loc 1 483 1 is_stmt 0 view .LVU230
+ 1225 0000 30B5     		push	{r4, r5, lr}
+ 1226              	.LCFI16:
+ 1227              		.cfi_def_cfa_offset 12
+ 1228              		.cfi_offset 4, -12
+ 1229              		.cfi_offset 5, -8
+ 1230              		.cfi_offset 14, -4
+ 1231 0002 89B0     		sub	sp, sp, #36
+ 1232              	.LCFI17:
+ 1233              		.cfi_def_cfa_offset 48
+ 1234 0004 0446     		mov	r4, r0
+ 484:Application/ui_task.c **** 
+ 485:Application/ui_task.c **** 	memset(client_send_buff, 0, sizeof(client_send_buff));
+ 1235              		.loc 1 485 2 is_stmt 1 view .LVU231
+ 1236 0006 1E22     		movs	r2, #30
+ 1237 0008 0021     		movs	r1, #0
+ 1238 000a 3448     		ldr	r0, .L72
+ 1239              	.LVL35:
+ 1240              		.loc 1 485 2 is_stmt 0 view .LVU232
+ 1241 000c FFF7FEFF 		bl	memset
+ 1242              	.LVL36:
+ 486:Application/ui_task.c **** 	if (flg == 1)
+ 1243              		.loc 1 486 2 is_stmt 1 view .LVU233
+ 1244              		.loc 1 486 10 is_stmt 0 view .LVU234
+ 1245 0010 334A     		ldr	r2, .L72+4
+ 1246 0012 92F90020 		ldrsb	r2, [r2]
+ 1247              		.loc 1 486 5 view .LVU235
+ 1248 0016 012A     		cmp	r2, #1
+ 1249 0018 06D0     		beq	.L70
+ 1250              	.L67:
+ 487:Application/ui_task.c **** 	{
+ 488:Application/ui_task.c **** 		int8_t a;
+ 489:Application/ui_task.c **** 		uint8_t lens;
+ 490:Application/ui_task.c **** 		memcpy(client_send_buff, "EnemyID ", strlen("EnemyID "));
+ 491:Application/ui_task.c **** 		lens = strlen("EnemyID ");
+ 492:Application/ui_task.c **** 		a = Gimbal_Data.tgt_ID + '0';
+ 493:Application/ui_task.c **** 		memcpy(client_send_buff + lens, &a, 1);
+ 494:Application/ui_task.c **** 		client_draw_char_2(JudgeUSART, &Char4, 4, operate, 500, 840, 20, robot_state.robot_id, robot_stat
+ 495:Application/ui_task.c **** 	}
+ 496:Application/ui_task.c **** 	if (flg == 8)
+ 1251              		.loc 1 496 2 is_stmt 1 view .LVU236
+ 1252              		.loc 1 496 10 is_stmt 0 view .LVU237
+ 1253 001a 314B     		ldr	r3, .L72+4
+ 1254 001c 93F90030 		ldrsb	r3, [r3]
+ 1255              		.loc 1 496 5 view .LVU238
+ 1256 0020 082B     		cmp	r3, #8
+ 1257 0022 26D0     		beq	.L71
+ 1258              	.L66:
+ 497:Application/ui_task.c **** 	{
+ 498:Application/ui_task.c **** 		static uint8_t length[5];
+ 499:Application/ui_task.c **** 		memset(client_send_buff, 0, sizeof(client_send_buff));
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 34
+
+
+ 500:Application/ui_task.c **** 		length[0] = strlen("Fric\n");
+ 501:Application/ui_task.c **** 		memcpy(client_send_buff, "Fric\n", length[0]);
+ 502:Application/ui_task.c **** 		length[1] = strlen("Lid\n");
+ 503:Application/ui_task.c **** 		memcpy(client_send_buff + length[0], "Lid\n", length[1]);
+ 504:Application/ui_task.c **** 		length[2] = strlen("PC\n");
+ 505:Application/ui_task.c **** 		memcpy(client_send_buff + length[0] + length[1], "PC\n", length[2]);
+ 506:Application/ui_task.c **** 		client_draw_char_2(JudgeUSART, &Char4, 5, GRAPHIC_ADD, 1550, 600, 20, robot_state.robot_id, robot
+ 507:Application/ui_task.c **** 	}
+ 508:Application/ui_task.c **** }
+ 1259              		.loc 1 508 1 view .LVU239
+ 1260 0024 09B0     		add	sp, sp, #36
+ 1261              	.LCFI18:
+ 1262              		.cfi_remember_state
+ 1263              		.cfi_def_cfa_offset 12
+ 1264              		@ sp needed
+ 1265 0026 30BD     		pop	{r4, r5, pc}
+ 1266              	.L70:
+ 1267              	.LCFI19:
+ 1268              		.cfi_restore_state
+ 1269              	.LBB3:
+ 488:Application/ui_task.c **** 		uint8_t lens;
+ 1270              		.loc 1 488 3 is_stmt 1 view .LVU240
+ 489:Application/ui_task.c **** 		memcpy(client_send_buff, "EnemyID ", strlen("EnemyID "));
+ 1271              		.loc 1 489 3 view .LVU241
+ 490:Application/ui_task.c **** 		lens = strlen("EnemyID ");
+ 1272              		.loc 1 490 3 view .LVU242
+ 1273 0028 2C4B     		ldr	r3, .L72
+ 1274 002a 2E4A     		ldr	r2, .L72+8
+ 1275 002c 92E80300 		ldm	r2, {r0, r1}
+ 1276 0030 83E80300 		stm	r3, {r0, r1}
+ 491:Application/ui_task.c **** 		a = Gimbal_Data.tgt_ID + '0';
+ 1277              		.loc 1 491 3 view .LVU243
+ 1278              	.LVL37:
+ 492:Application/ui_task.c **** 		memcpy(client_send_buff + lens, &a, 1);
+ 1279              		.loc 1 492 3 view .LVU244
+ 492:Application/ui_task.c **** 		memcpy(client_send_buff + lens, &a, 1);
+ 1280              		.loc 1 492 18 is_stmt 0 view .LVU245
+ 1281 0034 2C4A     		ldr	r2, .L72+12
+ 1282 0036 5278     		ldrb	r2, [r2, #1]	@ zero_extendqisi2
+ 492:Application/ui_task.c **** 		memcpy(client_send_buff + lens, &a, 1);
+ 1283              		.loc 1 492 26 view .LVU246
+ 1284 0038 3032     		adds	r2, r2, #48
+ 1285              	.LVL38:
+ 493:Application/ui_task.c **** 		client_draw_char_2(JudgeUSART, &Char4, 4, operate, 500, 840, 20, robot_state.robot_id, robot_stat
+ 1286              		.loc 1 493 3 is_stmt 1 view .LVU247
+ 1287 003a 1A72     		strb	r2, [r3, #8]
+ 494:Application/ui_task.c **** 	}
+ 1288              		.loc 1 494 3 view .LVU248
+ 1289 003c 2B4A     		ldr	r2, .L72+16
+ 1290              	.LVL39:
+ 494:Application/ui_task.c **** 	}
+ 1291              		.loc 1 494 3 is_stmt 0 view .LVU249
+ 1292 003e 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 1293 0040 0121     		movs	r1, #1
+ 1294 0042 0791     		str	r1, [sp, #28]
+ 1295 0044 1E21     		movs	r1, #30
+ 1296 0046 0691     		str	r1, [sp, #24]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 35
+
+
+ 1297 0048 0593     		str	r3, [sp, #20]
+ 1298 004a 02F58073 		add	r3, r2, #256
+ 1299              	.LVL40:
+ 494:Application/ui_task.c **** 	}
+ 1300              		.loc 1 494 3 view .LVU250
+ 1301 004e 0493     		str	r3, [sp, #16]
+ 1302 0050 0392     		str	r2, [sp, #12]
+ 1303 0052 1423     		movs	r3, #20
+ 1304 0054 0293     		str	r3, [sp, #8]
+ 1305 0056 4FF45273 		mov	r3, #840
+ 1306 005a 0193     		str	r3, [sp, #4]
+ 1307 005c 4FF4FA73 		mov	r3, #500
+ 1308 0060 0093     		str	r3, [sp]
+ 1309 0062 2346     		mov	r3, r4
+ 1310 0064 0422     		movs	r2, #4
+ 1311 0066 2249     		ldr	r1, .L72+20
+ 1312 0068 2248     		ldr	r0, .L72+24
+ 1313 006a 0068     		ldr	r0, [r0]
+ 1314 006c FFF7FEFF 		bl	client_draw_char_2
+ 1315              	.LVL41:
+ 494:Application/ui_task.c **** 	}
+ 1316              		.loc 1 494 3 view .LVU251
+ 1317 0070 D3E7     		b	.L67
+ 1318              	.LVL42:
+ 1319              	.L71:
+ 494:Application/ui_task.c **** 	}
+ 1320              		.loc 1 494 3 view .LVU252
+ 1321              	.LBE3:
+ 1322              	.LBB4:
+ 498:Application/ui_task.c **** 		memset(client_send_buff, 0, sizeof(client_send_buff));
+ 1323              		.loc 1 498 3 is_stmt 1 view .LVU253
+ 499:Application/ui_task.c **** 		length[0] = strlen("Fric\n");
+ 1324              		.loc 1 499 3 view .LVU254
+ 1325 0072 1A4C     		ldr	r4, .L72
+ 1326 0074 1E25     		movs	r5, #30
+ 1327 0076 2A46     		mov	r2, r5
+ 1328 0078 0021     		movs	r1, #0
+ 1329 007a 2046     		mov	r0, r4
+ 1330 007c FFF7FEFF 		bl	memset
+ 1331              	.LVL43:
+ 500:Application/ui_task.c **** 		memcpy(client_send_buff, "Fric\n", length[0]);
+ 1332              		.loc 1 500 3 view .LVU255
+ 500:Application/ui_task.c **** 		memcpy(client_send_buff, "Fric\n", length[0]);
+ 1333              		.loc 1 500 13 is_stmt 0 view .LVU256
+ 1334 0080 1D4B     		ldr	r3, .L72+28
+ 1335 0082 0522     		movs	r2, #5
+ 1336 0084 1A70     		strb	r2, [r3]
+ 501:Application/ui_task.c **** 		length[1] = strlen("Lid\n");
+ 1337              		.loc 1 501 3 is_stmt 1 view .LVU257
+ 1338 0086 1D49     		ldr	r1, .L72+32
+ 1339 0088 03C9     		ldm	r1, {r0, r1}
+ 1340 008a 2060     		str	r0, [r4]
+ 1341 008c 2171     		strb	r1, [r4, #4]
+ 502:Application/ui_task.c **** 		memcpy(client_send_buff + length[0], "Lid\n", length[1]);
+ 1342              		.loc 1 502 3 view .LVU258
+ 502:Application/ui_task.c **** 		memcpy(client_send_buff + length[0], "Lid\n", length[1]);
+ 1343              		.loc 1 502 13 is_stmt 0 view .LVU259
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 36
+
+
+ 1344 008e 0421     		movs	r1, #4
+ 1345 0090 5970     		strb	r1, [r3, #1]
+ 503:Application/ui_task.c **** 		length[2] = strlen("PC\n");
+ 1346              		.loc 1 503 3 is_stmt 1 view .LVU260
+ 1347 0092 1B49     		ldr	r1, .L72+36
+ 1348 0094 0868     		ldr	r0, [r1]
+ 1349 0096 C4F80500 		str	r0, [r4, #5]	@ unaligned
+ 504:Application/ui_task.c **** 		memcpy(client_send_buff + length[0] + length[1], "PC\n", length[2]);
+ 1350              		.loc 1 504 3 view .LVU261
+ 504:Application/ui_task.c **** 		memcpy(client_send_buff + length[0] + length[1], "PC\n", length[2]);
+ 1351              		.loc 1 504 13 is_stmt 0 view .LVU262
+ 1352 009a 0321     		movs	r1, #3
+ 1353 009c 9970     		strb	r1, [r3, #2]
+ 505:Application/ui_task.c **** 		client_draw_char_2(JudgeUSART, &Char4, 5, GRAPHIC_ADD, 1550, 600, 20, robot_state.robot_id, robot
+ 1354              		.loc 1 505 3 is_stmt 1 view .LVU263
+ 1355 009e 194B     		ldr	r3, .L72+40
+ 1356 00a0 1988     		ldrh	r1, [r3]	@ unaligned
+ 1357 00a2 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 1358 00a4 A4F80910 		strh	r1, [r4, #9]	@ unaligned
+ 1359 00a8 E372     		strb	r3, [r4, #11]
+ 506:Application/ui_task.c **** 	}
+ 1360              		.loc 1 506 3 view .LVU264
+ 1361 00aa 104B     		ldr	r3, .L72+16
+ 1362 00ac 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1363 00ae 0021     		movs	r1, #0
+ 1364 00b0 0791     		str	r1, [sp, #28]
+ 1365 00b2 0695     		str	r5, [sp, #24]
+ 1366 00b4 0594     		str	r4, [sp, #20]
+ 1367 00b6 03F58071 		add	r1, r3, #256
+ 1368 00ba 0491     		str	r1, [sp, #16]
+ 1369 00bc 0393     		str	r3, [sp, #12]
+ 1370 00be 1423     		movs	r3, #20
+ 1371 00c0 0293     		str	r3, [sp, #8]
+ 1372 00c2 4FF41673 		mov	r3, #600
+ 1373 00c6 0193     		str	r3, [sp, #4]
+ 1374 00c8 40F20E63 		movw	r3, #1550
+ 1375 00cc 0093     		str	r3, [sp]
+ 1376 00ce 0123     		movs	r3, #1
+ 1377 00d0 0749     		ldr	r1, .L72+20
+ 1378 00d2 0848     		ldr	r0, .L72+24
+ 1379 00d4 0068     		ldr	r0, [r0]
+ 1380 00d6 FFF7FEFF 		bl	client_draw_char_2
+ 1381              	.LVL44:
+ 1382              	.LBE4:
+ 1383              		.loc 1 508 1 is_stmt 0 view .LVU265
+ 1384 00da A3E7     		b	.L66
+ 1385              	.L73:
+ 1386              		.align	2
+ 1387              	.L72:
+ 1388 00dc 00000000 		.word	.LANCHOR6
+ 1389 00e0 00000000 		.word	.LANCHOR26
+ 1390 00e4 00000000 		.word	.LC12
+ 1391 00e8 00000000 		.word	Gimbal_Data
+ 1392 00ec 00000000 		.word	robot_state
+ 1393 00f0 00000000 		.word	.LANCHOR27
+ 1394 00f4 00000000 		.word	JudgeUSART
+ 1395 00f8 00000000 		.word	.LANCHOR28
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 37
+
+
+ 1396 00fc 0C000000 		.word	.LC13
+ 1397 0100 14000000 		.word	.LC14
+ 1398 0104 1C000000 		.word	.LC15
+ 1399              		.cfi_endproc
+ 1400              	.LFE178:
+ 1402              		.section	.text.Show_UI_Init,"ax",%progbits
+ 1403              		.align	1
+ 1404              		.syntax unified
+ 1405              		.thumb
+ 1406              		.thumb_func
+ 1408              	Show_UI_Init:
+ 1409              	.LFB172:
+ 167:Application/ui_task.c **** 	static uint8_t state = 0;
+ 1410              		.loc 1 167 1 is_stmt 1 view -0
+ 1411              		.cfi_startproc
+ 1412              		@ args = 0, pretend = 0, frame = 0
+ 1413              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1414 0000 08B5     		push	{r3, lr}
+ 1415              	.LCFI20:
+ 1416              		.cfi_def_cfa_offset 8
+ 1417              		.cfi_offset 3, -8
+ 1418              		.cfi_offset 14, -4
+ 168:Application/ui_task.c **** 
+ 1419              		.loc 1 168 2 view .LVU267
+ 170:Application/ui_task.c **** 	{
+ 1420              		.loc 1 170 2 view .LVU268
+ 1421 0002 1C4B     		ldr	r3, .L86
+ 1422 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1423 0006 062B     		cmp	r3, #6
+ 1424 0008 30D8     		bhi	.L75
+ 1425 000a DFE803F0 		tbb	[pc, r3]
+ 1426              	.L77:
+ 1427 000e 04       		.byte	(.L83-.L77)/2
+ 1428 000f 0B       		.byte	(.L82-.L77)/2
+ 1429 0010 12       		.byte	(.L81-.L77)/2
+ 1430 0011 19       		.byte	(.L80-.L77)/2
+ 1431 0012 20       		.byte	(.L79-.L77)/2
+ 1432 0013 27       		.byte	(.L78-.L77)/2
+ 1433 0014 2B       		.byte	(.L76-.L77)/2
+ 1434 0015 00       		.p2align 1
+ 1435              	.L83:
+ 173:Application/ui_task.c **** 		Layer1(GRAPHIC_ADD);
+ 1436              		.loc 1 173 3 view .LVU269
+ 173:Application/ui_task.c **** 		Layer1(GRAPHIC_ADD);
+ 1437              		.loc 1 173 8 is_stmt 0 view .LVU270
+ 1438 0016 0133     		adds	r3, r3, #1
+ 1439 0018 164A     		ldr	r2, .L86
+ 1440 001a 1370     		strb	r3, [r2]
+ 174:Application/ui_task.c **** 		break;
+ 1441              		.loc 1 174 3 is_stmt 1 view .LVU271
+ 1442 001c 0120     		movs	r0, #1
+ 1443 001e FFF7FEFF 		bl	Layer1
+ 1444              	.LVL45:
+ 175:Application/ui_task.c **** 
+ 1445              		.loc 1 175 3 view .LVU272
+ 1446              	.L74:
+ 211:Application/ui_task.c **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 38
+
+
+ 1447              		.loc 1 211 1 is_stmt 0 view .LVU273
+ 1448 0022 08BD     		pop	{r3, pc}
+ 1449              	.L82:
+ 178:Application/ui_task.c **** 		Layer2(GRAPHIC_ADD);
+ 1450              		.loc 1 178 3 is_stmt 1 view .LVU274
+ 178:Application/ui_task.c **** 		Layer2(GRAPHIC_ADD);
+ 1451              		.loc 1 178 8 is_stmt 0 view .LVU275
+ 1452 0024 0133     		adds	r3, r3, #1
+ 1453 0026 134A     		ldr	r2, .L86
+ 1454 0028 1370     		strb	r3, [r2]
+ 179:Application/ui_task.c **** 		break;
+ 1455              		.loc 1 179 3 is_stmt 1 view .LVU276
+ 1456 002a 0120     		movs	r0, #1
+ 1457 002c FFF7FEFF 		bl	Layer2
+ 1458              	.LVL46:
+ 180:Application/ui_task.c **** 
+ 1459              		.loc 1 180 3 view .LVU277
+ 1460 0030 F7E7     		b	.L74
+ 1461              	.L81:
+ 183:Application/ui_task.c **** 		Layer3(GRAPHIC_ADD);
+ 1462              		.loc 1 183 3 view .LVU278
+ 183:Application/ui_task.c **** 		Layer3(GRAPHIC_ADD);
+ 1463              		.loc 1 183 8 is_stmt 0 view .LVU279
+ 1464 0032 0133     		adds	r3, r3, #1
+ 1465 0034 0F4A     		ldr	r2, .L86
+ 1466 0036 1370     		strb	r3, [r2]
+ 184:Application/ui_task.c **** 		break;
+ 1467              		.loc 1 184 3 is_stmt 1 view .LVU280
+ 1468 0038 0120     		movs	r0, #1
+ 1469 003a FFF7FEFF 		bl	Layer3
+ 1470              	.LVL47:
+ 185:Application/ui_task.c **** 
+ 1471              		.loc 1 185 3 view .LVU281
+ 1472 003e F0E7     		b	.L74
+ 1473              	.L80:
+ 188:Application/ui_task.c **** 		Layer4(GRAPHIC_ADD);
+ 1474              		.loc 1 188 3 view .LVU282
+ 188:Application/ui_task.c **** 		Layer4(GRAPHIC_ADD);
+ 1475              		.loc 1 188 8 is_stmt 0 view .LVU283
+ 1476 0040 0133     		adds	r3, r3, #1
+ 1477 0042 0C4A     		ldr	r2, .L86
+ 1478 0044 1370     		strb	r3, [r2]
+ 189:Application/ui_task.c **** 		break;
+ 1479              		.loc 1 189 3 is_stmt 1 view .LVU284
+ 1480 0046 0120     		movs	r0, #1
+ 1481 0048 FFF7FEFF 		bl	Layer4
+ 1482              	.LVL48:
+ 190:Application/ui_task.c **** 
+ 1483              		.loc 1 190 3 view .LVU285
+ 1484 004c E9E7     		b	.L74
+ 1485              	.L79:
+ 193:Application/ui_task.c **** 		Layer5(GRAPHIC_ADD);
+ 1486              		.loc 1 193 3 view .LVU286
+ 193:Application/ui_task.c **** 		Layer5(GRAPHIC_ADD);
+ 1487              		.loc 1 193 8 is_stmt 0 view .LVU287
+ 1488 004e 0133     		adds	r3, r3, #1
+ 1489 0050 084A     		ldr	r2, .L86
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 39
+
+
+ 1490 0052 1370     		strb	r3, [r2]
+ 194:Application/ui_task.c **** 		break;
+ 1491              		.loc 1 194 3 is_stmt 1 view .LVU288
+ 1492 0054 0120     		movs	r0, #1
+ 1493 0056 FFF7FEFF 		bl	Layer5
+ 1494              	.LVL49:
+ 195:Application/ui_task.c **** 
+ 1495              		.loc 1 195 3 view .LVU289
+ 1496 005a E2E7     		b	.L74
+ 1497              	.L78:
+ 198:Application/ui_task.c **** 		Layer6(GRAPHIC_ADD);
+ 1498              		.loc 1 198 3 view .LVU290
+ 198:Application/ui_task.c **** 		Layer6(GRAPHIC_ADD);
+ 1499              		.loc 1 198 8 is_stmt 0 view .LVU291
+ 1500 005c 0133     		adds	r3, r3, #1
+ 1501 005e 054A     		ldr	r2, .L86
+ 1502 0060 1370     		strb	r3, [r2]
+ 199:Application/ui_task.c **** 		break;
+ 1503              		.loc 1 199 3 is_stmt 1 view .LVU292
+ 200:Application/ui_task.c **** 	case 6:
+ 1504              		.loc 1 200 3 view .LVU293
+ 1505 0062 DEE7     		b	.L74
+ 1506              	.L76:
+ 202:Application/ui_task.c **** 		Layer7(GRAPHIC_ADD);
+ 1507              		.loc 1 202 3 view .LVU294
+ 202:Application/ui_task.c **** 		Layer7(GRAPHIC_ADD);
+ 1508              		.loc 1 202 9 is_stmt 0 view .LVU295
+ 1509 0064 034B     		ldr	r3, .L86
+ 1510 0066 0022     		movs	r2, #0
+ 1511 0068 1A70     		strb	r2, [r3]
+ 203:Application/ui_task.c **** 
+ 1512              		.loc 1 203 3 is_stmt 1 view .LVU296
+ 205:Application/ui_task.c **** 
+ 1513              		.loc 1 205 3 view .LVU297
+ 1514 006a DAE7     		b	.L74
+ 1515              	.L75:
+ 208:Application/ui_task.c **** 		break;
+ 1516              		.loc 1 208 3 view .LVU298
+ 208:Application/ui_task.c **** 		break;
+ 1517              		.loc 1 208 9 is_stmt 0 view .LVU299
+ 1518 006c 014B     		ldr	r3, .L86
+ 1519 006e 0022     		movs	r2, #0
+ 1520 0070 1A70     		strb	r2, [r3]
+ 209:Application/ui_task.c **** 	}
+ 1521              		.loc 1 209 3 is_stmt 1 view .LVU300
+ 211:Application/ui_task.c **** 
+ 1522              		.loc 1 211 1 is_stmt 0 view .LVU301
+ 1523 0072 D6E7     		b	.L74
+ 1524              	.L87:
+ 1525              		.align	2
+ 1526              	.L86:
+ 1527 0074 00000000 		.word	.LANCHOR29
+ 1528              		.cfi_endproc
+ 1529              	.LFE172:
+ 1531              		.section	.text.Show_UI,"ax",%progbits
+ 1532              		.align	1
+ 1533              		.syntax unified
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 40
+
+
+ 1534              		.thumb
+ 1535              		.thumb_func
+ 1537              	Show_UI:
+ 1538              	.LFB173:
+ 214:Application/ui_task.c **** 	static uint8_t state = 0;
+ 1539              		.loc 1 214 1 is_stmt 1 view -0
+ 1540              		.cfi_startproc
+ 1541              		@ args = 0, pretend = 0, frame = 0
+ 1542              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1543 0000 08B5     		push	{r3, lr}
+ 1544              	.LCFI21:
+ 1545              		.cfi_def_cfa_offset 8
+ 1546              		.cfi_offset 3, -8
+ 1547              		.cfi_offset 14, -4
+ 215:Application/ui_task.c **** 	switch (state)
+ 1548              		.loc 1 215 2 view .LVU303
+ 216:Application/ui_task.c **** 	{
+ 1549              		.loc 1 216 2 view .LVU304
+ 1550 0002 1D4B     		ldr	r3, .L99
+ 1551 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1552 0006 042B     		cmp	r3, #4
+ 1553 0008 32D8     		bhi	.L89
+ 1554 000a DFE803F0 		tbb	[pc, r3]
+ 1555              	.L91:
+ 1556 000e 03       		.byte	(.L95-.L91)/2
+ 1557 000f 0A       		.byte	(.L94-.L91)/2
+ 1558 0010 11       		.byte	(.L93-.L91)/2
+ 1559 0011 18       		.byte	(.L92-.L91)/2
+ 1560 0012 1F       		.byte	(.L90-.L91)/2
+ 1561 0013 00       		.p2align 1
+ 1562              	.L95:
+ 219:Application/ui_task.c **** 		Layer1(GRAPHIC_MODIFY);
+ 1563              		.loc 1 219 3 view .LVU305
+ 219:Application/ui_task.c **** 		Layer1(GRAPHIC_MODIFY);
+ 1564              		.loc 1 219 8 is_stmt 0 view .LVU306
+ 1565 0014 0133     		adds	r3, r3, #1
+ 1566 0016 184A     		ldr	r2, .L99
+ 1567 0018 1370     		strb	r3, [r2]
+ 220:Application/ui_task.c **** 		break;
+ 1568              		.loc 1 220 3 is_stmt 1 view .LVU307
+ 1569 001a 0220     		movs	r0, #2
+ 1570 001c FFF7FEFF 		bl	Layer1
+ 1571              	.LVL50:
+ 221:Application/ui_task.c **** 
+ 1572              		.loc 1 221 3 view .LVU308
+ 1573              	.L88:
+ 251:Application/ui_task.c **** 
+ 1574              		.loc 1 251 1 is_stmt 0 view .LVU309
+ 1575 0020 08BD     		pop	{r3, pc}
+ 1576              	.L94:
+ 224:Application/ui_task.c **** 		Layer2(GRAPHIC_MODIFY);
+ 1577              		.loc 1 224 3 is_stmt 1 view .LVU310
+ 224:Application/ui_task.c **** 		Layer2(GRAPHIC_MODIFY);
+ 1578              		.loc 1 224 8 is_stmt 0 view .LVU311
+ 1579 0022 0133     		adds	r3, r3, #1
+ 1580 0024 144A     		ldr	r2, .L99
+ 1581 0026 1370     		strb	r3, [r2]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 41
+
+
+ 225:Application/ui_task.c **** 		break;
+ 1582              		.loc 1 225 3 is_stmt 1 view .LVU312
+ 1583 0028 0220     		movs	r0, #2
+ 1584 002a FFF7FEFF 		bl	Layer2
+ 1585              	.LVL51:
+ 226:Application/ui_task.c **** 
+ 1586              		.loc 1 226 3 view .LVU313
+ 1587 002e F7E7     		b	.L88
+ 1588              	.L93:
+ 229:Application/ui_task.c **** 		Layer3(GRAPHIC_MODIFY);
+ 1589              		.loc 1 229 3 view .LVU314
+ 229:Application/ui_task.c **** 		Layer3(GRAPHIC_MODIFY);
+ 1590              		.loc 1 229 8 is_stmt 0 view .LVU315
+ 1591 0030 0133     		adds	r3, r3, #1
+ 1592 0032 114A     		ldr	r2, .L99
+ 1593 0034 1370     		strb	r3, [r2]
+ 230:Application/ui_task.c **** 		break;
+ 1594              		.loc 1 230 3 is_stmt 1 view .LVU316
+ 1595 0036 0220     		movs	r0, #2
+ 1596 0038 FFF7FEFF 		bl	Layer3
+ 1597              	.LVL52:
+ 231:Application/ui_task.c **** 	case 3:
+ 1598              		.loc 1 231 3 view .LVU317
+ 1599 003c F0E7     		b	.L88
+ 1600              	.L92:
+ 233:Application/ui_task.c **** 		Layer4(GRAPHIC_MODIFY);
+ 1601              		.loc 1 233 3 view .LVU318
+ 233:Application/ui_task.c **** 		Layer4(GRAPHIC_MODIFY);
+ 1602              		.loc 1 233 8 is_stmt 0 view .LVU319
+ 1603 003e 0133     		adds	r3, r3, #1
+ 1604 0040 0D4A     		ldr	r2, .L99
+ 1605 0042 1370     		strb	r3, [r2]
+ 234:Application/ui_task.c **** 
+ 1606              		.loc 1 234 3 is_stmt 1 view .LVU320
+ 1607 0044 0220     		movs	r0, #2
+ 1608 0046 FFF7FEFF 		bl	Layer4
+ 1609              	.LVL53:
+ 236:Application/ui_task.c **** 	case 4:
+ 1610              		.loc 1 236 3 view .LVU321
+ 1611 004a E9E7     		b	.L88
+ 1612              	.L90:
+ 238:Application/ui_task.c **** 		if (flg > 10)
+ 1613              		.loc 1 238 3 view .LVU322
+ 238:Application/ui_task.c **** 		if (flg > 10)
+ 1614              		.loc 1 238 9 is_stmt 0 view .LVU323
+ 1615 004c 0A4B     		ldr	r3, .L99
+ 1616 004e 0022     		movs	r2, #0
+ 1617 0050 1A70     		strb	r2, [r3]
+ 239:Application/ui_task.c **** 		{
+ 1618              		.loc 1 239 3 is_stmt 1 view .LVU324
+ 239:Application/ui_task.c **** 		{
+ 1619              		.loc 1 239 11 is_stmt 0 view .LVU325
+ 1620 0052 0A4B     		ldr	r3, .L99+4
+ 1621 0054 93F90030 		ldrsb	r3, [r3]
+ 239:Application/ui_task.c **** 		{
+ 1622              		.loc 1 239 6 view .LVU326
+ 1623 0058 0A2B     		cmp	r3, #10
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 42
+
+
+ 1624 005a 01DD     		ble	.L97
+ 241:Application/ui_task.c **** 		}
+ 1625              		.loc 1 241 4 is_stmt 1 view .LVU327
+ 241:Application/ui_task.c **** 		}
+ 1626              		.loc 1 241 8 is_stmt 0 view .LVU328
+ 1627 005c 074B     		ldr	r3, .L99+4
+ 1628 005e 1A70     		strb	r2, [r3]
+ 1629              	.L97:
+ 243:Application/ui_task.c **** 		flg++;
+ 1630              		.loc 1 243 3 is_stmt 1 view .LVU329
+ 1631 0060 0220     		movs	r0, #2
+ 1632 0062 FFF7FEFF 		bl	Layer5
+ 1633              	.LVL54:
+ 244:Application/ui_task.c **** 		break;
+ 1634              		.loc 1 244 3 view .LVU330
+ 244:Application/ui_task.c **** 		break;
+ 1635              		.loc 1 244 6 is_stmt 0 view .LVU331
+ 1636 0066 054A     		ldr	r2, .L99+4
+ 1637 0068 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 1638 006a 0133     		adds	r3, r3, #1
+ 1639 006c 1370     		strb	r3, [r2]
+ 245:Application/ui_task.c **** 
+ 1640              		.loc 1 245 3 is_stmt 1 view .LVU332
+ 1641 006e D7E7     		b	.L88
+ 1642              	.L89:
+ 248:Application/ui_task.c **** 		break;
+ 1643              		.loc 1 248 3 view .LVU333
+ 248:Application/ui_task.c **** 		break;
+ 1644              		.loc 1 248 9 is_stmt 0 view .LVU334
+ 1645 0070 014B     		ldr	r3, .L99
+ 1646 0072 0022     		movs	r2, #0
+ 1647 0074 1A70     		strb	r2, [r3]
+ 249:Application/ui_task.c **** 	}
+ 1648              		.loc 1 249 3 is_stmt 1 view .LVU335
+ 251:Application/ui_task.c **** 
+ 1649              		.loc 1 251 1 is_stmt 0 view .LVU336
+ 1650 0076 D3E7     		b	.L88
+ 1651              	.L100:
+ 1652              		.align	2
+ 1653              	.L99:
+ 1654 0078 00000000 		.word	.LANCHOR30
+ 1655 007c 00000000 		.word	.LANCHOR26
+ 1656              		.cfi_endproc
+ 1657              	.LFE173:
+ 1659              		.section	.text.UI_Task,"ax",%progbits
+ 1660              		.align	1
+ 1661              		.global	UI_Task
+ 1662              		.syntax unified
+ 1663              		.thumb
+ 1664              		.thumb_func
+ 1666              	UI_Task:
+ 1667              	.LFB171:
+ 138:Application/ui_task.c **** 	dt = DWT_GetDeltaT(&UI_DWT_Count);
+ 1668              		.loc 1 138 1 is_stmt 1 view -0
+ 1669              		.cfi_startproc
+ 1670              		@ args = 0, pretend = 0, frame = 0
+ 1671              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 43
+
+
+ 1672 0000 08B5     		push	{r3, lr}
+ 1673              	.LCFI22:
+ 1674              		.cfi_def_cfa_offset 8
+ 1675              		.cfi_offset 3, -8
+ 1676              		.cfi_offset 14, -4
+ 139:Application/ui_task.c **** 	t += dt;
+ 1677              		.loc 1 139 2 view .LVU338
+ 139:Application/ui_task.c **** 	t += dt;
+ 1678              		.loc 1 139 7 is_stmt 0 view .LVU339
+ 1679 0002 1848     		ldr	r0, .L108
+ 1680 0004 FFF7FEFF 		bl	DWT_GetDeltaT
+ 1681              	.LVL55:
+ 139:Application/ui_task.c **** 	t += dt;
+ 1682              		.loc 1 139 5 view .LVU340
+ 1683 0008 174B     		ldr	r3, .L108+4
+ 1684 000a 83ED000A 		vstr.32	s0, [r3]
+ 140:Application/ui_task.c **** 	uiTimeStamp = DWT_GetDeltaT(&ui_DWT_Cost);
+ 1685              		.loc 1 140 2 is_stmt 1 view .LVU341
+ 140:Application/ui_task.c **** 	uiTimeStamp = DWT_GetDeltaT(&ui_DWT_Cost);
+ 1686              		.loc 1 140 4 is_stmt 0 view .LVU342
+ 1687 000e 174B     		ldr	r3, .L108+8
+ 1688 0010 D3ED007A 		vldr.32	s15, [r3]
+ 1689 0014 37EE800A 		vadd.f32	s0, s15, s0
+ 1690 0018 83ED000A 		vstr.32	s0, [r3]
+ 141:Application/ui_task.c **** 
+ 1691              		.loc 1 141 2 is_stmt 1 view .LVU343
+ 141:Application/ui_task.c **** 
+ 1692              		.loc 1 141 16 is_stmt 0 view .LVU344
+ 1693 001c 1448     		ldr	r0, .L108+12
+ 1694 001e FFF7FEFF 		bl	DWT_GetDeltaT
+ 1695              	.LVL56:
+ 141:Application/ui_task.c **** 
+ 1696              		.loc 1 141 14 view .LVU345
+ 1697 0022 144B     		ldr	r3, .L108+16
+ 1698 0024 83ED000A 		vstr.32	s0, [r3]
+ 143:Application/ui_task.c **** 
+ 1699              		.loc 1 143 2 is_stmt 1 view .LVU346
+ 145:Application/ui_task.c **** 	{
+ 1700              		.loc 1 145 2 view .LVU347
+ 1701 0028 134B     		ldr	r3, .L108+20
+ 1702 002a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1703 002c 2BB1     		cbz	r3, .L102
+ 1704 002e 012B     		cmp	r3, #1
+ 1705 0030 12D0     		beq	.L103
+ 158:Application/ui_task.c **** 		break;
+ 1706              		.loc 1 158 3 view .LVU348
+ 158:Application/ui_task.c **** 		break;
+ 1707              		.loc 1 158 9 is_stmt 0 view .LVU349
+ 1708 0032 114B     		ldr	r3, .L108+20
+ 1709 0034 0022     		movs	r2, #0
+ 1710 0036 1A70     		strb	r2, [r3]
+ 159:Application/ui_task.c **** 	}
+ 1711              		.loc 1 159 3 is_stmt 1 view .LVU350
+ 1712 0038 04E0     		b	.L105
+ 1713              	.L102:
+ 148:Application/ui_task.c **** 		Show_UI_Init();
+ 1714              		.loc 1 148 3 view .LVU351
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 44
+
+
+ 148:Application/ui_task.c **** 		Show_UI_Init();
+ 1715              		.loc 1 148 8 is_stmt 0 view .LVU352
+ 1716 003a 0133     		adds	r3, r3, #1
+ 1717 003c 0E4A     		ldr	r2, .L108+20
+ 1718 003e 1370     		strb	r3, [r2]
+ 149:Application/ui_task.c **** 		break;
+ 1719              		.loc 1 149 3 is_stmt 1 view .LVU353
+ 1720 0040 FFF7FEFF 		bl	Show_UI_Init
+ 1721              	.LVL57:
+ 150:Application/ui_task.c **** 
+ 1722              		.loc 1 150 3 view .LVU354
+ 1723              	.L105:
+ 162:Application/ui_task.c **** 	uiCostTime = uiTimeStamp;
+ 1724              		.loc 1 162 2 view .LVU355
+ 162:Application/ui_task.c **** 	uiCostTime = uiTimeStamp;
+ 1725              		.loc 1 162 16 is_stmt 0 view .LVU356
+ 1726 0044 0A48     		ldr	r0, .L108+12
+ 1727 0046 FFF7FEFF 		bl	DWT_GetDeltaT
+ 1728              	.LVL58:
+ 162:Application/ui_task.c **** 	uiCostTime = uiTimeStamp;
+ 1729              		.loc 1 162 14 view .LVU357
+ 1730 004a 0A4B     		ldr	r3, .L108+16
+ 1731 004c 83ED000A 		vstr.32	s0, [r3]
+ 163:Application/ui_task.c **** }
+ 1732              		.loc 1 163 2 is_stmt 1 view .LVU358
+ 163:Application/ui_task.c **** }
+ 1733              		.loc 1 163 13 is_stmt 0 view .LVU359
+ 1734 0050 0A4B     		ldr	r3, .L108+24
+ 1735 0052 83ED000A 		vstr.32	s0, [r3]
+ 164:Application/ui_task.c **** 
+ 1736              		.loc 1 164 1 view .LVU360
+ 1737 0056 08BD     		pop	{r3, pc}
+ 1738              	.L103:
+ 153:Application/ui_task.c **** 		Show_UI();
+ 1739              		.loc 1 153 3 is_stmt 1 view .LVU361
+ 153:Application/ui_task.c **** 		Show_UI();
+ 1740              		.loc 1 153 9 is_stmt 0 view .LVU362
+ 1741 0058 074B     		ldr	r3, .L108+20
+ 1742 005a 0022     		movs	r2, #0
+ 1743 005c 1A70     		strb	r2, [r3]
+ 154:Application/ui_task.c **** 		break;
+ 1744              		.loc 1 154 3 is_stmt 1 view .LVU363
+ 1745 005e FFF7FEFF 		bl	Show_UI
+ 1746              	.LVL59:
+ 155:Application/ui_task.c **** 
+ 1747              		.loc 1 155 3 view .LVU364
+ 1748 0062 EFE7     		b	.L105
+ 1749              	.L109:
+ 1750              		.align	2
+ 1751              	.L108:
+ 1752 0064 00000000 		.word	.LANCHOR31
+ 1753 0068 00000000 		.word	.LANCHOR32
+ 1754 006c 00000000 		.word	.LANCHOR33
+ 1755 0070 00000000 		.word	.LANCHOR34
+ 1756 0074 00000000 		.word	.LANCHOR35
+ 1757 0078 00000000 		.word	.LANCHOR36
+ 1758 007c 00000000 		.word	.LANCHOR37
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 45
+
+
+ 1759              		.cfi_endproc
+ 1760              	.LFE171:
+ 1762              		.section	.text.float_to_char,"ax",%progbits
+ 1763              		.align	1
+ 1764              		.global	float_to_char
+ 1765              		.syntax unified
+ 1766              		.thumb
+ 1767              		.thumb_func
+ 1769              	float_to_char:
+ 1770              	.LVL60:
+ 1771              	.LFB182:
+ 509:Application/ui_task.c **** static void Layer6(uint8_t operate)
+ 510:Application/ui_task.c **** {
+ 511:Application/ui_task.c **** }
+ 512:Application/ui_task.c **** static void Layer7(uint8_t operate)
+ 513:Application/ui_task.c **** {
+ 514:Application/ui_task.c **** }
+ 515:Application/ui_task.c **** void UI_Buff_Generate(float a, float b, float c, uint8_t *data)
+ 516:Application/ui_task.c **** {
+ 517:Application/ui_task.c **** 	uint8_t len[3];
+ 518:Application/ui_task.c **** 	uint8_t float_data[10];
+ 519:Application/ui_task.c **** 	uint8_t length = 0;
+ 520:Application/ui_task.c **** 
+ 521:Application/ui_task.c **** 	memcpy(data, "Cap=", strlen("Cap="));
+ 522:Application/ui_task.c **** 	length += strlen("Cap=");
+ 523:Application/ui_task.c **** 	len[0] = float_to_char(a, float_data);
+ 524:Application/ui_task.c **** 	memcpy(data + length, float_data, len[0]);
+ 525:Application/ui_task.c **** 	length += len[0];
+ 526:Application/ui_task.c **** 
+ 527:Application/ui_task.c **** 	memcpy(data + length, "Pit=", strlen("Pit="));
+ 528:Application/ui_task.c **** 	length += strlen("Pit=");
+ 529:Application/ui_task.c **** 	len[1] = float_to_char(b, float_data);
+ 530:Application/ui_task.c **** 	memcpy(data + length, float_data, len[1]);
+ 531:Application/ui_task.c **** 	length += len[1];
+ 532:Application/ui_task.c **** 
+ 533:Application/ui_task.c **** 	memcpy(data + length, "Pwr=", strlen("Pwr="));
+ 534:Application/ui_task.c **** 	length += strlen("Pwr=");
+ 535:Application/ui_task.c **** 	len[2] = float_to_char(c, float_data);
+ 536:Application/ui_task.c **** 	memcpy(data + length, float_data, len[2]);
+ 537:Application/ui_task.c **** 	length += len[2];
+ 538:Application/ui_task.c **** }
+ 539:Application/ui_task.c **** 
+ 540:Application/ui_task.c **** uint8_t float_to_char(float floatdata, uint8_t *buffer)
+ 541:Application/ui_task.c **** {
+ 1772              		.loc 1 541 1 view -0
+ 1773              		.cfi_startproc
+ 1774              		@ args = 0, pretend = 0, frame = 0
+ 1775              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1776              		.loc 1 541 1 is_stmt 0 view .LVU366
+ 1777 0000 30B5     		push	{r4, r5, lr}
+ 1778              	.LCFI23:
+ 1779              		.cfi_def_cfa_offset 12
+ 1780              		.cfi_offset 4, -12
+ 1781              		.cfi_offset 5, -8
+ 1782              		.cfi_offset 14, -4
+ 542:Application/ui_task.c **** 	int32_t slope;
+ 1783              		.loc 1 542 2 is_stmt 1 view .LVU367
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 46
+
+
+ 543:Application/ui_task.c **** 	int32_t temp;
+ 1784              		.loc 1 543 2 view .LVU368
+ 544:Application/ui_task.c **** 	int8_t i, j;
+ 1785              		.loc 1 544 2 view .LVU369
+ 545:Application/ui_task.c **** 	uint8_t len = 0;
+ 1786              		.loc 1 545 2 view .LVU370
+ 1787              	.LVL61:
+ 546:Application/ui_task.c **** 
+ 547:Application/ui_task.c **** 	slope = (int32_t)(floatdata * 100 + 0.5f);
+ 1788              		.loc 1 547 2 view .LVU371
+ 1789              		.loc 1 547 30 is_stmt 0 view .LVU372
+ 1790 0002 DFED277A 		vldr.32	s15, .L121
+ 1791 0006 20EE270A 		vmul.f32	s0, s0, s15
+ 1792              	.LVL62:
+ 1793              		.loc 1 547 36 view .LVU373
+ 1794 000a F6EE007A 		vmov.f32	s15, #5.0e-1
+ 1795 000e 30EE270A 		vadd.f32	s0, s0, s15
+ 1796              		.loc 1 547 8 view .LVU374
+ 1797 0012 FDEEC07A 		vcvt.s32.f32	s15, s0
+ 1798 0016 17EE90CA 		vmov	ip, s15	@ int
+ 1799              	.LVL63:
+ 548:Application/ui_task.c **** 	if (slope < 0)
+ 1800              		.loc 1 548 2 is_stmt 1 view .LVU375
+ 1801              		.loc 1 548 5 is_stmt 0 view .LVU376
+ 1802 001a BCF1000F 		cmp	ip, #0
+ 1803 001e 03DB     		blt	.L119
+ 545:Application/ui_task.c **** 	uint8_t len = 0;
+ 1804              		.loc 1 545 10 view .LVU377
+ 1805 0020 0024     		movs	r4, #0
+ 1806              	.LVL64:
+ 1807              	.L111:
+ 549:Application/ui_task.c **** 	{
+ 550:Application/ui_task.c **** 		buffer[len] = '-';
+ 551:Application/ui_task.c **** 		slope = -slope;
+ 552:Application/ui_task.c **** 		len += 1;
+ 553:Application/ui_task.c **** 	}
+ 554:Application/ui_task.c **** 	temp = slope;
+ 1808              		.loc 1 554 2 is_stmt 1 view .LVU378
+ 555:Application/ui_task.c **** 
+ 556:Application/ui_task.c **** 	for (i = 0; temp != 0; i++)
+ 1809              		.loc 1 556 2 view .LVU379
+ 554:Application/ui_task.c **** 
+ 1810              		.loc 1 554 7 is_stmt 0 view .LVU380
+ 1811 0022 6346     		mov	r3, ip
+ 1812              		.loc 1 556 9 view .LVU381
+ 1813 0024 0021     		movs	r1, #0
+ 1814              		.loc 1 556 2 view .LVU382
+ 1815 0026 0DE0     		b	.L112
+ 1816              	.LVL65:
+ 1817              	.L119:
+ 550:Application/ui_task.c **** 		slope = -slope;
+ 1818              		.loc 1 550 3 is_stmt 1 view .LVU383
+ 550:Application/ui_task.c **** 		slope = -slope;
+ 1819              		.loc 1 550 15 is_stmt 0 view .LVU384
+ 1820 0028 2D23     		movs	r3, #45
+ 1821 002a 0370     		strb	r3, [r0]
+ 551:Application/ui_task.c **** 		len += 1;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 47
+
+
+ 1822              		.loc 1 551 3 is_stmt 1 view .LVU385
+ 551:Application/ui_task.c **** 		len += 1;
+ 1823              		.loc 1 551 9 is_stmt 0 view .LVU386
+ 1824 002c CCF1000C 		rsb	ip, ip, #0
+ 1825              	.LVL66:
+ 552:Application/ui_task.c **** 	}
+ 1826              		.loc 1 552 3 is_stmt 1 view .LVU387
+ 552:Application/ui_task.c **** 	}
+ 1827              		.loc 1 552 7 is_stmt 0 view .LVU388
+ 1828 0030 0124     		movs	r4, #1
+ 1829 0032 F6E7     		b	.L111
+ 1830              	.LVL67:
+ 1831              	.L113:
+ 557:Application/ui_task.c **** 		temp /= 10;
+ 1832              		.loc 1 557 3 is_stmt 1 discriminator 3 view .LVU389
+ 1833              		.loc 1 557 8 is_stmt 0 discriminator 3 view .LVU390
+ 1834 0034 1B4A     		ldr	r2, .L121+4
+ 1835 0036 82FB0352 		smull	r5, r2, r2, r3
+ 1836 003a DB17     		asrs	r3, r3, #31
+ 1837              	.LVL68:
+ 1838              		.loc 1 557 8 discriminator 3 view .LVU391
+ 1839 003c C3EBA203 		rsb	r3, r3, r2, asr #2
+ 1840              	.LVL69:
+ 556:Application/ui_task.c **** 		temp /= 10;
+ 1841              		.loc 1 556 25 is_stmt 1 discriminator 3 view .LVU392
+ 556:Application/ui_task.c **** 		temp /= 10;
+ 1842              		.loc 1 556 26 is_stmt 0 discriminator 3 view .LVU393
+ 1843 0040 0131     		adds	r1, r1, #1
+ 1844              	.LVL70:
+ 556:Application/ui_task.c **** 		temp /= 10;
+ 1845              		.loc 1 556 26 discriminator 3 view .LVU394
+ 1846 0042 49B2     		sxtb	r1, r1
+ 1847              	.LVL71:
+ 1848              	.L112:
+ 556:Application/ui_task.c **** 		temp /= 10;
+ 1849              		.loc 1 556 14 is_stmt 1 discriminator 1 view .LVU395
+ 556:Application/ui_task.c **** 		temp /= 10;
+ 1850              		.loc 1 556 2 is_stmt 0 discriminator 1 view .LVU396
+ 1851 0044 002B     		cmp	r3, #0
+ 1852 0046 F5D1     		bne	.L113
+ 558:Application/ui_task.c **** 	temp = slope;
+ 559:Application/ui_task.c **** 
+ 560:Application/ui_task.c **** 	for (j = i; j >= 0; j--)
+ 1853              		.loc 1 560 9 view .LVU397
+ 1854 0048 0A46     		mov	r2, r1
+ 1855 004a 01E0     		b	.L114
+ 1856              	.LVL72:
+ 1857              	.L115:
+ 1858              		.loc 1 560 22 is_stmt 1 discriminator 2 view .LVU398
+ 1859              		.loc 1 560 23 is_stmt 0 discriminator 2 view .LVU399
+ 1860 004c 013A     		subs	r2, r2, #1
+ 1861              	.LVL73:
+ 1862              		.loc 1 560 23 discriminator 2 view .LVU400
+ 1863 004e 52B2     		sxtb	r2, r2
+ 1864              	.LVL74:
+ 1865              	.L114:
+ 1866              		.loc 1 560 14 is_stmt 1 discriminator 1 view .LVU401
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 48
+
+
+ 1867              		.loc 1 560 2 is_stmt 0 discriminator 1 view .LVU402
+ 1868 0050 002A     		cmp	r2, #0
+ 1869 0052 1CDB     		blt	.L120
+ 561:Application/ui_task.c **** 	{
+ 562:Application/ui_task.c **** 		buffer[len + j] = temp % 10 + '0';
+ 1870              		.loc 1 562 3 is_stmt 1 view .LVU403
+ 1871              		.loc 1 562 26 is_stmt 0 view .LVU404
+ 1872 0054 134B     		ldr	r3, .L121+4
+ 1873 0056 83FB0C3E 		smull	r3, lr, r3, ip
+ 1874 005a 4FEAEC73 		asr	r3, ip, #31
+ 1875 005e C3EBAE03 		rsb	r3, r3, lr, asr #2
+ 1876 0062 1D46     		mov	r5, r3
+ 1877 0064 03EB8303 		add	r3, r3, r3, lsl #2
+ 1878 0068 ACEB4303 		sub	r3, ip, r3, lsl #1
+ 1879              		.loc 1 562 14 view .LVU405
+ 1880 006c 04EB020E 		add	lr, r4, r2
+ 1881              		.loc 1 562 31 view .LVU406
+ 1882 0070 3033     		adds	r3, r3, #48
+ 1883              		.loc 1 562 19 view .LVU407
+ 1884 0072 00F80E30 		strb	r3, [r0, lr]
+ 563:Application/ui_task.c **** 		temp /= 10;
+ 1885              		.loc 1 563 3 is_stmt 1 view .LVU408
+ 1886              		.loc 1 563 8 is_stmt 0 view .LVU409
+ 1887 0076 AC46     		mov	ip, r5
+ 1888              	.LVL75:
+ 564:Application/ui_task.c **** 		if ((i - j) == 1)
+ 1889              		.loc 1 564 3 is_stmt 1 view .LVU410
+ 1890              		.loc 1 564 10 is_stmt 0 view .LVU411
+ 1891 0078 8B1A     		subs	r3, r1, r2
+ 1892              		.loc 1 564 6 view .LVU412
+ 1893 007a 012B     		cmp	r3, #1
+ 1894 007c E6D1     		bne	.L115
+ 565:Application/ui_task.c **** 		{
+ 566:Application/ui_task.c **** 			buffer[len + j - 1] = '.';
+ 1895              		.loc 1 566 4 is_stmt 1 view .LVU413
+ 1896              		.loc 1 566 10 is_stmt 0 view .LVU414
+ 1897 007e 0EF1FF3E 		add	lr, lr, #-1
+ 1898              		.loc 1 566 24 view .LVU415
+ 1899 0082 2E23     		movs	r3, #46
+ 1900 0084 00F80E30 		strb	r3, [r0, lr]
+ 567:Application/ui_task.c **** 			j -= 1;
+ 1901              		.loc 1 567 4 is_stmt 1 view .LVU416
+ 1902              		.loc 1 567 6 is_stmt 0 view .LVU417
+ 1903 0088 013A     		subs	r2, r2, #1
+ 1904              	.LVL76:
+ 1905              		.loc 1 567 6 view .LVU418
+ 1906 008a 52B2     		sxtb	r2, r2
+ 1907              	.LVL77:
+ 1908              		.loc 1 567 6 view .LVU419
+ 1909 008c DEE7     		b	.L115
+ 1910              	.LVL78:
+ 1911              	.L120:
+ 568:Application/ui_task.c **** 		}
+ 569:Application/ui_task.c **** 	}
+ 570:Application/ui_task.c **** 	len += i + 1;
+ 1912              		.loc 1 570 2 is_stmt 1 view .LVU420
+ 1913              		.loc 1 570 6 is_stmt 0 view .LVU421
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 49
+
+
+ 1914 008e 2144     		add	r1, r1, r4
+ 1915              	.LVL79:
+ 1916              		.loc 1 570 6 view .LVU422
+ 1917 0090 C9B2     		uxtb	r1, r1
+ 1918 0092 4B1C     		adds	r3, r1, #1
+ 1919 0094 DBB2     		uxtb	r3, r3
+ 1920              	.LVL80:
+ 571:Application/ui_task.c **** 
+ 572:Application/ui_task.c **** 	buffer[len] = '\n';
+ 1921              		.loc 1 572 2 is_stmt 1 view .LVU423
+ 1922              		.loc 1 572 14 is_stmt 0 view .LVU424
+ 1923 0096 0A22     		movs	r2, #10
+ 1924              	.LVL81:
+ 1925              		.loc 1 572 14 view .LVU425
+ 1926 0098 C254     		strb	r2, [r0, r3]
+ 573:Application/ui_task.c **** 	len += 1;
+ 1927              		.loc 1 573 2 is_stmt 1 view .LVU426
+ 1928              		.loc 1 573 6 is_stmt 0 view .LVU427
+ 1929 009a 0231     		adds	r1, r1, #2
+ 1930              	.LVL82:
+ 574:Application/ui_task.c **** 	return len;
+ 1931              		.loc 1 574 2 is_stmt 1 view .LVU428
+ 575:Application/ui_task.c **** }
+ 1932              		.loc 1 575 1 is_stmt 0 view .LVU429
+ 1933 009c C8B2     		uxtb	r0, r1
+ 1934              	.LVL83:
+ 1935              		.loc 1 575 1 view .LVU430
+ 1936 009e 30BD     		pop	{r4, r5, pc}
+ 1937              	.L122:
+ 1938              		.align	2
+ 1939              	.L121:
+ 1940 00a0 0000C842 		.word	1120403456
+ 1941 00a4 67666666 		.word	1717986919
+ 1942              		.cfi_endproc
+ 1943              	.LFE182:
+ 1945              		.section	.rodata.UI_Buff_Generate.str1.4,"aMS",%progbits,1
+ 1946              		.align	2
+ 1947              	.LC16:
+ 1948 0000 4361703D 		.ascii	"Cap=\000"
+ 1948      00
+ 1949 0005 000000   		.align	2
+ 1950              	.LC17:
+ 1951 0008 5069743D 		.ascii	"Pit=\000"
+ 1951      00
+ 1952 000d 000000   		.align	2
+ 1953              	.LC18:
+ 1954 0010 5077723D 		.ascii	"Pwr=\000"
+ 1954      00
+ 1955              		.section	.text.UI_Buff_Generate,"ax",%progbits
+ 1956              		.align	1
+ 1957              		.global	UI_Buff_Generate
+ 1958              		.syntax unified
+ 1959              		.thumb
+ 1960              		.thumb_func
+ 1962              	UI_Buff_Generate:
+ 1963              	.LVL84:
+ 1964              	.LFB181:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 50
+
+
+ 516:Application/ui_task.c **** 	uint8_t len[3];
+ 1965              		.loc 1 516 1 is_stmt 1 view -0
+ 1966              		.cfi_startproc
+ 1967              		@ args = 0, pretend = 0, frame = 16
+ 1968              		@ frame_needed = 0, uses_anonymous_args = 0
+ 516:Application/ui_task.c **** 	uint8_t len[3];
+ 1969              		.loc 1 516 1 is_stmt 0 view .LVU432
+ 1970 0000 70B5     		push	{r4, r5, r6, lr}
+ 1971              	.LCFI24:
+ 1972              		.cfi_def_cfa_offset 16
+ 1973              		.cfi_offset 4, -16
+ 1974              		.cfi_offset 5, -12
+ 1975              		.cfi_offset 6, -8
+ 1976              		.cfi_offset 14, -4
+ 1977 0002 2DED028B 		vpush.64	{d8}
+ 1978              	.LCFI25:
+ 1979              		.cfi_def_cfa_offset 24
+ 1980              		.cfi_offset 80, -24
+ 1981              		.cfi_offset 81, -20
+ 1982 0006 84B0     		sub	sp, sp, #16
+ 1983              	.LCFI26:
+ 1984              		.cfi_def_cfa_offset 40
+ 1985 0008 F0EE608A 		vmov.f32	s17, s1
+ 1986 000c B0EE418A 		vmov.f32	s16, s2
+ 1987 0010 0546     		mov	r5, r0
+ 517:Application/ui_task.c **** 	uint8_t float_data[10];
+ 1988              		.loc 1 517 2 is_stmt 1 view .LVU433
+ 518:Application/ui_task.c **** 	uint8_t length = 0;
+ 1989              		.loc 1 518 2 view .LVU434
+ 519:Application/ui_task.c **** 
+ 1990              		.loc 1 519 2 view .LVU435
+ 1991              	.LVL85:
+ 521:Application/ui_task.c **** 	length += strlen("Cap=");
+ 1992              		.loc 1 521 2 view .LVU436
+ 1993 0012 1D4B     		ldr	r3, .L125
+ 1994 0014 1868     		ldr	r0, [r3]
+ 1995              	.LVL86:
+ 521:Application/ui_task.c **** 	length += strlen("Cap=");
+ 1996              		.loc 1 521 2 is_stmt 0 view .LVU437
+ 1997 0016 2E46     		mov	r6, r5
+ 1998 0018 46F8040B 		str	r0, [r6], #4	@ unaligned
+ 522:Application/ui_task.c **** 	len[0] = float_to_char(a, float_data);
+ 1999              		.loc 1 522 2 is_stmt 1 view .LVU438
+ 2000              	.LVL87:
+ 523:Application/ui_task.c **** 	memcpy(data + length, float_data, len[0]);
+ 2001              		.loc 1 523 2 view .LVU439
+ 523:Application/ui_task.c **** 	memcpy(data + length, float_data, len[0]);
+ 2002              		.loc 1 523 11 is_stmt 0 view .LVU440
+ 2003 001c 6846     		mov	r0, sp
+ 2004 001e FFF7FEFF 		bl	float_to_char
+ 2005              	.LVL88:
+ 523:Application/ui_task.c **** 	memcpy(data + length, float_data, len[0]);
+ 2006              		.loc 1 523 11 view .LVU441
+ 2007 0022 0446     		mov	r4, r0
+ 523:Application/ui_task.c **** 	memcpy(data + length, float_data, len[0]);
+ 2008              		.loc 1 523 9 view .LVU442
+ 2009 0024 8DF80C00 		strb	r0, [sp, #12]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 51
+
+
+ 524:Application/ui_task.c **** 	length += len[0];
+ 2010              		.loc 1 524 2 is_stmt 1 view .LVU443
+ 2011 0028 0246     		mov	r2, r0
+ 2012 002a 6946     		mov	r1, sp
+ 2013 002c 3046     		mov	r0, r6
+ 2014 002e FFF7FEFF 		bl	memcpy
+ 2015              	.LVL89:
+ 525:Application/ui_task.c **** 
+ 2016              		.loc 1 525 2 view .LVU444
+ 525:Application/ui_task.c **** 
+ 2017              		.loc 1 525 9 is_stmt 0 view .LVU445
+ 2018 0032 231D     		adds	r3, r4, #4
+ 2019 0034 DBB2     		uxtb	r3, r3
+ 2020              	.LVL90:
+ 527:Application/ui_task.c **** 	length += strlen("Pit=");
+ 2021              		.loc 1 527 2 is_stmt 1 view .LVU446
+ 2022 0036 154A     		ldr	r2, .L125+4
+ 2023 0038 1068     		ldr	r0, [r2]
+ 2024 003a E850     		str	r0, [r5, r3]	@ unaligned
+ 528:Application/ui_task.c **** 	len[1] = float_to_char(b, float_data);
+ 2025              		.loc 1 528 2 view .LVU447
+ 528:Application/ui_task.c **** 	len[1] = float_to_char(b, float_data);
+ 2026              		.loc 1 528 9 is_stmt 0 view .LVU448
+ 2027 003c 0834     		adds	r4, r4, #8
+ 2028 003e E6B2     		uxtb	r6, r4
+ 2029              	.LVL91:
+ 529:Application/ui_task.c **** 	memcpy(data + length, float_data, len[1]);
+ 2030              		.loc 1 529 2 is_stmt 1 view .LVU449
+ 529:Application/ui_task.c **** 	memcpy(data + length, float_data, len[1]);
+ 2031              		.loc 1 529 11 is_stmt 0 view .LVU450
+ 2032 0040 6846     		mov	r0, sp
+ 2033 0042 B0EE680A 		vmov.f32	s0, s17
+ 2034 0046 FFF7FEFF 		bl	float_to_char
+ 2035              	.LVL92:
+ 2036 004a 0446     		mov	r4, r0
+ 529:Application/ui_task.c **** 	memcpy(data + length, float_data, len[1]);
+ 2037              		.loc 1 529 9 view .LVU451
+ 2038 004c 8DF80D00 		strb	r0, [sp, #13]
+ 530:Application/ui_task.c **** 	length += len[1];
+ 2039              		.loc 1 530 2 is_stmt 1 view .LVU452
+ 2040 0050 0246     		mov	r2, r0
+ 2041 0052 6946     		mov	r1, sp
+ 2042 0054 A819     		adds	r0, r5, r6
+ 2043 0056 FFF7FEFF 		bl	memcpy
+ 2044              	.LVL93:
+ 531:Application/ui_task.c **** 
+ 2045              		.loc 1 531 2 view .LVU453
+ 531:Application/ui_task.c **** 
+ 2046              		.loc 1 531 9 is_stmt 0 view .LVU454
+ 2047 005a 3444     		add	r4, r4, r6
+ 2048 005c E4B2     		uxtb	r4, r4
+ 2049              	.LVL94:
+ 533:Application/ui_task.c **** 	length += strlen("Pwr=");
+ 2050              		.loc 1 533 2 is_stmt 1 view .LVU455
+ 2051 005e 0C4B     		ldr	r3, .L125+8
+ 2052 0060 1868     		ldr	r0, [r3]
+ 2053 0062 2851     		str	r0, [r5, r4]	@ unaligned
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 52
+
+
+ 534:Application/ui_task.c **** 	len[2] = float_to_char(c, float_data);
+ 2054              		.loc 1 534 2 view .LVU456
+ 534:Application/ui_task.c **** 	len[2] = float_to_char(c, float_data);
+ 2055              		.loc 1 534 9 is_stmt 0 view .LVU457
+ 2056 0064 0434     		adds	r4, r4, #4
+ 2057              	.LVL95:
+ 534:Application/ui_task.c **** 	len[2] = float_to_char(c, float_data);
+ 2058              		.loc 1 534 9 view .LVU458
+ 2059 0066 E4B2     		uxtb	r4, r4
+ 2060              	.LVL96:
+ 535:Application/ui_task.c **** 	memcpy(data + length, float_data, len[2]);
+ 2061              		.loc 1 535 2 is_stmt 1 view .LVU459
+ 535:Application/ui_task.c **** 	memcpy(data + length, float_data, len[2]);
+ 2062              		.loc 1 535 11 is_stmt 0 view .LVU460
+ 2063 0068 6846     		mov	r0, sp
+ 2064 006a B0EE480A 		vmov.f32	s0, s16
+ 2065 006e FFF7FEFF 		bl	float_to_char
+ 2066              	.LVL97:
+ 2067 0072 0246     		mov	r2, r0
+ 535:Application/ui_task.c **** 	memcpy(data + length, float_data, len[2]);
+ 2068              		.loc 1 535 9 view .LVU461
+ 2069 0074 8DF80E00 		strb	r0, [sp, #14]
+ 536:Application/ui_task.c **** 	length += len[2];
+ 2070              		.loc 1 536 2 is_stmt 1 view .LVU462
+ 2071 0078 6946     		mov	r1, sp
+ 2072 007a 2819     		adds	r0, r5, r4
+ 2073 007c FFF7FEFF 		bl	memcpy
+ 2074              	.LVL98:
+ 537:Application/ui_task.c **** }
+ 2075              		.loc 1 537 2 view .LVU463
+ 538:Application/ui_task.c **** 
+ 2076              		.loc 1 538 1 is_stmt 0 view .LVU464
+ 2077 0080 04B0     		add	sp, sp, #16
+ 2078              	.LCFI27:
+ 2079              		.cfi_def_cfa_offset 24
+ 2080              		@ sp needed
+ 2081 0082 BDEC028B 		vldm	sp!, {d8}
+ 2082              	.LCFI28:
+ 2083              		.cfi_restore 80
+ 2084              		.cfi_restore 81
+ 2085              		.cfi_def_cfa_offset 16
+ 2086              	.LVL99:
+ 538:Application/ui_task.c **** 
+ 2087              		.loc 1 538 1 view .LVU465
+ 2088 0086 70BD     		pop	{r4, r5, r6, pc}
+ 2089              	.LVL100:
+ 2090              	.L126:
+ 538:Application/ui_task.c **** 
+ 2091              		.loc 1 538 1 view .LVU466
+ 2092              		.align	2
+ 2093              	.L125:
+ 2094 0088 00000000 		.word	.LC16
+ 2095 008c 08000000 		.word	.LC17
+ 2096 0090 10000000 		.word	.LC18
+ 2097              		.cfi_endproc
+ 2098              	.LFE181:
+ 2100              		.global	Radius_30
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 53
+
+
+ 2101              		.global	Center_y_30
+ 2102              		.global	Center_x_30
+ 2103              		.global	Radius_15
+ 2104              		.global	Center_y_15
+ 2105              		.global	Center_x_15
+ 2106              		.global	End_y2
+ 2107              		.global	End_x2
+ 2108              		.global	Start_y2
+ 2109              		.global	Start_x2
+ 2110              		.global	End_y1
+ 2111              		.global	End_x1
+ 2112              		.global	Start_y1
+ 2113              		.global	Start_x1
+ 2114              		.global	robot_width
+ 2115              		.global	robot_state_endY
+ 2116              		.global	robot_state_endX
+ 2117              		.global	robot_state_startY
+ 2118              		.global	robot_state_startX
+ 2119              		.global	rect_Aimpre_endY
+ 2120              		.global	rect_Aimpre_endX
+ 2121              		.global	rect_Aimpre_startY
+ 2122              		.global	rect_Aimpre_startX
+ 2123              		.global	rect_Aim_endY
+ 2124              		.global	rect_Aim_endX
+ 2125              		.global	rect_Aim_startY
+ 2126              		.global	rect_Aim_startX
+ 2127              		.global	HIT_Width
+ 2128              		.global	HP_Width
+ 2129              		.global	HIT_endY
+ 2130              		.global	HIT_endX
+ 2131              		.global	HIT_startY
+ 2132              		.global	HIT_startX
+ 2133              		.global	HP_endY
+ 2134              		.global	HP_endX
+ 2135              		.global	HP_startY
+ 2136              		.global	HP_startX
+ 2137              		.global	rect_endY
+ 2138              		.global	rect_endX
+ 2139              		.global	rect_startY
+ 2140              		.global	rect_startX
+ 2141              		.global	color
+ 2142              		.global	width
+ 2143              		.global	end_y
+ 2144              		.global	end_x
+ 2145              		.global	y
+ 2146              		.global	x
+ 2147              		.global	client_send_buff_0
+ 2148              		.global	client_send_buff
+ 2149              		.global	hunt_buff
+ 2150              		.global	remain_HP
+ 2151              		.global	flg
+ 2152              		.global	ui_DWT_Cost
+ 2153              		.global	UI_DWT_Count
+ 2154              		.global	uiTimeStamp
+ 2155              		.global	uiCostTime
+ 2156              		.global	Char4
+ 2157              		.global	Char3
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 54
+
+
+ 2158              		.global	Char2
+ 2159              		.global	Char
+ 2160              		.global	graphic
+ 2161              		.section	.bss.Char,"aw",%nobits
+ 2162              		.align	2
+ 2165              	Char:
+ 2166 0000 00000000 		.space	36
+ 2166      00000000 
+ 2166      00000000 
+ 2166      00000000 
+ 2166      00000000 
+ 2167              		.section	.bss.Char2,"aw",%nobits
+ 2168              		.align	2
+ 2169              		.set	.LANCHOR23,. + 0
+ 2172              	Char2:
+ 2173 0000 00000000 		.space	64
+ 2173      00000000 
+ 2173      00000000 
+ 2173      00000000 
+ 2173      00000000 
+ 2174              		.section	.bss.Char3,"aw",%nobits
+ 2175              		.align	2
+ 2176              		.set	.LANCHOR25,. + 0
+ 2179              	Char3:
+ 2180 0000 00000000 		.space	36
+ 2180      00000000 
+ 2180      00000000 
+ 2180      00000000 
+ 2180      00000000 
+ 2181              		.section	.bss.Char4,"aw",%nobits
+ 2182              		.align	2
+ 2183              		.set	.LANCHOR27,. + 0
+ 2186              	Char4:
+ 2187 0000 00000000 		.space	36
+ 2187      00000000 
+ 2187      00000000 
+ 2187      00000000 
+ 2187      00000000 
+ 2188              		.section	.bss.UI_DWT_Count,"aw",%nobits
+ 2189              		.align	2
+ 2190              		.set	.LANCHOR31,. + 0
+ 2193              	UI_DWT_Count:
+ 2194 0000 00000000 		.space	4
+ 2195              		.section	.bss.client_send_buff,"aw",%nobits
+ 2196              		.align	2
+ 2197              		.set	.LANCHOR6,. + 0
+ 2200              	client_send_buff:
+ 2201 0000 00000000 		.space	30
+ 2201      00000000 
+ 2201      00000000 
+ 2201      00000000 
+ 2201      00000000 
+ 2202              		.section	.bss.client_send_buff_0,"aw",%nobits
+ 2203              		.align	2
+ 2204              		.set	.LANCHOR24,. + 0
+ 2207              	client_send_buff_0:
+ 2208 0000 00000000 		.space	30
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 55
+
+
+ 2208      00000000 
+ 2208      00000000 
+ 2208      00000000 
+ 2208      00000000 
+ 2209              		.section	.bss.color,"aw",%nobits
+ 2212              	color:
+ 2213 0000 00       		.space	1
+ 2214              		.section	.bss.dt,"aw",%nobits
+ 2215              		.align	2
+ 2216              		.set	.LANCHOR32,. + 0
+ 2219              	dt:
+ 2220 0000 00000000 		.space	4
+ 2221              		.section	.bss.end_x,"aw",%nobits
+ 2222              		.align	2
+ 2225              	end_x:
+ 2226 0000 00000000 		.space	4
+ 2227              		.section	.bss.end_y,"aw",%nobits
+ 2228              		.align	2
+ 2231              	end_y:
+ 2232 0000 00000000 		.space	4
+ 2233              		.section	.bss.flg,"aw",%nobits
+ 2234              		.set	.LANCHOR26,. + 0
+ 2237              	flg:
+ 2238 0000 00       		.space	1
+ 2239              		.section	.bss.graphic,"aw",%nobits
+ 2240              		.align	2
+ 2241              		.set	.LANCHOR1,. + 0
+ 2244              	graphic:
+ 2245 0000 00000000 		.space	112
+ 2245      00000000 
+ 2245      00000000 
+ 2245      00000000 
+ 2245      00000000 
+ 2246              		.section	.bss.hunt_buff,"aw",%nobits
+ 2247              		.set	.LANCHOR8,. + 0
+ 2250              	hunt_buff:
+ 2251 0000 00       		.space	1
+ 2252              		.section	.bss.length.1,"aw",%nobits
+ 2253              		.align	2
+ 2254              		.set	.LANCHOR28,. + 0
+ 2257              	length.1:
+ 2258 0000 00000000 		.space	5
+ 2258      00
+ 2259              		.section	.bss.rect_Aim_endX,"aw",%nobits
+ 2260              		.align	1
+ 2263              	rect_Aim_endX:
+ 2264 0000 0000     		.space	2
+ 2265              		.section	.bss.rect_Aim_endY,"aw",%nobits
+ 2266              		.align	1
+ 2269              	rect_Aim_endY:
+ 2270 0000 0000     		.space	2
+ 2271              		.section	.bss.rect_Aim_startX,"aw",%nobits
+ 2272              		.align	1
+ 2275              	rect_Aim_startX:
+ 2276 0000 0000     		.space	2
+ 2277              		.section	.bss.rect_Aim_startY,"aw",%nobits
+ 2278              		.align	1
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 56
+
+
+ 2281              	rect_Aim_startY:
+ 2282 0000 0000     		.space	2
+ 2283              		.section	.bss.rect_Aimpre_endX,"aw",%nobits
+ 2284              		.align	1
+ 2287              	rect_Aimpre_endX:
+ 2288 0000 0000     		.space	2
+ 2289              		.section	.bss.rect_Aimpre_endY,"aw",%nobits
+ 2290              		.align	1
+ 2293              	rect_Aimpre_endY:
+ 2294 0000 0000     		.space	2
+ 2295              		.section	.bss.rect_Aimpre_startX,"aw",%nobits
+ 2296              		.align	1
+ 2299              	rect_Aimpre_startX:
+ 2300 0000 0000     		.space	2
+ 2301              		.section	.bss.rect_Aimpre_startY,"aw",%nobits
+ 2302              		.align	1
+ 2305              	rect_Aimpre_startY:
+ 2306 0000 0000     		.space	2
+ 2307              		.section	.bss.remain_HP,"aw",%nobits
+ 2308              		.align	1
+ 2309              		.set	.LANCHOR7,. + 0
+ 2312              	remain_HP:
+ 2313 0000 0000     		.space	2
+ 2314              		.section	.bss.robot_width,"aw",%nobits
+ 2315              		.align	2
+ 2316              		.set	.LANCHOR0,. + 0
+ 2319              	robot_width:
+ 2320 0000 000000   		.space	3
+ 2321              		.section	.bss.state.0,"aw",%nobits
+ 2322              		.set	.LANCHOR30,. + 0
+ 2325              	state.0:
+ 2326 0000 00       		.space	1
+ 2327              		.section	.bss.state.2,"aw",%nobits
+ 2328              		.set	.LANCHOR29,. + 0
+ 2331              	state.2:
+ 2332 0000 00       		.space	1
+ 2333              		.section	.bss.state.3,"aw",%nobits
+ 2334              		.set	.LANCHOR36,. + 0
+ 2337              	state.3:
+ 2338 0000 00       		.space	1
+ 2339              		.section	.bss.t,"aw",%nobits
+ 2340              		.align	2
+ 2341              		.set	.LANCHOR33,. + 0
+ 2344              	t:
+ 2345 0000 00000000 		.space	4
+ 2346              		.section	.bss.uiCostTime,"aw",%nobits
+ 2347              		.align	2
+ 2348              		.set	.LANCHOR37,. + 0
+ 2351              	uiCostTime:
+ 2352 0000 00000000 		.space	4
+ 2353              		.section	.bss.uiTimeStamp,"aw",%nobits
+ 2354              		.align	2
+ 2355              		.set	.LANCHOR35,. + 0
+ 2358              	uiTimeStamp:
+ 2359 0000 00000000 		.space	4
+ 2360              		.section	.bss.ui_DWT_Cost,"aw",%nobits
+ 2361              		.align	2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 57
+
+
+ 2362              		.set	.LANCHOR34,. + 0
+ 2365              	ui_DWT_Cost:
+ 2366 0000 00000000 		.space	4
+ 2367              		.section	.bss.width,"aw",%nobits
+ 2368              		.align	1
+ 2371              	width:
+ 2372 0000 0000     		.space	2
+ 2373              		.section	.bss.x,"aw",%nobits
+ 2374              		.align	2
+ 2377              	x:
+ 2378 0000 00000000 		.space	6
+ 2378      0000
+ 2379              		.section	.bss.y,"aw",%nobits
+ 2380              		.align	2
+ 2383              	y:
+ 2384 0000 00000000 		.space	6
+ 2384      0000
+ 2385              		.section	.data.Center_x_15,"aw"
+ 2386              		.align	2
+ 2389              	Center_x_15:
+ 2390 0000 C003     		.short	960
+ 2391 0002 C003     		.short	960
+ 2392 0004 C003     		.short	960
+ 2393 0006 C003     		.short	960
+ 2394 0008 C003     		.short	960
+ 2395              		.section	.data.Center_x_30,"aw"
+ 2396              		.align	2
+ 2399              	Center_x_30:
+ 2400 0000 B103     		.short	945
+ 2401 0002 B103     		.short	945
+ 2402 0004 B103     		.short	945
+ 2403 0006 B103     		.short	945
+ 2404 0008 B103     		.short	945
+ 2405              		.section	.data.Center_y_15,"aw"
+ 2406              		.align	2
+ 2409              	Center_y_15:
+ 2410 0000 AE01     		.short	430
+ 2411 0002 A401     		.short	420
+ 2412 0004 9001     		.short	400
+ 2413 0006 2201     		.short	290
+ 2414 0008 F500     		.short	245
+ 2415              		.section	.data.Center_y_30,"aw"
+ 2416              		.align	2
+ 2419              	Center_y_30:
+ 2420 0000 AE01     		.short	430
+ 2421 0002 A401     		.short	420
+ 2422 0004 9001     		.short	400
+ 2423 0006 2201     		.short	290
+ 2424 0008 F500     		.short	245
+ 2425              		.section	.data.End_x1,"aw"
+ 2426              		.align	2
+ 2429              	End_x1:
+ 2430 0000 1A04     		.short	1050
+ 2431 0002 5203     		.short	850
+ 2432 0004 8403     		.short	900
+ 2433 0006 B103     		.short	945
+ 2434 0008 E803     		.short	1000
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 58
+
+
+ 2435 000a 1A04     		.short	1050
+ 2436 000c 0000     		.short	0
+ 2437              		.section	.data.End_x2,"aw"
+ 2438              		.align	2
+ 2441              	End_x2:
+ 2442 0000 7E04     		.short	1150
+ 2443 0002 EE02     		.short	750
+ 2444 0004 5203     		.short	850
+ 2445 0006 B103     		.short	945
+ 2446 0008 1A04     		.short	1050
+ 2447 000a 7E04     		.short	1150
+ 2448 000c 0000     		.short	0
+ 2449              		.section	.data.End_y1,"aw"
+ 2450              		.align	2
+ 2453              	End_y1:
+ 2454 0000 9001     		.short	400
+ 2455 0002 9A01     		.short	410
+ 2456 0004 9A01     		.short	410
+ 2457 0006 9A01     		.short	410
+ 2458 0008 9A01     		.short	410
+ 2459 000a 9A01     		.short	410
+ 2460 000c 0000     		.short	0
+ 2461              		.section	.data.End_y2,"aw"
+ 2462              		.align	2
+ 2465              	End_y2:
+ 2466 0000 5E01     		.short	350
+ 2467 0002 6801     		.short	360
+ 2468 0004 6801     		.short	360
+ 2469 0006 6801     		.short	360
+ 2470 0008 6801     		.short	360
+ 2471 000a 6801     		.short	360
+ 2472 000c 0000     		.short	0
+ 2473              		.section	.data.HIT_Width,"aw"
+ 2474              		.set	.LANCHOR20,. + 0
+ 2477              	HIT_Width:
+ 2478 0000 08       		.byte	8
+ 2479              		.section	.data.HIT_endX,"aw"
+ 2480              		.align	1
+ 2481              		.set	.LANCHOR12,. + 0
+ 2484              	HIT_endX:
+ 2485 0000 1603     		.short	790
+ 2486              		.section	.data.HIT_endY,"aw"
+ 2487              		.align	1
+ 2488              		.set	.LANCHOR21,. + 0
+ 2491              	HIT_endY:
+ 2492 0000 3E03     		.short	830
+ 2493              		.section	.data.HIT_startX,"aw"
+ 2494              		.align	1
+ 2495              		.set	.LANCHOR11,. + 0
+ 2498              	HIT_startX:
+ 2499 0000 7A03     		.short	890
+ 2500              		.section	.data.HIT_startY,"aw"
+ 2501              		.align	1
+ 2502              		.set	.LANCHOR22,. + 0
+ 2505              	HIT_startY:
+ 2506 0000 3E03     		.short	830
+ 2507              		.section	.data.HP_Width,"aw"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 59
+
+
+ 2508              		.set	.LANCHOR17,. + 0
+ 2511              	HP_Width:
+ 2512 0000 0C       		.byte	12
+ 2513              		.section	.data.HP_endX,"aw"
+ 2514              		.align	1
+ 2515              		.set	.LANCHOR10,. + 0
+ 2518              	HP_endX:
+ 2519 0000 7A03     		.short	890
+ 2520              		.section	.data.HP_endY,"aw"
+ 2521              		.align	1
+ 2522              		.set	.LANCHOR18,. + 0
+ 2525              	HP_endY:
+ 2526 0000 3E03     		.short	830
+ 2527              		.section	.data.HP_startX,"aw"
+ 2528              		.align	1
+ 2529              		.set	.LANCHOR9,. + 0
+ 2532              	HP_startX:
+ 2533 0000 C602     		.short	710
+ 2534              		.section	.data.HP_startY,"aw"
+ 2535              		.align	1
+ 2536              		.set	.LANCHOR19,. + 0
+ 2539              	HP_startY:
+ 2540 0000 3E03     		.short	830
+ 2541              		.section	.data.Radius_15,"aw"
+ 2542              		.align	2
+ 2545              	Radius_15:
+ 2546 0000 0300     		.short	3
+ 2547 0002 0300     		.short	3
+ 2548 0004 0300     		.short	3
+ 2549 0006 0300     		.short	3
+ 2550 0008 0300     		.short	3
+ 2551              		.section	.data.Radius_30,"aw"
+ 2552              		.align	2
+ 2555              	Radius_30:
+ 2556 0000 0300     		.short	3
+ 2557 0002 0300     		.short	3
+ 2558 0004 0300     		.short	3
+ 2559 0006 0300     		.short	3
+ 2560 0008 0300     		.short	3
+ 2561              		.section	.data.Start_x1,"aw"
+ 2562              		.align	2
+ 2565              	Start_x1:
+ 2566 0000 5203     		.short	850
+ 2567 0002 5203     		.short	850
+ 2568 0004 8403     		.short	900
+ 2569 0006 B103     		.short	945
+ 2570 0008 E803     		.short	1000
+ 2571 000a 1A04     		.short	1050
+ 2572 000c 0000     		.short	0
+ 2573              		.section	.data.Start_x2,"aw"
+ 2574              		.align	2
+ 2577              	Start_x2:
+ 2578 0000 EE02     		.short	750
+ 2579 0002 EE02     		.short	750
+ 2580 0004 5203     		.short	850
+ 2581 0006 B103     		.short	945
+ 2582 0008 1A04     		.short	1050
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 60
+
+
+ 2583 000a 7E04     		.short	1150
+ 2584 000c 0000     		.short	0
+ 2585              		.section	.data.Start_y1,"aw"
+ 2586              		.align	2
+ 2589              	Start_y1:
+ 2590 0000 9001     		.short	400
+ 2591 0002 9001     		.short	400
+ 2592 0004 9001     		.short	400
+ 2593 0006 9001     		.short	400
+ 2594 0008 9001     		.short	400
+ 2595 000a 9001     		.short	400
+ 2596 000c 0000     		.short	0
+ 2597              		.section	.data.Start_y2,"aw"
+ 2598              		.align	2
+ 2601              	Start_y2:
+ 2602 0000 5E01     		.short	350
+ 2603 0002 5E01     		.short	350
+ 2604 0004 5E01     		.short	350
+ 2605 0006 5E01     		.short	350
+ 2606 0008 5E01     		.short	350
+ 2607 000a 5E01     		.short	350
+ 2608 000c 0000     		.short	0
+ 2609              		.section	.data.rect_endX,"aw"
+ 2610              		.align	1
+ 2611              		.set	.LANCHOR14,. + 0
+ 2614              	rect_endX:
+ 2615 0000 BE04     		.short	1214
+ 2616              		.section	.data.rect_endY,"aw"
+ 2617              		.align	1
+ 2618              		.set	.LANCHOR13,. + 0
+ 2621              	rect_endY:
+ 2622 0000 4803     		.short	840
+ 2623              		.section	.data.rect_startX,"aw"
+ 2624              		.align	1
+ 2625              		.set	.LANCHOR16,. + 0
+ 2628              	rect_startX:
+ 2629 0000 C202     		.short	706
+ 2630              		.section	.data.rect_startY,"aw"
+ 2631              		.align	1
+ 2632              		.set	.LANCHOR15,. + 0
+ 2635              	rect_startY:
+ 2636 0000 3403     		.short	820
+ 2637              		.section	.data.robot_state_endX,"aw"
+ 2638              		.align	2
+ 2639              		.set	.LANCHOR3,. + 0
+ 2642              	robot_state_endX:
+ 2643 0000 5406     		.short	1620
+ 2644 0002 4006     		.short	1600
+ 2645 0004 2C06     		.short	1580
+ 2646 0006 0000     		.short	0
+ 2647 0008 0000     		.short	0
+ 2648              		.section	.data.robot_state_endY,"aw"
+ 2649              		.align	2
+ 2650              		.set	.LANCHOR2,. + 0
+ 2653              	robot_state_endY:
+ 2654 0000 4E02     		.short	590
+ 2655 0002 3002     		.short	560
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 61
+
+
+ 2656 0004 1202     		.short	530
+ 2657 0006 0000     		.short	0
+ 2658 0008 0000     		.short	0
+ 2659              		.section	.data.robot_state_startX,"aw"
+ 2660              		.align	2
+ 2661              		.set	.LANCHOR5,. + 0
+ 2664              	robot_state_startX:
+ 2665 0000 0E06     		.short	1550
+ 2666 0002 0E06     		.short	1550
+ 2667 0004 0E06     		.short	1550
+ 2668 0006 0000     		.short	0
+ 2669 0008 0000     		.short	0
+ 2670              		.section	.data.robot_state_startY,"aw"
+ 2671              		.align	2
+ 2672              		.set	.LANCHOR4,. + 0
+ 2675              	robot_state_startY:
+ 2676 0000 4E02     		.short	590
+ 2677 0002 3002     		.short	560
+ 2678 0004 1202     		.short	530
+ 2679 0006 0000     		.short	0
+ 2680 0008 0000     		.short	0
+ 2681              		.text
+ 2682              	.Letext0:
+ 2683              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 2684              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 2685              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 2686              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 2687              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 2688              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ 2689              		.file 8 "Application/client_interact.h"
+ 2690              		.file 9 "Application/judgement_info.h"
+ 2691              		.file 10 "Components/Algorithm/Include/arm_math.h"
+ 2692              		.file 11 "Components/user_lib.h"
+ 2693              		.file 12 "Components/Controller/controller.h"
+ 2694              		.file 13 "Application/motor.h"
+ 2695              		.file 14 "Components/kalman_filter.h"
+ 2696              		.file 15 "Application/chassis_task.h"
+ 2697              		.file 16 "Application/gimbal_task.h"
+ 2698              		.file 17 "Application/remote_control.h"
+ 2699              		.file 18 "Application/power_measure.h"
+ 2700              		.file 19 "Application/detect_task.h"
+ 2701              		.file 20 "<built-in>"
+ 2702              		.file 21 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 2703              		.file 22 "Bsp/bsp_dwt.h"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 62
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ui_task.c
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:20     .text.Layer1:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:25     .text.Layer1:00000000 Layer1
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:166    .text.Layer1:000000a4 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:179    .text.Layer2:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:184    .text.Layer2:00000000 Layer2
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:488    .text.Layer2:00000220 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:494    .text.Layer2:00000226 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:563    .text.Layer2:0000026e $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:569    .text.Layer2:00000274 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:621    .text.Layer2:000002a4 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:654    .text.Layer2:0000031c $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:664    .text.Layer2:00000328 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:670    .rodata.Layer3.str1.4:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:704    .text.Layer3:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:709    .text.Layer3:00000000 Layer3
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:746    .text.Layer3:0000001e $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:750    .text.Layer3:00000022 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:775    .text.Layer3:00000044 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:779    .text.Layer3:00000048 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1055   .text.Layer3:000001fc $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1078   .rodata.Layer4.str1.4:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1082   .text.Layer4:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1087   .text.Layer4:00000000 Layer4
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1186   .text.Layer4:0000008c $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1199   .rodata.Layer5.str1.4:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1212   .text.Layer5:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1217   .text.Layer5:00000000 Layer5
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1388   .text.Layer5:000000dc $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1403   .text.Show_UI_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1408   .text.Show_UI_Init:00000000 Show_UI_Init
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1427   .text.Show_UI_Init:0000000e $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1527   .text.Show_UI_Init:00000074 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1532   .text.Show_UI:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1537   .text.Show_UI:00000000 Show_UI
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1556   .text.Show_UI:0000000e $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1654   .text.Show_UI:00000078 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1660   .text.UI_Task:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1666   .text.UI_Task:00000000 UI_Task
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1752   .text.UI_Task:00000064 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1763   .text.float_to_char:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1769   .text.float_to_char:00000000 float_to_char
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1940   .text.float_to_char:000000a0 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1946   .rodata.UI_Buff_Generate.str1.4:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1956   .text.UI_Buff_Generate:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1962   .text.UI_Buff_Generate:00000000 UI_Buff_Generate
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2094   .text.UI_Buff_Generate:00000088 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2555   .data.Radius_30:00000000 Radius_30
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2419   .data.Center_y_30:00000000 Center_y_30
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2399   .data.Center_x_30:00000000 Center_x_30
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2545   .data.Radius_15:00000000 Radius_15
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2409   .data.Center_y_15:00000000 Center_y_15
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2389   .data.Center_x_15:00000000 Center_x_15
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2465   .data.End_y2:00000000 End_y2
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2441   .data.End_x2:00000000 End_x2
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2601   .data.Start_y2:00000000 Start_y2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 63
+
+
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2577   .data.Start_x2:00000000 Start_x2
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2453   .data.End_y1:00000000 End_y1
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2429   .data.End_x1:00000000 End_x1
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2589   .data.Start_y1:00000000 Start_y1
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2565   .data.Start_x1:00000000 Start_x1
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2319   .bss.robot_width:00000000 robot_width
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2653   .data.robot_state_endY:00000000 robot_state_endY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2642   .data.robot_state_endX:00000000 robot_state_endX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2675   .data.robot_state_startY:00000000 robot_state_startY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2664   .data.robot_state_startX:00000000 robot_state_startX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2293   .bss.rect_Aimpre_endY:00000000 rect_Aimpre_endY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2287   .bss.rect_Aimpre_endX:00000000 rect_Aimpre_endX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2305   .bss.rect_Aimpre_startY:00000000 rect_Aimpre_startY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2299   .bss.rect_Aimpre_startX:00000000 rect_Aimpre_startX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2269   .bss.rect_Aim_endY:00000000 rect_Aim_endY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2263   .bss.rect_Aim_endX:00000000 rect_Aim_endX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2281   .bss.rect_Aim_startY:00000000 rect_Aim_startY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2275   .bss.rect_Aim_startX:00000000 rect_Aim_startX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2477   .data.HIT_Width:00000000 HIT_Width
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2511   .data.HP_Width:00000000 HP_Width
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2491   .data.HIT_endY:00000000 HIT_endY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2484   .data.HIT_endX:00000000 HIT_endX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2505   .data.HIT_startY:00000000 HIT_startY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2498   .data.HIT_startX:00000000 HIT_startX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2525   .data.HP_endY:00000000 HP_endY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2518   .data.HP_endX:00000000 HP_endX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2539   .data.HP_startY:00000000 HP_startY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2532   .data.HP_startX:00000000 HP_startX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2621   .data.rect_endY:00000000 rect_endY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2614   .data.rect_endX:00000000 rect_endX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2635   .data.rect_startY:00000000 rect_startY
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2628   .data.rect_startX:00000000 rect_startX
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2212   .bss.color:00000000 color
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2371   .bss.width:00000000 width
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2231   .bss.end_y:00000000 end_y
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2225   .bss.end_x:00000000 end_x
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2383   .bss.y:00000000 y
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2377   .bss.x:00000000 x
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2207   .bss.client_send_buff_0:00000000 client_send_buff_0
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2200   .bss.client_send_buff:00000000 client_send_buff
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2250   .bss.hunt_buff:00000000 hunt_buff
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2312   .bss.remain_HP:00000000 remain_HP
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2237   .bss.flg:00000000 flg
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2365   .bss.ui_DWT_Cost:00000000 ui_DWT_Cost
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2193   .bss.UI_DWT_Count:00000000 UI_DWT_Count
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2358   .bss.uiTimeStamp:00000000 uiTimeStamp
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2351   .bss.uiCostTime:00000000 uiCostTime
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2186   .bss.Char4:00000000 Char4
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2179   .bss.Char3:00000000 Char3
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2172   .bss.Char2:00000000 Char2
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2165   .bss.Char:00000000 Char
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2244   .bss.graphic:00000000 graphic
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2162   .bss.Char:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2168   .bss.Char2:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2175   .bss.Char3:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2182   .bss.Char4:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2189   .bss.UI_DWT_Count:00000000 $d
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 64
+
+
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2196   .bss.client_send_buff:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2203   .bss.client_send_buff_0:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2213   .bss.color:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2215   .bss.dt:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2219   .bss.dt:00000000 dt
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2222   .bss.end_x:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2228   .bss.end_y:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2238   .bss.flg:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2240   .bss.graphic:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2251   .bss.hunt_buff:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2253   .bss.length.1:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2257   .bss.length.1:00000000 length.1
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2260   .bss.rect_Aim_endX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2266   .bss.rect_Aim_endY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2272   .bss.rect_Aim_startX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2278   .bss.rect_Aim_startY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2284   .bss.rect_Aimpre_endX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2290   .bss.rect_Aimpre_endY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2296   .bss.rect_Aimpre_startX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2302   .bss.rect_Aimpre_startY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2308   .bss.remain_HP:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2315   .bss.robot_width:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2325   .bss.state.0:00000000 state.0
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2326   .bss.state.0:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2331   .bss.state.2:00000000 state.2
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2332   .bss.state.2:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2337   .bss.state.3:00000000 state.3
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2338   .bss.state.3:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2340   .bss.t:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2344   .bss.t:00000000 t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2347   .bss.uiCostTime:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2354   .bss.uiTimeStamp:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2361   .bss.ui_DWT_Cost:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2368   .bss.width:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2374   .bss.x:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2380   .bss.y:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2386   .data.Center_x_15:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2396   .data.Center_x_30:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2406   .data.Center_y_15:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2416   .data.Center_y_30:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2426   .data.End_x1:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2438   .data.End_x2:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2450   .data.End_y1:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2462   .data.End_y2:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2480   .data.HIT_endX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2487   .data.HIT_endY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2494   .data.HIT_startX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2501   .data.HIT_startY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2514   .data.HP_endX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2521   .data.HP_endY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2528   .data.HP_startX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2535   .data.HP_startY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2542   .data.Radius_15:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2552   .data.Radius_30:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2562   .data.Start_x1:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2574   .data.Start_x2:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2586   .data.Start_y1:00000000 $d
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s 			page 65
+
+
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2598   .data.Start_y2:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2610   .data.rect_endX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2617   .data.rect_endY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2624   .data.rect_startX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2631   .data.rect_startY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2638   .data.robot_state_endX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2649   .data.robot_state_endY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2660   .data.robot_state_startX:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:2671   .data.robot_state_startY:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1434   .text.Show_UI_Init:00000015 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1434   .text.Show_UI_Init:00000016 $t
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1561   .text.Show_UI:00000013 $d
+C:\Users\86152\AppData\Local\Temp\ccNE7Oh7.s:1561   .text.Show_UI:00000014 $t
+
+UNDEFINED SYMBOLS
+Line_Generate
+client_draw
+Gimbal_Data
+robot_state
+JudgeUSART
+memset
+arm_sin_f32
+arm_cos_f32
+rect_Generate
+Chassis
+power_heat_data_t
+game_robot_HP
+client_draw_char
+remote_control
+__aeabi_f2d
+sprintf
+client_draw_char_2
+Gimbal
+ina226
+DWT_GetDeltaT
+memcpy

@@ -1,0 +1,1726 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"power_measure.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.INA_writeData,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	INA_writeData:
+  26              	.LVL0:
+  27              	.LFB174:
+  28              		.file 1 "Application/power_measure.c"
+   1:Application/power_measure.c **** /**
+   2:Application/power_measure.c ****   ******************************************************************************
+   3:Application/power_measure.c ****   * @file    power_measure
+   4:Application/power_measure.c ****   * @author  Liu ZhiJie 
+   5:Application/power_measure.c ****   * @brief   power_measure.
+   6:Application/power_measure.c ****   ******************************************************************************
+   7:Application/power_measure.c ****   * @attention
+   8:Application/power_measure.c ****   * typedef struct
+   9:Application/power_measure.c **** 		{
+  10:Application/power_measure.c **** 			uint16_t  Config_Register;//00h≈‰÷√ºƒ¥Ê∆˜
+  11:Application/power_measure.c **** 			
+  12:Application/power_measure.c **** 			int16_t  Shunt_Voltage_Register;//01h 2.5uv/msb
+  13:Application/power_measure.c **** 			
+  14:Application/power_measure.c **** 			int16_t	Bus_Voltage;//02h 1.25mv/msb
+  15:Application/power_measure.c **** 			
+  16:Application/power_measure.c **** 			uint16_t  Power_Register;//03h
+  17:Application/power_measure.c **** 			
+  18:Application/power_measure.c **** 			int16_t  Current_Register;//04h
+  19:Application/power_measure.c **** 			
+  20:Application/power_measure.c **** 			uint16_t  Calibration_Register;// (05h)
+  21:Application/power_measure.c **** 			
+  22:Application/power_measure.c **** 			uint16_t  ID;
+  23:Application/power_measure.c **** 		}ina226_t_reg_t;
+  24:Application/power_measure.c ****   * 
+  25:Application/power_measure.c ****   * –æ∆¨ ÷≤·÷–”–±Ì∏Òø…“‘≤È…Ë±∏µƒµÿ÷∑£¨»Áπ˚A0.A1“˝Ω≈»´≤ø¿≠µÕ‘Ú «0x0000
+  26:Application/power_measure.c ****   * ÷˜“™æÕ «calibrationºƒ¥Ê∆˜∫ÕµÁ¡˜∫Õπ¶¬ ºƒ¥Ê∆˜µƒπÿœµ
+  27:Application/power_measure.c ****   * CAL =0.00512/Current_LSB*RSHUNT ±»»Áƒ„œ£Õ˚µÁ¡˜ºƒ¥Ê∆˜ «1mA/bit»ª∫Û≤…—˘µÁ◊Ë «10m¶∏
+  28:Application/power_measure.c ****   * ‘ÚCAL = 512º¥0x200h£¨’‚¿ÔµƒCurrent_LSB∫ÕRSHUNT∂º «“‘A∫Õ¶∏Œ™µ•Œªµƒ°£
+  29:Application/power_measure.c ****   * ≈‰÷√ÕÍ¡ÀCALºƒ¥Ê∆˜£¨æÕø…“‘∂¡µÁ¡˜¡À°£»ª∫Ûπ¶¬ ƒ¨»œLSB «µÁ¡˜MSBµƒ25±∂°£º¥µÁ¡˜ «1mA/bit
+  30:Application/power_measure.c ****   * ƒ«√¥π¶¬ æÕ «25mW/bit
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 2
+
+
+  31:Application/power_measure.c ****   *
+  32:Application/power_measure.c ****   *	
+  33:Application/power_measure.c ****   ******************************************************************************
+  34:Application/power_measure.c ****   */
+  35:Application/power_measure.c **** #include "power_measure.h"
+  36:Application/power_measure.c **** #include "cmsis_os.h"
+  37:Application/power_measure.c **** #include "filter32.h"
+  38:Application/power_measure.c **** #include "includes.h"
+  39:Application/power_measure.c **** #include "core_cm4.h"
+  40:Application/power_measure.c **** #include "bsp_i2c.h"
+  41:Application/power_measure.c **** 
+  42:Application/power_measure.c **** i2c_t inaIic; //¥¥Ω®IICΩ·ππÃÂ
+  43:Application/power_measure.c **** 
+  44:Application/power_measure.c **** First_Order_Filter_t Ina226_0_Power;   //π¶¬ “ªΩ◊¬À≤®
+  45:Application/power_measure.c **** Window_Filter_t Ina226_0_Vol;          //µÁ—π¥∞ø⁄¬À≤®
+  46:Application/power_measure.c **** Window_Filter_t Ina226_0_Power_Window; //π¶¬ ¥∞ø⁄¬À≤®
+  47:Application/power_measure.c **** 
+  48:Application/power_measure.c **** ina226_t_reg_t ina226_reg;
+  49:Application/power_measure.c **** ina226_t ina226[3];
+  50:Application/power_measure.c **** 
+  51:Application/power_measure.c **** uint8_t id_buff[2];
+  52:Application/power_measure.c **** uint8_t Votage_buff[2];
+  53:Application/power_measure.c **** uint8_t reg_buff[7] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0xff};
+  54:Application/power_measure.c **** uint16_t Receive_buff[7];
+  55:Application/power_measure.c **** uint8_t INA226_I2C_Lost = 0;
+  56:Application/power_measure.c **** 
+  57:Application/power_measure.c **** uint32_t lost_count = 0;
+  58:Application/power_measure.c **** 
+  59:Application/power_measure.c **** static uint8_t INA_writeData(uint8_t dev, uint8_t reg, uint16_t data);
+  60:Application/power_measure.c **** static uint8_t INA_readLen(uint8_t dev, uint8_t reg, uint8_t len, uint8_t *buf);
+  61:Application/power_measure.c **** 
+  62:Application/power_measure.c **** void INA226_Init(uint16_t Ina226_ID)
+  63:Application/power_measure.c **** {
+  64:Application/power_measure.c **** 
+  65:Application/power_measure.c **** #ifdef Use_software_i2c // π”√»Ìº˛ƒ£ƒ‚IIC
+  66:Application/power_measure.c **** 
+  67:Application/power_measure.c **** #ifdef Use_hi2c3
+  68:Application/power_measure.c ****     __HAL_RCC_GPIOA_CLK_ENABLE();
+  69:Application/power_measure.c ****     __HAL_RCC_GPIOC_CLK_ENABLE();
+  70:Application/power_measure.c ****     inaIic.SCL_GPIO = GPIOA;
+  71:Application/power_measure.c ****     inaIic.SCL_PIN = GPIO_PIN_8;
+  72:Application/power_measure.c ****     inaIic.SDA_GPIO = GPIOC;
+  73:Application/power_measure.c ****     inaIic.SDA_PIN = GPIO_PIN_9;
+  74:Application/power_measure.c **** #endif
+  75:Application/power_measure.c **** 
+  76:Application/power_measure.c **** #ifdef Use_hi2c1
+  77:Application/power_measure.c ****     //I2C1
+  78:Application/power_measure.c ****     __HAL_RCC_GPIOB_CLK_ENABLE();
+  79:Application/power_measure.c ****     inaIic.SCL_GPIO = GPIOB;
+  80:Application/power_measure.c ****     inaIic.SCL_PIN = GPIO_PIN_8;
+  81:Application/power_measure.c ****     inaIic.SDA_GPIO = GPIOB;
+  82:Application/power_measure.c ****     inaIic.SDA_PIN = GPIO_PIN_9;
+  83:Application/power_measure.c **** #endif
+  84:Application/power_measure.c **** 
+  85:Application/power_measure.c ****     IIC_Init(&inaIic); //IIC≥ı ºªØ
+  86:Application/power_measure.c ****     INA_writeData(INA226_ADDR1, 0x00, 0X4207);
+  87:Application/power_measure.c ****     INA_writeData(INA226_ADDR1, 0x05, 512);
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 3
+
+
+  88:Application/power_measure.c **** 
+  89:Application/power_measure.c **** #else // π”√STM32”≤º˛IIC
+  90:Application/power_measure.c **** 
+  91:Application/power_measure.c ****     uint8_t temp[2] = {0x42, 0x07};
+  92:Application/power_measure.c ****     uint8_t cal[2];
+  93:Application/power_measure.c ****     uint16_t CAL;
+  94:Application/power_measure.c **** 
+  95:Application/power_measure.c ****     CAL = 5120 / Curren_LSB / Shunt_ohm;
+  96:Application/power_measure.c ****     cal[0] = CAL >> 8;
+  97:Application/power_measure.c ****     cal[1] = CAL;
+  98:Application/power_measure.c ****     HAL_I2C_Mem_Write(&ina226_i2c, Ina226_ID, CFG_REG, I2C_MEMADD_SIZE_8BIT, temp, 2, 0x10);
+  99:Application/power_measure.c ****     HAL_I2C_Mem_Write(&ina226_i2c, Ina226_ID, CAL_REG, I2C_MEMADD_SIZE_8BIT, cal, 2, 0x10);
+ 100:Application/power_measure.c **** #endif
+ 101:Application/power_measure.c ****     //¬À≤®≥ı ºªØ
+ 102:Application/power_measure.c ****     First_Order_Filter_Init(&Ina226_0_Power, 0.003, 0.01);
+ 103:Application/power_measure.c ****     Window_Filter_Init(&Ina226_0_Vol, 50);
+ 104:Application/power_measure.c ****     Window_Filter_Init(&Ina226_0_Power_Window, 50);
+ 105:Application/power_measure.c **** }
+ 106:Application/power_measure.c **** 
+ 107:Application/power_measure.c **** void INA226_Read_Registers(uint16_t ina226_id)
+ 108:Application/power_measure.c **** {
+ 109:Application/power_measure.c **** 
+ 110:Application/power_measure.c **** #ifdef Use_software_i2c // π”√»Ìº˛ƒ£ƒ‚IIC
+ 111:Application/power_measure.c ****     static uint8_t buff[2] = {0};
+ 112:Application/power_measure.c ****     //∑÷œﬂµÁ—π
+ 113:Application/power_measure.c ****     INA_readLen(INA226_ADDR1, SV_REG, 2, buff);
+ 114:Application/power_measure.c ****     ina226_reg.Shunt_Voltage_Register = (int16_t)(buff[0] << 8) | buff[1];
+ 115:Application/power_measure.c ****     //◊‹œﬂµÁ—π
+ 116:Application/power_measure.c ****     INA_readLen(INA226_ADDR1, BV_REG, 2, buff);
+ 117:Application/power_measure.c ****     ina226_reg.Bus_Voltage = (int16_t)(buff[0] << 8) | buff[1];
+ 118:Application/power_measure.c ****     //π¶¬ 
+ 119:Application/power_measure.c ****     INA_readLen(INA226_ADDR1, PWR_REG, 2, buff);
+ 120:Application/power_measure.c ****     ina226_reg.Power_Register = (int16_t)(buff[0] << 8) | buff[1];
+ 121:Application/power_measure.c ****     //µÁ¡˜
+ 122:Application/power_measure.c ****     INA_readLen(INA226_ADDR1, CUR_REG, 2, buff);
+ 123:Application/power_measure.c ****     ina226_reg.Current_Register = (int16_t)(buff[0] << 8) | buff[1];
+ 124:Application/power_measure.c ****     //–£◊º
+ 125:Application/power_measure.c ****     INA_readLen(INA226_ADDR1, CAL_REG, 2, buff);
+ 126:Application/power_measure.c ****     ina226_reg.Calibration_Register = (int16_t)(buff[0] << 8) | buff[1];
+ 127:Application/power_measure.c **** #else // π”√STM32”≤º˛IIC
+ 128:Application/power_measure.c ****     uint8_t i;
+ 129:Application/power_measure.c ****     for (i = 0; i < 7; i++)
+ 130:Application/power_measure.c ****     {
+ 131:Application/power_measure.c ****         Receive_buff[i] = INA226_Read_a_Reg(reg_buff[i], ina226_id);
+ 132:Application/power_measure.c ****     }
+ 133:Application/power_measure.c ****     ina226_reg.Config_Register = Receive_buff[0];
+ 134:Application/power_measure.c ****     ina226_reg.Shunt_Voltage_Register = Receive_buff[1];
+ 135:Application/power_measure.c ****     ina226_reg.Bus_Voltage = Receive_buff[2];
+ 136:Application/power_measure.c ****     ina226_reg.Power_Register = Receive_buff[3];
+ 137:Application/power_measure.c ****     ina226_reg.Current_Register = Receive_buff[4];
+ 138:Application/power_measure.c ****     ina226_reg.Calibration_Register = Receive_buff[5];
+ 139:Application/power_measure.c ****     ina226_reg.ID = Receive_buff[6];
+ 140:Application/power_measure.c **** 
+ 141:Application/power_measure.c **** #endif
+ 142:Application/power_measure.c **** 
+ 143:Application/power_measure.c ****     switch (ina226_id)
+ 144:Application/power_measure.c ****     {
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 4
+
+
+ 145:Application/power_measure.c ****     case INA226_ADDR1:
+ 146:Application/power_measure.c ****         ina226[0].Bus_Voltage = (float)ina226_reg.Bus_Voltage * 1.25f / 1000;
+ 147:Application/power_measure.c ****         ina226[0].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 148:Application/power_measure.c ****         ina226[0].Power_cal_W = ina226[0].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 149:Application/power_measure.c ****         ina226[0].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 150:Application/power_measure.c ****         ina226[0].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 151:Application/power_measure.c ****         ina226[0].current_A = (float)ina226[0].current_mA / 1000;
+ 152:Application/power_measure.c ****         ina226[0].Bus_Voltage_filter = Window_Filter_Calculate(&Ina226_0_Vol, ina226[0].Bus_Voltage
+ 153:Application/power_measure.c ****         ina226[0].Power_cal_W_first_order_filter = First_Order_Filter_Calculate(&Ina226_0_Power, in
+ 154:Application/power_measure.c ****         ina226[0].Power_cal_W_window_filter = Window_Filter_Calculate(&Ina226_0_Power_Window, ina22
+ 155:Application/power_measure.c ****         break;
+ 156:Application/power_measure.c **** 
+ 157:Application/power_measure.c ****     case INA226_ADDR2:
+ 158:Application/power_measure.c ****         ina226[1].Bus_Voltage = (float)ina226_reg.Bus_Voltage * 1.25f / 1000;
+ 159:Application/power_measure.c ****         ina226[1].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 160:Application/power_measure.c ****         ina226[1].Power_cal_W = ina226[1].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 161:Application/power_measure.c ****         ina226[1].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 162:Application/power_measure.c ****         ina226[1].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 163:Application/power_measure.c ****         ina226[1].current_A = (float)ina226[1].current_mA / 1000;
+ 164:Application/power_measure.c **** 
+ 165:Application/power_measure.c ****         break;
+ 166:Application/power_measure.c **** 
+ 167:Application/power_measure.c ****     case INA226_ADDR3:
+ 168:Application/power_measure.c ****         ina226[2].Bus_Voltage = (float)ina226_reg.Bus_Voltage * 1.25f / 1000;
+ 169:Application/power_measure.c ****         ina226[2].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 170:Application/power_measure.c ****         ina226[2].Power_cal_W = ina226[2].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 171:Application/power_measure.c ****         ina226[2].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 172:Application/power_measure.c ****         ina226[2].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 173:Application/power_measure.c ****         ina226[2].current_A = (float)ina226[2].current_mA / 1000;
+ 174:Application/power_measure.c ****         break;
+ 175:Application/power_measure.c ****     }
+ 176:Application/power_measure.c ****     if (lost_count > 30)
+ 177:Application/power_measure.c ****     {
+ 178:Application/power_measure.c ****         ina226[0].Bus_Voltage = 22.0f;
+ 179:Application/power_measure.c ****         ina226[0].Bus_Voltage_filter = 22.0f;
+ 180:Application/power_measure.c ****     }
+ 181:Application/power_measure.c **** }
+ 182:Application/power_measure.c **** 
+ 183:Application/power_measure.c **** //INA226∂¡»°ºƒ¥Ê∆˜£®STM”≤º˛IIC£©
+ 184:Application/power_measure.c **** uint16_t INA226_Read_a_Reg(uint8_t reg, uint16_t Ina226_id)
+ 185:Application/power_measure.c **** {
+ 186:Application/power_measure.c ****     uint8_t temp[2];
+ 187:Application/power_measure.c ****     uint16_t value;
+ 188:Application/power_measure.c ****     static uint32_t lost_count = 0;
+ 189:Application/power_measure.c ****     if (HAL_I2C_Mem_Read(&ina226_i2c, Ina226_id, reg, I2C_MEMADD_SIZE_8BIT, temp, 2, 5) == HAL_OK)
+ 190:Application/power_measure.c ****     {
+ 191:Application/power_measure.c ****         //Detect_Hook(I2C_TOE);
+ 192:Application/power_measure.c ****         HAL_IWDG_Refresh(&hiwdg);
+ 193:Application/power_measure.c ****         lost_count = 0;
+ 194:Application/power_measure.c ****     }
+ 195:Application/power_measure.c ****     else
+ 196:Application/power_measure.c ****     {
+ 197:Application/power_measure.c ****         MX_I2C1_Init();
+ 198:Application/power_measure.c ****         MX_I2C3_Init();
+ 199:Application/power_measure.c ****         lost_count++;
+ 200:Application/power_measure.c ****         if (lost_count > 30)
+ 201:Application/power_measure.c ****         {
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 5
+
+
+ 202:Application/power_measure.c ****             Send_Motor_Current_1_4(&hcan1, 0, 0, 0, 0);
+ 203:Application/power_measure.c ****             HAL_NVIC_SystemReset();
+ 204:Application/power_measure.c ****         }
+ 205:Application/power_measure.c ****     }
+ 206:Application/power_measure.c **** 
+ 207:Application/power_measure.c ****     value = (temp[0] << 8) | temp[1];
+ 208:Application/power_measure.c ****     return value;
+ 209:Application/power_measure.c **** }
+ 210:Application/power_measure.c **** 
+ 211:Application/power_measure.c **** //INA226–¥»Î ˝æ›£®»Ìº˛ƒ£ƒ‚IIC£©
+ 212:Application/power_measure.c **** static uint8_t INA_writeData(uint8_t dev, uint8_t reg, uint16_t data)
+ 213:Application/power_measure.c **** {
+  29              		.loc 1 213 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 213 1 is_stmt 0 view .LVU1
+  34 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 24
+  37              		.cfi_offset 3, -24
+  38              		.cfi_offset 4, -20
+  39              		.cfi_offset 5, -16
+  40              		.cfi_offset 6, -12
+  41              		.cfi_offset 7, -8
+  42              		.cfi_offset 14, -4
+  43 0002 0546     		mov	r5, r0
+  44 0004 0E46     		mov	r6, r1
+  45 0006 1746     		mov	r7, r2
+ 214:Application/power_measure.c **** 
+ 215:Application/power_measure.c ****     IIC_Start(&inaIic);
+  46              		.loc 1 215 5 is_stmt 1 view .LVU2
+  47 0008 194C     		ldr	r4, .L7
+  48 000a 2046     		mov	r0, r4
+  49              	.LVL1:
+  50              		.loc 1 215 5 is_stmt 0 view .LVU3
+  51 000c FFF7FEFF 		bl	IIC_Start
+  52              	.LVL2:
+ 216:Application/power_measure.c **** 
+ 217:Application/power_measure.c ****     IIC_writeByte(&inaIic, dev);
+  53              		.loc 1 217 5 is_stmt 1 view .LVU4
+  54 0010 2946     		mov	r1, r5
+  55 0012 2046     		mov	r0, r4
+  56 0014 FFF7FEFF 		bl	IIC_writeByte
+  57              	.LVL3:
+ 218:Application/power_measure.c ****     if (IIC_waitAck(&inaIic) == 1)
+  58              		.loc 1 218 5 view .LVU5
+  59              		.loc 1 218 9 is_stmt 0 view .LVU6
+  60 0018 2046     		mov	r0, r4
+  61 001a FFF7FEFF 		bl	IIC_waitAck
+  62              	.LVL4:
+  63              		.loc 1 218 8 view .LVU7
+  64 001e 0128     		cmp	r0, #1
+  65 0020 1ED0     		beq	.L2
+ 219:Application/power_measure.c ****     {
+ 220:Application/power_measure.c ****         return 1;
+ 221:Application/power_measure.c ****     }
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 6
+
+
+ 222:Application/power_measure.c **** 
+ 223:Application/power_measure.c ****     IIC_writeByte(&inaIic, reg);
+  66              		.loc 1 223 5 is_stmt 1 view .LVU8
+  67 0022 3146     		mov	r1, r6
+  68 0024 2046     		mov	r0, r4
+  69 0026 FFF7FEFF 		bl	IIC_writeByte
+  70              	.LVL5:
+ 224:Application/power_measure.c ****     if (IIC_waitAck(&inaIic) == 1)
+  71              		.loc 1 224 5 view .LVU9
+  72              		.loc 1 224 9 is_stmt 0 view .LVU10
+  73 002a 2046     		mov	r0, r4
+  74 002c FFF7FEFF 		bl	IIC_waitAck
+  75              	.LVL6:
+  76              		.loc 1 224 8 view .LVU11
+  77 0030 0128     		cmp	r0, #1
+  78 0032 16D0     		beq	.L3
+ 225:Application/power_measure.c ****     {
+ 226:Application/power_measure.c ****         return 2;
+ 227:Application/power_measure.c ****     }
+ 228:Application/power_measure.c **** 
+ 229:Application/power_measure.c ****     IIC_writeByte(&inaIic, data >> 8);
+  79              		.loc 1 229 5 is_stmt 1 view .LVU12
+  80 0034 390A     		lsrs	r1, r7, #8
+  81 0036 2046     		mov	r0, r4
+  82 0038 FFF7FEFF 		bl	IIC_writeByte
+  83              	.LVL7:
+ 230:Application/power_measure.c ****     if (IIC_waitAck(&inaIic) == 1)
+  84              		.loc 1 230 5 view .LVU13
+  85              		.loc 1 230 9 is_stmt 0 view .LVU14
+  86 003c 2046     		mov	r0, r4
+  87 003e FFF7FEFF 		bl	IIC_waitAck
+  88              	.LVL8:
+  89              		.loc 1 230 8 view .LVU15
+  90 0042 0128     		cmp	r0, #1
+  91 0044 0FD0     		beq	.L4
+ 231:Application/power_measure.c ****     {
+ 232:Application/power_measure.c ****         return 3;
+ 233:Application/power_measure.c ****     }
+ 234:Application/power_measure.c **** 
+ 235:Application/power_measure.c ****     IIC_writeByte(&inaIic, data & 0xff);
+  92              		.loc 1 235 5 is_stmt 1 view .LVU16
+  93 0046 F9B2     		uxtb	r1, r7
+  94 0048 2046     		mov	r0, r4
+  95 004a FFF7FEFF 		bl	IIC_writeByte
+  96              	.LVL9:
+ 236:Application/power_measure.c ****     if (IIC_waitAck(&inaIic) == 1)
+  97              		.loc 1 236 5 view .LVU17
+  98              		.loc 1 236 9 is_stmt 0 view .LVU18
+  99 004e 2046     		mov	r0, r4
+ 100 0050 FFF7FEFF 		bl	IIC_waitAck
+ 101              	.LVL10:
+ 102              		.loc 1 236 8 view .LVU19
+ 103 0054 0128     		cmp	r0, #1
+ 104 0056 08D0     		beq	.L5
+ 237:Application/power_measure.c ****     {
+ 238:Application/power_measure.c ****         return 4;
+ 239:Application/power_measure.c ****     }
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 7
+
+
+ 240:Application/power_measure.c **** 
+ 241:Application/power_measure.c ****     IIC_Stop(&inaIic);
+ 105              		.loc 1 241 5 is_stmt 1 view .LVU20
+ 106 0058 2046     		mov	r0, r4
+ 107 005a FFF7FEFF 		bl	IIC_Stop
+ 108              	.LVL11:
+ 242:Application/power_measure.c ****     return 0;
+ 109              		.loc 1 242 5 view .LVU21
+ 110              		.loc 1 242 12 is_stmt 0 view .LVU22
+ 111 005e 0020     		movs	r0, #0
+ 112              	.L2:
+ 243:Application/power_measure.c **** }
+ 113              		.loc 1 243 1 view .LVU23
+ 114 0060 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 115              	.L3:
+ 226:Application/power_measure.c ****     }
+ 116              		.loc 1 226 16 view .LVU24
+ 117 0062 0220     		movs	r0, #2
+ 118 0064 FCE7     		b	.L2
+ 119              	.L4:
+ 232:Application/power_measure.c ****     }
+ 120              		.loc 1 232 16 view .LVU25
+ 121 0066 0320     		movs	r0, #3
+ 122 0068 FAE7     		b	.L2
+ 123              	.L5:
+ 238:Application/power_measure.c ****     }
+ 124              		.loc 1 238 16 view .LVU26
+ 125 006a 0420     		movs	r0, #4
+ 126 006c F8E7     		b	.L2
+ 127              	.L8:
+ 128 006e 00BF     		.align	2
+ 129              	.L7:
+ 130 0070 00000000 		.word	.LANCHOR0
+ 131              		.cfi_endproc
+ 132              	.LFE174:
+ 134              		.section	.text.INA226_Init,"ax",%progbits
+ 135              		.align	1
+ 136              		.global	INA226_Init
+ 137              		.syntax unified
+ 138              		.thumb
+ 139              		.thumb_func
+ 141              	INA226_Init:
+ 142              	.LVL12:
+ 143              	.LFB171:
+  63:Application/power_measure.c **** 
+ 144              		.loc 1 63 1 is_stmt 1 view -0
+ 145              		.cfi_startproc
+ 146              		@ args = 0, pretend = 0, frame = 8
+ 147              		@ frame_needed = 0, uses_anonymous_args = 0
+  63:Application/power_measure.c **** 
+ 148              		.loc 1 63 1 is_stmt 0 view .LVU28
+ 149 0000 30B5     		push	{r4, r5, lr}
+ 150              	.LCFI1:
+ 151              		.cfi_def_cfa_offset 12
+ 152              		.cfi_offset 4, -12
+ 153              		.cfi_offset 5, -8
+ 154              		.cfi_offset 14, -4
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 8
+
+
+ 155 0002 83B0     		sub	sp, sp, #12
+ 156              	.LCFI2:
+ 157              		.cfi_def_cfa_offset 24
+  68:Application/power_measure.c ****     __HAL_RCC_GPIOC_CLK_ENABLE();
+ 158              		.loc 1 68 5 is_stmt 1 view .LVU29
+ 159              	.LBB2:
+  68:Application/power_measure.c ****     __HAL_RCC_GPIOC_CLK_ENABLE();
+ 160              		.loc 1 68 5 view .LVU30
+ 161 0004 0024     		movs	r4, #0
+ 162 0006 0094     		str	r4, [sp]
+  68:Application/power_measure.c ****     __HAL_RCC_GPIOC_CLK_ENABLE();
+ 163              		.loc 1 68 5 view .LVU31
+ 164 0008 1E4B     		ldr	r3, .L11
+ 165 000a 1A6B     		ldr	r2, [r3, #48]
+ 166 000c 42F00102 		orr	r2, r2, #1
+ 167 0010 1A63     		str	r2, [r3, #48]
+  68:Application/power_measure.c ****     __HAL_RCC_GPIOC_CLK_ENABLE();
+ 168              		.loc 1 68 5 view .LVU32
+ 169 0012 1A6B     		ldr	r2, [r3, #48]
+ 170 0014 02F00102 		and	r2, r2, #1
+ 171 0018 0092     		str	r2, [sp]
+  68:Application/power_measure.c ****     __HAL_RCC_GPIOC_CLK_ENABLE();
+ 172              		.loc 1 68 5 view .LVU33
+ 173 001a 009A     		ldr	r2, [sp]
+ 174              	.LBE2:
+  68:Application/power_measure.c ****     __HAL_RCC_GPIOC_CLK_ENABLE();
+ 175              		.loc 1 68 5 view .LVU34
+  69:Application/power_measure.c ****     inaIic.SCL_GPIO = GPIOA;
+ 176              		.loc 1 69 5 view .LVU35
+ 177              	.LBB3:
+  69:Application/power_measure.c ****     inaIic.SCL_GPIO = GPIOA;
+ 178              		.loc 1 69 5 view .LVU36
+ 179 001c 0194     		str	r4, [sp, #4]
+  69:Application/power_measure.c ****     inaIic.SCL_GPIO = GPIOA;
+ 180              		.loc 1 69 5 view .LVU37
+ 181 001e 1A6B     		ldr	r2, [r3, #48]
+ 182 0020 42F00402 		orr	r2, r2, #4
+ 183 0024 1A63     		str	r2, [r3, #48]
+  69:Application/power_measure.c ****     inaIic.SCL_GPIO = GPIOA;
+ 184              		.loc 1 69 5 view .LVU38
+ 185 0026 1B6B     		ldr	r3, [r3, #48]
+ 186 0028 03F00403 		and	r3, r3, #4
+ 187 002c 0193     		str	r3, [sp, #4]
+  69:Application/power_measure.c ****     inaIic.SCL_GPIO = GPIOA;
+ 188              		.loc 1 69 5 view .LVU39
+ 189 002e 019B     		ldr	r3, [sp, #4]
+ 190              	.LBE3:
+  69:Application/power_measure.c ****     inaIic.SCL_GPIO = GPIOA;
+ 191              		.loc 1 69 5 view .LVU40
+  70:Application/power_measure.c ****     inaIic.SCL_PIN = GPIO_PIN_8;
+ 192              		.loc 1 70 5 view .LVU41
+  70:Application/power_measure.c ****     inaIic.SCL_PIN = GPIO_PIN_8;
+ 193              		.loc 1 70 21 is_stmt 0 view .LVU42
+ 194 0030 1548     		ldr	r0, .L11+4
+ 195              	.LVL13:
+  70:Application/power_measure.c ****     inaIic.SCL_PIN = GPIO_PIN_8;
+ 196              		.loc 1 70 21 view .LVU43
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 9
+
+
+ 197 0032 164B     		ldr	r3, .L11+8
+ 198 0034 8360     		str	r3, [r0, #8]
+  71:Application/power_measure.c ****     inaIic.SDA_GPIO = GPIOC;
+ 199              		.loc 1 71 5 is_stmt 1 view .LVU44
+  71:Application/power_measure.c ****     inaIic.SDA_GPIO = GPIOC;
+ 200              		.loc 1 71 20 is_stmt 0 view .LVU45
+ 201 0036 4FF48073 		mov	r3, #256
+ 202 003a C360     		str	r3, [r0, #12]
+  72:Application/power_measure.c ****     inaIic.SDA_PIN = GPIO_PIN_9;
+ 203              		.loc 1 72 5 is_stmt 1 view .LVU46
+  72:Application/power_measure.c ****     inaIic.SDA_PIN = GPIO_PIN_9;
+ 204              		.loc 1 72 21 is_stmt 0 view .LVU47
+ 205 003c 144B     		ldr	r3, .L11+12
+ 206 003e 0360     		str	r3, [r0]
+  73:Application/power_measure.c **** #endif
+ 207              		.loc 1 73 5 is_stmt 1 view .LVU48
+  73:Application/power_measure.c **** #endif
+ 208              		.loc 1 73 20 is_stmt 0 view .LVU49
+ 209 0040 4FF40075 		mov	r5, #512
+ 210 0044 4560     		str	r5, [r0, #4]
+  85:Application/power_measure.c ****     INA_writeData(INA226_ADDR1, 0x00, 0X4207);
+ 211              		.loc 1 85 5 is_stmt 1 view .LVU50
+ 212 0046 FFF7FEFF 		bl	IIC_Init
+ 213              	.LVL14:
+  86:Application/power_measure.c ****     INA_writeData(INA226_ADDR1, 0x05, 512);
+ 214              		.loc 1 86 5 view .LVU51
+ 215 004a 44F20722 		movw	r2, #16903
+ 216 004e 2146     		mov	r1, r4
+ 217 0050 8020     		movs	r0, #128
+ 218 0052 FFF7FEFF 		bl	INA_writeData
+ 219              	.LVL15:
+  87:Application/power_measure.c **** 
+ 220              		.loc 1 87 5 view .LVU52
+ 221 0056 2A46     		mov	r2, r5
+ 222 0058 0521     		movs	r1, #5
+ 223 005a 8020     		movs	r0, #128
+ 224 005c FFF7FEFF 		bl	INA_writeData
+ 225              	.LVL16:
+ 102:Application/power_measure.c ****     Window_Filter_Init(&Ina226_0_Vol, 50);
+ 226              		.loc 1 102 5 view .LVU53
+ 227 0060 DFED0C0A 		vldr.32	s1, .L11+16
+ 228 0064 9FED0C0A 		vldr.32	s0, .L11+20
+ 229 0068 0C48     		ldr	r0, .L11+24
+ 230 006a FFF7FEFF 		bl	First_Order_Filter_Init
+ 231              	.LVL17:
+ 103:Application/power_measure.c ****     Window_Filter_Init(&Ina226_0_Power_Window, 50);
+ 232              		.loc 1 103 5 view .LVU54
+ 233 006e 3221     		movs	r1, #50
+ 234 0070 0B48     		ldr	r0, .L11+28
+ 235 0072 FFF7FEFF 		bl	Window_Filter_Init
+ 236              	.LVL18:
+ 104:Application/power_measure.c **** }
+ 237              		.loc 1 104 5 view .LVU55
+ 238 0076 3221     		movs	r1, #50
+ 239 0078 0A48     		ldr	r0, .L11+32
+ 240 007a FFF7FEFF 		bl	Window_Filter_Init
+ 241              	.LVL19:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 10
+
+
+ 105:Application/power_measure.c **** 
+ 242              		.loc 1 105 1 is_stmt 0 view .LVU56
+ 243 007e 03B0     		add	sp, sp, #12
+ 244              	.LCFI3:
+ 245              		.cfi_def_cfa_offset 12
+ 246              		@ sp needed
+ 247 0080 30BD     		pop	{r4, r5, pc}
+ 248              	.L12:
+ 249 0082 00BF     		.align	2
+ 250              	.L11:
+ 251 0084 00380240 		.word	1073887232
+ 252 0088 00000000 		.word	.LANCHOR0
+ 253 008c 00000240 		.word	1073872896
+ 254 0090 00080240 		.word	1073874944
+ 255 0094 0AD7233C 		.word	1008981770
+ 256 0098 A69B443B 		.word	994352038
+ 257 009c 00000000 		.word	.LANCHOR1
+ 258 00a0 00000000 		.word	.LANCHOR2
+ 259 00a4 00000000 		.word	.LANCHOR3
+ 260              		.cfi_endproc
+ 261              	.LFE171:
+ 263              		.section	.text.INA_readLen,"ax",%progbits
+ 264              		.align	1
+ 265              		.syntax unified
+ 266              		.thumb
+ 267              		.thumb_func
+ 269              	INA_readLen:
+ 270              	.LVL20:
+ 271              	.LFB175:
+ 244:Application/power_measure.c **** //INA266∂¡»° ˝æ›£®»Ìº˛ƒ£ƒ‚IIC£©
+ 245:Application/power_measure.c **** static uint8_t INA_readLen(uint8_t dev, uint8_t reg, uint8_t len, uint8_t *buf)
+ 246:Application/power_measure.c **** {
+ 272              		.loc 1 246 1 is_stmt 1 view -0
+ 273              		.cfi_startproc
+ 274              		@ args = 0, pretend = 0, frame = 0
+ 275              		@ frame_needed = 0, uses_anonymous_args = 0
+ 276              		.loc 1 246 1 is_stmt 0 view .LVU58
+ 277 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 278              	.LCFI4:
+ 279              		.cfi_def_cfa_offset 24
+ 280              		.cfi_offset 4, -24
+ 281              		.cfi_offset 5, -20
+ 282              		.cfi_offset 6, -16
+ 283              		.cfi_offset 7, -12
+ 284              		.cfi_offset 8, -8
+ 285              		.cfi_offset 14, -4
+ 286 0004 0546     		mov	r5, r0
+ 287 0006 0F46     		mov	r7, r1
+ 288 0008 1446     		mov	r4, r2
+ 289 000a 1E46     		mov	r6, r3
+ 247:Application/power_measure.c **** 
+ 248:Application/power_measure.c ****     lost_count++;
+ 290              		.loc 1 248 5 is_stmt 1 view .LVU59
+ 291              		.loc 1 248 15 is_stmt 0 view .LVU60
+ 292 000c 284A     		ldr	r2, .L25
+ 293              	.LVL21:
+ 294              		.loc 1 248 15 view .LVU61
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 11
+
+
+ 295 000e 1368     		ldr	r3, [r2]
+ 296              	.LVL22:
+ 297              		.loc 1 248 15 view .LVU62
+ 298 0010 0133     		adds	r3, r3, #1
+ 299 0012 1360     		str	r3, [r2]
+ 249:Application/power_measure.c **** 
+ 250:Application/power_measure.c ****     if (lost_count > 30)
+ 300              		.loc 1 250 5 is_stmt 1 view .LVU63
+ 301              		.loc 1 250 8 is_stmt 0 view .LVU64
+ 302 0014 1E2B     		cmp	r3, #30
+ 303 0016 22D8     		bhi	.L23
+ 304              	.LVL23:
+ 305              	.L14:
+ 251:Application/power_measure.c ****     {
+ 252:Application/power_measure.c ****         INA226_Init(INA226_ADDR1);//÷ÿ–¬≥ı ºªØ
+ 253:Application/power_measure.c ****     }
+ 254:Application/power_measure.c **** 
+ 255:Application/power_measure.c ****     IIC_Start(&inaIic);
+ 306              		.loc 1 255 5 is_stmt 1 view .LVU65
+ 307 0018 DFF89880 		ldr	r8, .L25+4
+ 308 001c 4046     		mov	r0, r8
+ 309 001e FFF7FEFF 		bl	IIC_Start
+ 310              	.LVL24:
+ 256:Application/power_measure.c **** 
+ 257:Application/power_measure.c ****     IIC_writeByte(&inaIic, dev);
+ 311              		.loc 1 257 5 view .LVU66
+ 312 0022 2946     		mov	r1, r5
+ 313 0024 4046     		mov	r0, r8
+ 314 0026 FFF7FEFF 		bl	IIC_writeByte
+ 315              	.LVL25:
+ 258:Application/power_measure.c ****     if (IIC_waitAck(&inaIic) == 1)
+ 316              		.loc 1 258 5 view .LVU67
+ 317              		.loc 1 258 9 is_stmt 0 view .LVU68
+ 318 002a 4046     		mov	r0, r8
+ 319 002c FFF7FEFF 		bl	IIC_waitAck
+ 320              	.LVL26:
+ 321              		.loc 1 258 8 view .LVU69
+ 322 0030 0128     		cmp	r0, #1
+ 323 0032 38D0     		beq	.L15
+ 259:Application/power_measure.c ****     {
+ 260:Application/power_measure.c ****         return 1;
+ 261:Application/power_measure.c ****     }
+ 262:Application/power_measure.c **** 
+ 263:Application/power_measure.c ****     IIC_writeByte(&inaIic, reg);
+ 324              		.loc 1 263 5 is_stmt 1 view .LVU70
+ 325 0034 3946     		mov	r1, r7
+ 326 0036 4046     		mov	r0, r8
+ 327 0038 FFF7FEFF 		bl	IIC_writeByte
+ 328              	.LVL27:
+ 264:Application/power_measure.c ****     if (IIC_waitAck(&inaIic) == 1)
+ 329              		.loc 1 264 5 view .LVU71
+ 330              		.loc 1 264 9 is_stmt 0 view .LVU72
+ 331 003c 4046     		mov	r0, r8
+ 332 003e FFF7FEFF 		bl	IIC_waitAck
+ 333              	.LVL28:
+ 334              		.loc 1 264 8 view .LVU73
+ 335 0042 0128     		cmp	r0, #1
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 12
+
+
+ 336 0044 31D0     		beq	.L20
+ 265:Application/power_measure.c ****     {
+ 266:Application/power_measure.c ****         return 2;
+ 267:Application/power_measure.c ****     }
+ 268:Application/power_measure.c **** 
+ 269:Application/power_measure.c ****     // IIC_Start(&inaIic);
+ 270:Application/power_measure.c ****     IIC_writeByte(&inaIic, dev + 1);
+ 337              		.loc 1 270 5 is_stmt 1 view .LVU74
+ 338 0046 691C     		adds	r1, r5, #1
+ 339 0048 C9B2     		uxtb	r1, r1
+ 340 004a 4046     		mov	r0, r8
+ 341 004c FFF7FEFF 		bl	IIC_writeByte
+ 342              	.LVL29:
+ 271:Application/power_measure.c ****     if (IIC_waitAck(&inaIic) == 1)
+ 343              		.loc 1 271 5 view .LVU75
+ 344              		.loc 1 271 9 is_stmt 0 view .LVU76
+ 345 0050 4046     		mov	r0, r8
+ 346 0052 FFF7FEFF 		bl	IIC_waitAck
+ 347              	.LVL30:
+ 348              		.loc 1 271 8 view .LVU77
+ 349 0056 0128     		cmp	r0, #1
+ 350 0058 11D1     		bne	.L16
+ 272:Application/power_measure.c ****     {
+ 273:Application/power_measure.c ****         return 3;
+ 351              		.loc 1 273 16 view .LVU78
+ 352 005a 0320     		movs	r0, #3
+ 353 005c 23E0     		b	.L15
+ 354              	.LVL31:
+ 355              	.L23:
+ 252:Application/power_measure.c ****     }
+ 356              		.loc 1 252 9 is_stmt 1 view .LVU79
+ 357 005e 8020     		movs	r0, #128
+ 358              	.LVL32:
+ 252:Application/power_measure.c ****     }
+ 359              		.loc 1 252 9 is_stmt 0 view .LVU80
+ 360 0060 FFF7FEFF 		bl	INA226_Init
+ 361              	.LVL33:
+ 252:Application/power_measure.c ****     }
+ 362              		.loc 1 252 9 view .LVU81
+ 363 0064 D8E7     		b	.L14
+ 364              	.LVL34:
+ 365              	.L17:
+ 274:Application/power_measure.c ****     }
+ 275:Application/power_measure.c **** 
+ 276:Application/power_measure.c ****     while (len)
+ 277:Application/power_measure.c ****     {
+ 278:Application/power_measure.c ****         if (len == 1)
+ 279:Application/power_measure.c ****         {
+ 280:Application/power_measure.c ****             *buf = IIC_readByte(&inaIic); //∂¡ ˝æ›,∑¢ÀÕnACK
+ 281:Application/power_measure.c ****             IIC_ack(&inaIic, 1);
+ 282:Application/power_measure.c ****         }
+ 283:Application/power_measure.c ****         else
+ 284:Application/power_measure.c ****         {
+ 285:Application/power_measure.c ****             *buf = IIC_readByte(&inaIic); //∂¡ ˝æ›,∑¢ÀÕACK
+ 366              		.loc 1 285 13 is_stmt 1 view .LVU82
+ 367              		.loc 1 285 20 is_stmt 0 view .LVU83
+ 368 0066 134D     		ldr	r5, .L25+4
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 13
+
+
+ 369 0068 2846     		mov	r0, r5
+ 370 006a FFF7FEFF 		bl	IIC_readByte
+ 371              	.LVL35:
+ 372              		.loc 1 285 18 view .LVU84
+ 373 006e 3070     		strb	r0, [r6]
+ 286:Application/power_measure.c ****             IIC_ack(&inaIic, 0);
+ 374              		.loc 1 286 13 is_stmt 1 view .LVU85
+ 375 0070 0021     		movs	r1, #0
+ 376 0072 2846     		mov	r0, r5
+ 377 0074 FFF7FEFF 		bl	IIC_ack
+ 378              	.LVL36:
+ 379              	.L18:
+ 287:Application/power_measure.c ****         }
+ 288:Application/power_measure.c **** 
+ 289:Application/power_measure.c ****         len--;
+ 380              		.loc 1 289 9 view .LVU86
+ 381              		.loc 1 289 12 is_stmt 0 view .LVU87
+ 382 0078 013C     		subs	r4, r4, #1
+ 383              	.LVL37:
+ 384              		.loc 1 289 12 view .LVU88
+ 385 007a E4B2     		uxtb	r4, r4
+ 386              	.LVL38:
+ 290:Application/power_measure.c ****         buf++;
+ 387              		.loc 1 290 9 is_stmt 1 view .LVU89
+ 388              		.loc 1 290 12 is_stmt 0 view .LVU90
+ 389 007c 0136     		adds	r6, r6, #1
+ 390              	.LVL39:
+ 391              	.L16:
+ 276:Application/power_measure.c ****     {
+ 392              		.loc 1 276 11 is_stmt 1 view .LVU91
+ 393 007e 5CB1     		cbz	r4, .L24
+ 278:Application/power_measure.c ****         {
+ 394              		.loc 1 278 9 view .LVU92
+ 278:Application/power_measure.c ****         {
+ 395              		.loc 1 278 12 is_stmt 0 view .LVU93
+ 396 0080 012C     		cmp	r4, #1
+ 397 0082 F0D1     		bne	.L17
+ 280:Application/power_measure.c ****             IIC_ack(&inaIic, 1);
+ 398              		.loc 1 280 13 is_stmt 1 view .LVU94
+ 280:Application/power_measure.c ****             IIC_ack(&inaIic, 1);
+ 399              		.loc 1 280 20 is_stmt 0 view .LVU95
+ 400 0084 0B4D     		ldr	r5, .L25+4
+ 401 0086 2846     		mov	r0, r5
+ 402 0088 FFF7FEFF 		bl	IIC_readByte
+ 403              	.LVL40:
+ 280:Application/power_measure.c ****             IIC_ack(&inaIic, 1);
+ 404              		.loc 1 280 18 view .LVU96
+ 405 008c 3070     		strb	r0, [r6]
+ 281:Application/power_measure.c ****         }
+ 406              		.loc 1 281 13 is_stmt 1 view .LVU97
+ 407 008e 0121     		movs	r1, #1
+ 408 0090 2846     		mov	r0, r5
+ 409 0092 FFF7FEFF 		bl	IIC_ack
+ 410              	.LVL41:
+ 411 0096 EFE7     		b	.L18
+ 412              	.L24:
+ 291:Application/power_measure.c ****     }
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 14
+
+
+ 292:Application/power_measure.c **** 
+ 293:Application/power_measure.c ****     IIC_Stop(&inaIic);
+ 413              		.loc 1 293 5 view .LVU98
+ 414 0098 0648     		ldr	r0, .L25+4
+ 415 009a FFF7FEFF 		bl	IIC_Stop
+ 416              	.LVL42:
+ 294:Application/power_measure.c ****     
+ 295:Application/power_measure.c ****     lost_count = 0;
+ 417              		.loc 1 295 5 view .LVU99
+ 418              		.loc 1 295 16 is_stmt 0 view .LVU100
+ 419 009e 044B     		ldr	r3, .L25
+ 420 00a0 0022     		movs	r2, #0
+ 421 00a2 1A60     		str	r2, [r3]
+ 296:Application/power_measure.c ****     return 0;
+ 422              		.loc 1 296 5 is_stmt 1 view .LVU101
+ 423              		.loc 1 296 12 is_stmt 0 view .LVU102
+ 424 00a4 2046     		mov	r0, r4
+ 425              	.LVL43:
+ 426              	.L15:
+ 297:Application/power_measure.c **** }
+ 427              		.loc 1 297 1 view .LVU103
+ 428 00a6 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 429              	.LVL44:
+ 430              	.L20:
+ 266:Application/power_measure.c ****     }
+ 431              		.loc 1 266 16 view .LVU104
+ 432 00aa 0220     		movs	r0, #2
+ 433 00ac FBE7     		b	.L15
+ 434              	.L26:
+ 435 00ae 00BF     		.align	2
+ 436              	.L25:
+ 437 00b0 00000000 		.word	.LANCHOR4
+ 438 00b4 00000000 		.word	.LANCHOR0
+ 439              		.cfi_endproc
+ 440              	.LFE175:
+ 442              		.section	.text.INA226_Read_Registers,"ax",%progbits
+ 443              		.align	1
+ 444              		.global	INA226_Read_Registers
+ 445              		.syntax unified
+ 446              		.thumb
+ 447              		.thumb_func
+ 449              	INA226_Read_Registers:
+ 450              	.LVL45:
+ 451              	.LFB172:
+ 108:Application/power_measure.c **** 
+ 452              		.loc 1 108 1 is_stmt 1 view -0
+ 453              		.cfi_startproc
+ 454              		@ args = 0, pretend = 0, frame = 0
+ 455              		@ frame_needed = 0, uses_anonymous_args = 0
+ 108:Application/power_measure.c **** 
+ 456              		.loc 1 108 1 is_stmt 0 view .LVU106
+ 457 0000 70B5     		push	{r4, r5, r6, lr}
+ 458              	.LCFI5:
+ 459              		.cfi_def_cfa_offset 16
+ 460              		.cfi_offset 4, -16
+ 461              		.cfi_offset 5, -12
+ 462              		.cfi_offset 6, -8
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 15
+
+
+ 463              		.cfi_offset 14, -4
+ 464 0002 0546     		mov	r5, r0
+ 111:Application/power_measure.c ****     //∑÷œﬂµÁ—π
+ 465              		.loc 1 111 5 is_stmt 1 view .LVU107
+ 113:Application/power_measure.c ****     ina226_reg.Shunt_Voltage_Register = (int16_t)(buff[0] << 8) | buff[1];
+ 466              		.loc 1 113 5 view .LVU108
+ 467 0004 944C     		ldr	r4, .L34
+ 468 0006 2346     		mov	r3, r4
+ 469 0008 0222     		movs	r2, #2
+ 470 000a 0121     		movs	r1, #1
+ 471 000c 8020     		movs	r0, #128
+ 472              	.LVL46:
+ 113:Application/power_measure.c ****     ina226_reg.Shunt_Voltage_Register = (int16_t)(buff[0] << 8) | buff[1];
+ 473              		.loc 1 113 5 is_stmt 0 view .LVU109
+ 474 000e FFF7FEFF 		bl	INA_readLen
+ 475              	.LVL47:
+ 114:Application/power_measure.c ****     //◊‹œﬂµÁ—π
+ 476              		.loc 1 114 5 is_stmt 1 view .LVU110
+ 114:Application/power_measure.c ****     //◊‹œﬂµÁ—π
+ 477              		.loc 1 114 55 is_stmt 0 view .LVU111
+ 478 0012 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 114:Application/power_measure.c ****     //◊‹œﬂµÁ—π
+ 479              		.loc 1 114 59 view .LVU112
+ 480 0014 1B02     		lsls	r3, r3, #8
+ 114:Application/power_measure.c ****     //◊‹œﬂµÁ—π
+ 481              		.loc 1 114 41 view .LVU113
+ 482 0016 1BB2     		sxth	r3, r3
+ 114:Application/power_measure.c ****     //◊‹œﬂµÁ—π
+ 483              		.loc 1 114 71 view .LVU114
+ 484 0018 6278     		ldrb	r2, [r4, #1]	@ zero_extendqisi2
+ 114:Application/power_measure.c ****     //◊‹œﬂµÁ—π
+ 485              		.loc 1 114 65 view .LVU115
+ 486 001a 1343     		orrs	r3, r3, r2
+ 114:Application/power_measure.c ****     //◊‹œﬂµÁ—π
+ 487              		.loc 1 114 39 view .LVU116
+ 488 001c 8F4E     		ldr	r6, .L34+4
+ 489 001e 7380     		strh	r3, [r6, #2]	@ movhi
+ 116:Application/power_measure.c ****     ina226_reg.Bus_Voltage = (int16_t)(buff[0] << 8) | buff[1];
+ 490              		.loc 1 116 5 is_stmt 1 view .LVU117
+ 491 0020 2346     		mov	r3, r4
+ 492 0022 0222     		movs	r2, #2
+ 493 0024 1146     		mov	r1, r2
+ 494 0026 8020     		movs	r0, #128
+ 495 0028 FFF7FEFF 		bl	INA_readLen
+ 496              	.LVL48:
+ 117:Application/power_measure.c ****     //π¶¬ 
+ 497              		.loc 1 117 5 view .LVU118
+ 117:Application/power_measure.c ****     //π¶¬ 
+ 498              		.loc 1 117 44 is_stmt 0 view .LVU119
+ 499 002c 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 117:Application/power_measure.c ****     //π¶¬ 
+ 500              		.loc 1 117 48 view .LVU120
+ 501 002e 1B02     		lsls	r3, r3, #8
+ 117:Application/power_measure.c ****     //π¶¬ 
+ 502              		.loc 1 117 30 view .LVU121
+ 503 0030 1BB2     		sxth	r3, r3
+ 117:Application/power_measure.c ****     //π¶¬ 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 16
+
+
+ 504              		.loc 1 117 60 view .LVU122
+ 505 0032 6278     		ldrb	r2, [r4, #1]	@ zero_extendqisi2
+ 117:Application/power_measure.c ****     //π¶¬ 
+ 506              		.loc 1 117 54 view .LVU123
+ 507 0034 1343     		orrs	r3, r3, r2
+ 117:Application/power_measure.c ****     //π¶¬ 
+ 508              		.loc 1 117 28 view .LVU124
+ 509 0036 B380     		strh	r3, [r6, #4]	@ movhi
+ 119:Application/power_measure.c ****     ina226_reg.Power_Register = (int16_t)(buff[0] << 8) | buff[1];
+ 510              		.loc 1 119 5 is_stmt 1 view .LVU125
+ 511 0038 2346     		mov	r3, r4
+ 512 003a 0222     		movs	r2, #2
+ 513 003c 0321     		movs	r1, #3
+ 514 003e 8020     		movs	r0, #128
+ 515 0040 FFF7FEFF 		bl	INA_readLen
+ 516              	.LVL49:
+ 120:Application/power_measure.c ****     //µÁ¡˜
+ 517              		.loc 1 120 5 view .LVU126
+ 120:Application/power_measure.c ****     //µÁ¡˜
+ 518              		.loc 1 120 47 is_stmt 0 view .LVU127
+ 519 0044 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 120:Application/power_measure.c ****     //µÁ¡˜
+ 520              		.loc 1 120 51 view .LVU128
+ 521 0046 1B02     		lsls	r3, r3, #8
+ 120:Application/power_measure.c ****     //µÁ¡˜
+ 522              		.loc 1 120 33 view .LVU129
+ 523 0048 1BB2     		sxth	r3, r3
+ 120:Application/power_measure.c ****     //µÁ¡˜
+ 524              		.loc 1 120 63 view .LVU130
+ 525 004a 6278     		ldrb	r2, [r4, #1]	@ zero_extendqisi2
+ 120:Application/power_measure.c ****     //µÁ¡˜
+ 526              		.loc 1 120 57 view .LVU131
+ 527 004c 1343     		orrs	r3, r3, r2
+ 120:Application/power_measure.c ****     //µÁ¡˜
+ 528              		.loc 1 120 31 view .LVU132
+ 529 004e F380     		strh	r3, [r6, #6]	@ movhi
+ 122:Application/power_measure.c ****     ina226_reg.Current_Register = (int16_t)(buff[0] << 8) | buff[1];
+ 530              		.loc 1 122 5 is_stmt 1 view .LVU133
+ 531 0050 2346     		mov	r3, r4
+ 532 0052 0222     		movs	r2, #2
+ 533 0054 0421     		movs	r1, #4
+ 534 0056 8020     		movs	r0, #128
+ 535 0058 FFF7FEFF 		bl	INA_readLen
+ 536              	.LVL50:
+ 123:Application/power_measure.c ****     //–£◊º
+ 537              		.loc 1 123 5 view .LVU134
+ 123:Application/power_measure.c ****     //–£◊º
+ 538              		.loc 1 123 49 is_stmt 0 view .LVU135
+ 539 005c 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 123:Application/power_measure.c ****     //–£◊º
+ 540              		.loc 1 123 53 view .LVU136
+ 541 005e 1B02     		lsls	r3, r3, #8
+ 123:Application/power_measure.c ****     //–£◊º
+ 542              		.loc 1 123 35 view .LVU137
+ 543 0060 1BB2     		sxth	r3, r3
+ 123:Application/power_measure.c ****     //–£◊º
+ 544              		.loc 1 123 65 view .LVU138
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 17
+
+
+ 545 0062 6278     		ldrb	r2, [r4, #1]	@ zero_extendqisi2
+ 123:Application/power_measure.c ****     //–£◊º
+ 546              		.loc 1 123 59 view .LVU139
+ 547 0064 1343     		orrs	r3, r3, r2
+ 123:Application/power_measure.c ****     //–£◊º
+ 548              		.loc 1 123 33 view .LVU140
+ 549 0066 3381     		strh	r3, [r6, #8]	@ movhi
+ 125:Application/power_measure.c ****     ina226_reg.Calibration_Register = (int16_t)(buff[0] << 8) | buff[1];
+ 550              		.loc 1 125 5 is_stmt 1 view .LVU141
+ 551 0068 2346     		mov	r3, r4
+ 552 006a 0222     		movs	r2, #2
+ 553 006c 0521     		movs	r1, #5
+ 554 006e 8020     		movs	r0, #128
+ 555 0070 FFF7FEFF 		bl	INA_readLen
+ 556              	.LVL51:
+ 126:Application/power_measure.c **** #else // π”√STM32”≤º˛IIC
+ 557              		.loc 1 126 5 view .LVU142
+ 126:Application/power_measure.c **** #else // π”√STM32”≤º˛IIC
+ 558              		.loc 1 126 53 is_stmt 0 view .LVU143
+ 559 0074 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 126:Application/power_measure.c **** #else // π”√STM32”≤º˛IIC
+ 560              		.loc 1 126 57 view .LVU144
+ 561 0076 1B02     		lsls	r3, r3, #8
+ 126:Application/power_measure.c **** #else // π”√STM32”≤º˛IIC
+ 562              		.loc 1 126 39 view .LVU145
+ 563 0078 1BB2     		sxth	r3, r3
+ 126:Application/power_measure.c **** #else // π”√STM32”≤º˛IIC
+ 564              		.loc 1 126 69 view .LVU146
+ 565 007a 6278     		ldrb	r2, [r4, #1]	@ zero_extendqisi2
+ 126:Application/power_measure.c **** #else // π”√STM32”≤º˛IIC
+ 566              		.loc 1 126 63 view .LVU147
+ 567 007c 1343     		orrs	r3, r3, r2
+ 126:Application/power_measure.c **** #else // π”√STM32”≤º˛IIC
+ 568              		.loc 1 126 37 view .LVU148
+ 569 007e 7381     		strh	r3, [r6, #10]	@ movhi
+ 143:Application/power_measure.c ****     {
+ 570              		.loc 1 143 5 is_stmt 1 view .LVU149
+ 571 0080 812D     		cmp	r5, #129
+ 572 0082 61D0     		beq	.L28
+ 573 0084 882D     		cmp	r5, #136
+ 574 0086 00F0A380 		beq	.L29
+ 575 008a 802D     		cmp	r5, #128
+ 576 008c 08D0     		beq	.L33
+ 577              	.L30:
+ 176:Application/power_measure.c ****     {
+ 578              		.loc 1 176 5 view .LVU150
+ 176:Application/power_measure.c ****     {
+ 579              		.loc 1 176 20 is_stmt 0 view .LVU151
+ 580 008e 744B     		ldr	r3, .L34+8
+ 581 0090 1B68     		ldr	r3, [r3]
+ 176:Application/power_measure.c ****     {
+ 582              		.loc 1 176 8 view .LVU152
+ 583 0092 1E2B     		cmp	r3, #30
+ 584 0094 03D9     		bls	.L27
+ 178:Application/power_measure.c ****         ina226[0].Bus_Voltage_filter = 22.0f;
+ 585              		.loc 1 178 9 is_stmt 1 view .LVU153
+ 178:Application/power_measure.c ****         ina226[0].Bus_Voltage_filter = 22.0f;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 18
+
+
+ 586              		.loc 1 178 31 is_stmt 0 view .LVU154
+ 587 0096 734B     		ldr	r3, .L34+12
+ 588 0098 734A     		ldr	r2, .L34+16
+ 589 009a 1A60     		str	r2, [r3]	@ float
+ 179:Application/power_measure.c ****     }
+ 590              		.loc 1 179 9 is_stmt 1 view .LVU155
+ 179:Application/power_measure.c ****     }
+ 591              		.loc 1 179 38 is_stmt 0 view .LVU156
+ 592 009c 9A61     		str	r2, [r3, #24]	@ float
+ 593              	.L27:
+ 181:Application/power_measure.c **** 
+ 594              		.loc 1 181 1 view .LVU157
+ 595 009e 70BD     		pop	{r4, r5, r6, pc}
+ 596              	.L33:
+ 146:Application/power_measure.c ****         ina226[0].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 597              		.loc 1 146 9 is_stmt 1 view .LVU158
+ 146:Application/power_measure.c ****         ina226[0].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 598              		.loc 1 146 50 is_stmt 0 view .LVU159
+ 599 00a0 B6F90420 		ldrsh	r2, [r6, #4]
+ 600 00a4 07EE902A 		vmov	s15, r2	@ int
+ 146:Application/power_measure.c ****         ina226[0].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 601              		.loc 1 146 33 view .LVU160
+ 602 00a8 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 146:Application/power_measure.c ****         ina226[0].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 603              		.loc 1 146 63 view .LVU161
+ 604 00ac B7EE047A 		vmov.f32	s14, #1.25e+0
+ 605 00b0 67EE877A 		vmul.f32	s15, s15, s14
+ 146:Application/power_measure.c ****         ina226[0].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 606              		.loc 1 146 71 view .LVU162
+ 607 00b4 9FED6D7A 		vldr.32	s14, .L34+20
+ 608 00b8 87EE870A 		vdiv.f32	s0, s15, s14
+ 146:Application/power_measure.c ****         ina226[0].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 609              		.loc 1 146 31 view .LVU163
+ 610 00bc 694C     		ldr	r4, .L34+12
+ 611 00be 84ED000A 		vstr.32	s0, [r4]
+ 147:Application/power_measure.c ****         ina226[0].Power_cal_W = ina226[0].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 612              		.loc 1 147 9 is_stmt 1 view .LVU164
+ 147:Application/power_measure.c ****         ina226[0].Power_cal_W = ina226[0].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 613              		.loc 1 147 52 is_stmt 0 view .LVU165
+ 614 00c2 B6F90220 		ldrsh	r2, [r6, #2]
+ 615 00c6 07EE902A 		vmov	s15, r2	@ int
+ 147:Application/power_measure.c ****         ina226[0].Power_cal_W = ina226[0].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 616              		.loc 1 147 35 view .LVU166
+ 617 00ca F8EEE77A 		vcvt.f32.s32	s15, s15
+ 147:Application/power_measure.c ****         ina226[0].Power_cal_W = ina226[0].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 618              		.loc 1 147 76 view .LVU167
+ 619 00ce F0EE046A 		vmov.f32	s13, #2.5e+0
+ 620 00d2 67EEA67A 		vmul.f32	s15, s15, s13
+ 147:Application/power_measure.c ****         ina226[0].Power_cal_W = ina226[0].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 621              		.loc 1 147 83 view .LVU168
+ 622 00d6 C7EE876A 		vdiv.f32	s13, s15, s14
+ 147:Application/power_measure.c ****         ina226[0].Power_cal_W = ina226[0].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 623              		.loc 1 147 33 view .LVU169
+ 624 00da C4ED016A 		vstr.32	s13, [r4, #4]
+ 148:Application/power_measure.c ****         ina226[0].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 625              		.loc 1 148 9 is_stmt 1 view .LVU170
+ 148:Application/power_measure.c ****         ina226[0].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 19
+
+
+ 626              		.loc 1 148 57 is_stmt 0 view .LVU171
+ 627 00de B2EE046A 		vmov.f32	s12, #1.0e+1
+ 628 00e2 C6EE867A 		vdiv.f32	s15, s13, s12
+ 148:Application/power_measure.c ****         ina226[0].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 629              		.loc 1 148 69 view .LVU172
+ 630 00e6 60EE277A 		vmul.f32	s15, s0, s15
+ 148:Application/power_measure.c ****         ina226[0].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 631              		.loc 1 148 31 view .LVU173
+ 632 00ea C4ED027A 		vstr.32	s15, [r4, #8]
+ 149:Application/power_measure.c ****         ina226[0].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 633              		.loc 1 149 9 is_stmt 1 view .LVU174
+ 149:Application/power_measure.c ****         ina226[0].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 634              		.loc 1 149 51 is_stmt 0 view .LVU175
+ 635 00ee F288     		ldrh	r2, [r6, #6]
+ 636 00f0 07EE902A 		vmov	s15, r2	@ int
+ 149:Application/power_measure.c ****         ina226[0].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 637              		.loc 1 149 67 view .LVU176
+ 638 00f4 F8EE677A 		vcvt.f32.u32	s15, s15
+ 149:Application/power_measure.c ****         ina226[0].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 639              		.loc 1 149 80 view .LVU177
+ 640 00f8 F3EE096A 		vmov.f32	s13, #2.5e+1
+ 641 00fc 67EEA67A 		vmul.f32	s15, s15, s13
+ 149:Application/power_measure.c ****         ina226[0].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 642              		.loc 1 149 85 view .LVU178
+ 643 0100 C7EE876A 		vdiv.f32	s13, s15, s14
+ 149:Application/power_measure.c ****         ina226[0].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 644              		.loc 1 149 32 view .LVU179
+ 645 0104 C4ED036A 		vstr.32	s13, [r4, #12]
+ 150:Application/power_measure.c ****         ina226[0].current_A = (float)ina226[0].current_mA / 1000;
+ 646              		.loc 1 150 9 is_stmt 1 view .LVU180
+ 150:Application/power_measure.c ****         ina226[0].current_A = (float)ina226[0].current_mA / 1000;
+ 647              		.loc 1 150 42 is_stmt 0 view .LVU181
+ 648 0108 B6F90830 		ldrsh	r3, [r6, #8]
+ 649 010c 07EE903A 		vmov	s15, r3	@ int
+ 150:Application/power_measure.c ****         ina226[0].current_A = (float)ina226[0].current_mA / 1000;
+ 650              		.loc 1 150 30 view .LVU182
+ 651 0110 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 652 0114 C4ED047A 		vstr.32	s15, [r4, #16]
+ 151:Application/power_measure.c ****         ina226[0].Bus_Voltage_filter = Window_Filter_Calculate(&Ina226_0_Vol, ina226[0].Bus_Voltage
+ 653              		.loc 1 151 9 is_stmt 1 view .LVU183
+ 151:Application/power_measure.c ****         ina226[0].Bus_Voltage_filter = Window_Filter_Calculate(&Ina226_0_Vol, ina226[0].Bus_Voltage
+ 654              		.loc 1 151 59 is_stmt 0 view .LVU184
+ 655 0118 C7EE876A 		vdiv.f32	s13, s15, s14
+ 151:Application/power_measure.c ****         ina226[0].Bus_Voltage_filter = Window_Filter_Calculate(&Ina226_0_Vol, ina226[0].Bus_Voltage
+ 656              		.loc 1 151 29 view .LVU185
+ 657 011c C4ED056A 		vstr.32	s13, [r4, #20]
+ 152:Application/power_measure.c ****         ina226[0].Power_cal_W_first_order_filter = First_Order_Filter_Calculate(&Ina226_0_Power, in
+ 658              		.loc 1 152 9 is_stmt 1 view .LVU186
+ 152:Application/power_measure.c ****         ina226[0].Power_cal_W_first_order_filter = First_Order_Filter_Calculate(&Ina226_0_Power, in
+ 659              		.loc 1 152 40 is_stmt 0 view .LVU187
+ 660 0120 5348     		ldr	r0, .L34+24
+ 661 0122 FFF7FEFF 		bl	Window_Filter_Calculate
+ 662              	.LVL52:
+ 152:Application/power_measure.c ****         ina226[0].Power_cal_W_first_order_filter = First_Order_Filter_Calculate(&Ina226_0_Power, in
+ 663              		.loc 1 152 38 view .LVU188
+ 664 0126 84ED060A 		vstr.32	s0, [r4, #24]
+ 153:Application/power_measure.c ****         ina226[0].Power_cal_W_window_filter = Window_Filter_Calculate(&Ina226_0_Power_Window, ina22
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 20
+
+
+ 665              		.loc 1 153 9 is_stmt 1 view .LVU189
+ 153:Application/power_measure.c ****         ina226[0].Power_cal_W_window_filter = Window_Filter_Calculate(&Ina226_0_Power_Window, ina22
+ 666              		.loc 1 153 52 is_stmt 0 view .LVU190
+ 667 012a 94ED020A 		vldr.32	s0, [r4, #8]
+ 668 012e 5148     		ldr	r0, .L34+28
+ 669 0130 FFF7FEFF 		bl	First_Order_Filter_Calculate
+ 670              	.LVL53:
+ 153:Application/power_measure.c ****         ina226[0].Power_cal_W_window_filter = Window_Filter_Calculate(&Ina226_0_Power_Window, ina22
+ 671              		.loc 1 153 50 view .LVU191
+ 672 0134 84ED070A 		vstr.32	s0, [r4, #28]
+ 154:Application/power_measure.c ****         break;
+ 673              		.loc 1 154 9 is_stmt 1 view .LVU192
+ 154:Application/power_measure.c ****         break;
+ 674              		.loc 1 154 47 is_stmt 0 view .LVU193
+ 675 0138 94ED020A 		vldr.32	s0, [r4, #8]
+ 676 013c 4E48     		ldr	r0, .L34+32
+ 677 013e FFF7FEFF 		bl	Window_Filter_Calculate
+ 678              	.LVL54:
+ 154:Application/power_measure.c ****         break;
+ 679              		.loc 1 154 45 view .LVU194
+ 680 0142 84ED080A 		vstr.32	s0, [r4, #32]
+ 155:Application/power_measure.c **** 
+ 681              		.loc 1 155 9 is_stmt 1 view .LVU195
+ 682 0146 A2E7     		b	.L30
+ 683              	.L28:
+ 158:Application/power_measure.c ****         ina226[1].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 684              		.loc 1 158 9 view .LVU196
+ 158:Application/power_measure.c ****         ina226[1].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 685              		.loc 1 158 50 is_stmt 0 view .LVU197
+ 686 0148 444A     		ldr	r2, .L34+4
+ 687 014a B2F90430 		ldrsh	r3, [r2, #4]
+ 688 014e 07EE903A 		vmov	s15, r3	@ int
+ 158:Application/power_measure.c ****         ina226[1].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 689              		.loc 1 158 33 view .LVU198
+ 690 0152 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 158:Application/power_measure.c ****         ina226[1].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 691              		.loc 1 158 63 view .LVU199
+ 692 0156 B7EE047A 		vmov.f32	s14, #1.25e+0
+ 693 015a 67EE877A 		vmul.f32	s15, s15, s14
+ 158:Application/power_measure.c ****         ina226[1].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 694              		.loc 1 158 71 view .LVU200
+ 695 015e 9FED437A 		vldr.32	s14, .L34+20
+ 696 0162 C7EE876A 		vdiv.f32	s13, s15, s14
+ 158:Application/power_measure.c ****         ina226[1].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 697              		.loc 1 158 31 view .LVU201
+ 698 0166 3F4B     		ldr	r3, .L34+12
+ 699 0168 C3ED096A 		vstr.32	s13, [r3, #36]
+ 159:Application/power_measure.c ****         ina226[1].Power_cal_W = ina226[1].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 700              		.loc 1 159 9 is_stmt 1 view .LVU202
+ 159:Application/power_measure.c ****         ina226[1].Power_cal_W = ina226[1].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 701              		.loc 1 159 52 is_stmt 0 view .LVU203
+ 702 016c B2F90210 		ldrsh	r1, [r2, #2]
+ 703 0170 07EE901A 		vmov	s15, r1	@ int
+ 159:Application/power_measure.c ****         ina226[1].Power_cal_W = ina226[1].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 704              		.loc 1 159 35 view .LVU204
+ 705 0174 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 159:Application/power_measure.c ****         ina226[1].Power_cal_W = ina226[1].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 21
+
+
+ 706              		.loc 1 159 76 view .LVU205
+ 707 0178 F0EE046A 		vmov.f32	s13, #2.5e+0
+ 708 017c 67EEA67A 		vmul.f32	s15, s15, s13
+ 159:Application/power_measure.c ****         ina226[1].Power_cal_W = ina226[1].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 709              		.loc 1 159 83 view .LVU206
+ 710 0180 C7EE876A 		vdiv.f32	s13, s15, s14
+ 159:Application/power_measure.c ****         ina226[1].Power_cal_W = ina226[1].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 711              		.loc 1 159 33 view .LVU207
+ 712 0184 C3ED0A6A 		vstr.32	s13, [r3, #40]
+ 160:Application/power_measure.c ****         ina226[1].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 713              		.loc 1 160 9 is_stmt 1 view .LVU208
+ 160:Application/power_measure.c ****         ina226[1].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 714              		.loc 1 160 57 is_stmt 0 view .LVU209
+ 715 0188 B2EE046A 		vmov.f32	s12, #1.0e+1
+ 716 018c C6EE867A 		vdiv.f32	s15, s13, s12
+ 160:Application/power_measure.c ****         ina226[1].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 717              		.loc 1 160 80 view .LVU210
+ 718 0190 D3ED006A 		vldr.32	s13, [r3]
+ 160:Application/power_measure.c ****         ina226[1].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 719              		.loc 1 160 69 view .LVU211
+ 720 0194 67EEA67A 		vmul.f32	s15, s15, s13
+ 160:Application/power_measure.c ****         ina226[1].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 721              		.loc 1 160 31 view .LVU212
+ 722 0198 C3ED0B7A 		vstr.32	s15, [r3, #44]
+ 161:Application/power_measure.c ****         ina226[1].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 723              		.loc 1 161 9 is_stmt 1 view .LVU213
+ 161:Application/power_measure.c ****         ina226[1].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 724              		.loc 1 161 51 is_stmt 0 view .LVU214
+ 725 019c D188     		ldrh	r1, [r2, #6]
+ 726 019e 07EE901A 		vmov	s15, r1	@ int
+ 161:Application/power_measure.c ****         ina226[1].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 727              		.loc 1 161 67 view .LVU215
+ 728 01a2 F8EE677A 		vcvt.f32.u32	s15, s15
+ 161:Application/power_measure.c ****         ina226[1].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 729              		.loc 1 161 80 view .LVU216
+ 730 01a6 F3EE096A 		vmov.f32	s13, #2.5e+1
+ 731 01aa 67EEA67A 		vmul.f32	s15, s15, s13
+ 161:Application/power_measure.c ****         ina226[1].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 732              		.loc 1 161 85 view .LVU217
+ 733 01ae C7EE876A 		vdiv.f32	s13, s15, s14
+ 161:Application/power_measure.c ****         ina226[1].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 734              		.loc 1 161 32 view .LVU218
+ 735 01b2 C3ED0C6A 		vstr.32	s13, [r3, #48]
+ 162:Application/power_measure.c ****         ina226[1].current_A = (float)ina226[1].current_mA / 1000;
+ 736              		.loc 1 162 9 is_stmt 1 view .LVU219
+ 162:Application/power_measure.c ****         ina226[1].current_A = (float)ina226[1].current_mA / 1000;
+ 737              		.loc 1 162 42 is_stmt 0 view .LVU220
+ 738 01b6 B2F90820 		ldrsh	r2, [r2, #8]
+ 739 01ba 07EE902A 		vmov	s15, r2	@ int
+ 162:Application/power_measure.c ****         ina226[1].current_A = (float)ina226[1].current_mA / 1000;
+ 740              		.loc 1 162 30 view .LVU221
+ 741 01be F8EEE77A 		vcvt.f32.s32	s15, s15
+ 742 01c2 C3ED0D7A 		vstr.32	s15, [r3, #52]
+ 163:Application/power_measure.c **** 
+ 743              		.loc 1 163 9 is_stmt 1 view .LVU222
+ 163:Application/power_measure.c **** 
+ 744              		.loc 1 163 59 is_stmt 0 view .LVU223
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 22
+
+
+ 745 01c6 C7EE876A 		vdiv.f32	s13, s15, s14
+ 163:Application/power_measure.c **** 
+ 746              		.loc 1 163 29 view .LVU224
+ 747 01ca C3ED0E6A 		vstr.32	s13, [r3, #56]
+ 165:Application/power_measure.c **** 
+ 748              		.loc 1 165 9 is_stmt 1 view .LVU225
+ 749 01ce 5EE7     		b	.L30
+ 750              	.L29:
+ 168:Application/power_measure.c ****         ina226[2].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 751              		.loc 1 168 9 view .LVU226
+ 168:Application/power_measure.c ****         ina226[2].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 752              		.loc 1 168 50 is_stmt 0 view .LVU227
+ 753 01d0 224A     		ldr	r2, .L34+4
+ 754 01d2 B2F90430 		ldrsh	r3, [r2, #4]
+ 755 01d6 07EE903A 		vmov	s15, r3	@ int
+ 168:Application/power_measure.c ****         ina226[2].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 756              		.loc 1 168 33 view .LVU228
+ 757 01da F8EEE77A 		vcvt.f32.s32	s15, s15
+ 168:Application/power_measure.c ****         ina226[2].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 758              		.loc 1 168 63 view .LVU229
+ 759 01de B7EE047A 		vmov.f32	s14, #1.25e+0
+ 760 01e2 67EE877A 		vmul.f32	s15, s15, s14
+ 168:Application/power_measure.c ****         ina226[2].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 761              		.loc 1 168 71 view .LVU230
+ 762 01e6 9FED217A 		vldr.32	s14, .L34+20
+ 763 01ea C7EE876A 		vdiv.f32	s13, s15, s14
+ 168:Application/power_measure.c ****         ina226[2].Shunt_Voltage = (float)ina226_reg.Shunt_Voltage_Register * 2.5f / 1000; //µ•Œªmv¬
+ 764              		.loc 1 168 31 view .LVU231
+ 765 01ee 1D4B     		ldr	r3, .L34+12
+ 766 01f0 C3ED126A 		vstr.32	s13, [r3, #72]
+ 169:Application/power_measure.c ****         ina226[2].Power_cal_W = ina226[2].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 767              		.loc 1 169 9 is_stmt 1 view .LVU232
+ 169:Application/power_measure.c ****         ina226[2].Power_cal_W = ina226[2].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 768              		.loc 1 169 52 is_stmt 0 view .LVU233
+ 769 01f4 B2F90210 		ldrsh	r1, [r2, #2]
+ 770 01f8 07EE901A 		vmov	s15, r1	@ int
+ 169:Application/power_measure.c ****         ina226[2].Power_cal_W = ina226[2].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 771              		.loc 1 169 35 view .LVU234
+ 772 01fc F8EEE77A 		vcvt.f32.s32	s15, s15
+ 169:Application/power_measure.c ****         ina226[2].Power_cal_W = ina226[2].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 773              		.loc 1 169 76 view .LVU235
+ 774 0200 F0EE046A 		vmov.f32	s13, #2.5e+0
+ 775 0204 67EEA67A 		vmul.f32	s15, s15, s13
+ 169:Application/power_measure.c ****         ina226[2].Power_cal_W = ina226[2].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 776              		.loc 1 169 83 view .LVU236
+ 777 0208 C7EE876A 		vdiv.f32	s13, s15, s14
+ 169:Application/power_measure.c ****         ina226[2].Power_cal_W = ina226[2].Shunt_Voltage / Shunt_ohm * ina226[0].Bus_Voltage;
+ 778              		.loc 1 169 33 view .LVU237
+ 779 020c C3ED136A 		vstr.32	s13, [r3, #76]
+ 170:Application/power_measure.c ****         ina226[2].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 780              		.loc 1 170 9 is_stmt 1 view .LVU238
+ 170:Application/power_measure.c ****         ina226[2].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 781              		.loc 1 170 57 is_stmt 0 view .LVU239
+ 782 0210 B2EE046A 		vmov.f32	s12, #1.0e+1
+ 783 0214 C6EE867A 		vdiv.f32	s15, s13, s12
+ 170:Application/power_measure.c ****         ina226[2].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 784              		.loc 1 170 80 view .LVU240
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 23
+
+
+ 785 0218 D3ED006A 		vldr.32	s13, [r3]
+ 170:Application/power_measure.c ****         ina226[2].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 786              		.loc 1 170 69 view .LVU241
+ 787 021c 67EEA67A 		vmul.f32	s15, s15, s13
+ 170:Application/power_measure.c ****         ina226[2].Power_read_W = (float)ina226_reg.Power_Register * Curren_LSB * 25 / 1000;
+ 788              		.loc 1 170 31 view .LVU242
+ 789 0220 C3ED147A 		vstr.32	s15, [r3, #80]
+ 171:Application/power_measure.c ****         ina226[2].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 790              		.loc 1 171 9 is_stmt 1 view .LVU243
+ 171:Application/power_measure.c ****         ina226[2].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 791              		.loc 1 171 51 is_stmt 0 view .LVU244
+ 792 0224 D188     		ldrh	r1, [r2, #6]
+ 793 0226 07EE901A 		vmov	s15, r1	@ int
+ 171:Application/power_measure.c ****         ina226[2].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 794              		.loc 1 171 67 view .LVU245
+ 795 022a F8EE677A 		vcvt.f32.u32	s15, s15
+ 171:Application/power_measure.c ****         ina226[2].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 796              		.loc 1 171 80 view .LVU246
+ 797 022e F3EE096A 		vmov.f32	s13, #2.5e+1
+ 798 0232 67EEA67A 		vmul.f32	s15, s15, s13
+ 171:Application/power_measure.c ****         ina226[2].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 799              		.loc 1 171 85 view .LVU247
+ 800 0236 C7EE876A 		vdiv.f32	s13, s15, s14
+ 171:Application/power_measure.c ****         ina226[2].current_mA = ina226_reg.Current_Register * Curren_LSB;
+ 801              		.loc 1 171 32 view .LVU248
+ 802 023a C3ED156A 		vstr.32	s13, [r3, #84]
+ 172:Application/power_measure.c ****         ina226[2].current_A = (float)ina226[2].current_mA / 1000;
+ 803              		.loc 1 172 9 is_stmt 1 view .LVU249
+ 172:Application/power_measure.c ****         ina226[2].current_A = (float)ina226[2].current_mA / 1000;
+ 804              		.loc 1 172 42 is_stmt 0 view .LVU250
+ 805 023e B2F90820 		ldrsh	r2, [r2, #8]
+ 806 0242 07EE902A 		vmov	s15, r2	@ int
+ 172:Application/power_measure.c ****         ina226[2].current_A = (float)ina226[2].current_mA / 1000;
+ 807              		.loc 1 172 30 view .LVU251
+ 808 0246 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 809 024a C3ED167A 		vstr.32	s15, [r3, #88]
+ 173:Application/power_measure.c ****         break;
+ 810              		.loc 1 173 9 is_stmt 1 view .LVU252
+ 173:Application/power_measure.c ****         break;
+ 811              		.loc 1 173 59 is_stmt 0 view .LVU253
+ 812 024e C7EE876A 		vdiv.f32	s13, s15, s14
+ 173:Application/power_measure.c ****         break;
+ 813              		.loc 1 173 29 view .LVU254
+ 814 0252 C3ED176A 		vstr.32	s13, [r3, #92]
+ 174:Application/power_measure.c ****     }
+ 815              		.loc 1 174 9 is_stmt 1 view .LVU255
+ 816 0256 1AE7     		b	.L30
+ 817              	.L35:
+ 818              		.align	2
+ 819              	.L34:
+ 820 0258 00000000 		.word	.LANCHOR5
+ 821 025c 00000000 		.word	.LANCHOR6
+ 822 0260 00000000 		.word	.LANCHOR4
+ 823 0264 00000000 		.word	.LANCHOR7
+ 824 0268 0000B041 		.word	1102053376
+ 825 026c 00007A44 		.word	1148846080
+ 826 0270 00000000 		.word	.LANCHOR2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 24
+
+
+ 827 0274 00000000 		.word	.LANCHOR1
+ 828 0278 00000000 		.word	.LANCHOR3
+ 829              		.cfi_endproc
+ 830              	.LFE172:
+ 832              		.section	.text.INA226_Read_a_Reg,"ax",%progbits
+ 833              		.align	1
+ 834              		.global	INA226_Read_a_Reg
+ 835              		.syntax unified
+ 836              		.thumb
+ 837              		.thumb_func
+ 839              	INA226_Read_a_Reg:
+ 840              	.LVL55:
+ 841              	.LFB173:
+ 185:Application/power_measure.c ****     uint8_t temp[2];
+ 842              		.loc 1 185 1 view -0
+ 843              		.cfi_startproc
+ 844              		@ args = 0, pretend = 0, frame = 8
+ 845              		@ frame_needed = 0, uses_anonymous_args = 0
+ 185:Application/power_measure.c ****     uint8_t temp[2];
+ 846              		.loc 1 185 1 is_stmt 0 view .LVU257
+ 847 0000 00B5     		push	{lr}
+ 848              	.LCFI6:
+ 849              		.cfi_def_cfa_offset 4
+ 850              		.cfi_offset 14, -4
+ 851 0002 87B0     		sub	sp, sp, #28
+ 852              	.LCFI7:
+ 853              		.cfi_def_cfa_offset 32
+ 854 0004 0246     		mov	r2, r0
+ 186:Application/power_measure.c ****     uint16_t value;
+ 855              		.loc 1 186 5 is_stmt 1 view .LVU258
+ 187:Application/power_measure.c ****     static uint32_t lost_count = 0;
+ 856              		.loc 1 187 5 view .LVU259
+ 188:Application/power_measure.c ****     if (HAL_I2C_Mem_Read(&ina226_i2c, Ina226_id, reg, I2C_MEMADD_SIZE_8BIT, temp, 2, 5) == HAL_OK)
+ 857              		.loc 1 188 5 view .LVU260
+ 189:Application/power_measure.c ****     {
+ 858              		.loc 1 189 5 view .LVU261
+ 189:Application/power_measure.c ****     {
+ 859              		.loc 1 189 9 is_stmt 0 view .LVU262
+ 860 0006 0523     		movs	r3, #5
+ 861 0008 0293     		str	r3, [sp, #8]
+ 862 000a 0223     		movs	r3, #2
+ 863 000c 0193     		str	r3, [sp, #4]
+ 864 000e 05AB     		add	r3, sp, #20
+ 865 0010 0093     		str	r3, [sp]
+ 866 0012 0123     		movs	r3, #1
+ 867 0014 1348     		ldr	r0, .L40
+ 868              	.LVL56:
+ 189:Application/power_measure.c ****     {
+ 869              		.loc 1 189 9 view .LVU263
+ 870 0016 FFF7FEFF 		bl	HAL_I2C_Mem_Read
+ 871              	.LVL57:
+ 189:Application/power_measure.c ****     {
+ 872              		.loc 1 189 8 view .LVU264
+ 873 001a 70B9     		cbnz	r0, .L37
+ 192:Application/power_measure.c ****         lost_count = 0;
+ 874              		.loc 1 192 9 is_stmt 1 view .LVU265
+ 875 001c 1248     		ldr	r0, .L40+4
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 25
+
+
+ 876 001e FFF7FEFF 		bl	HAL_IWDG_Refresh
+ 877              	.LVL58:
+ 193:Application/power_measure.c ****     }
+ 878              		.loc 1 193 9 view .LVU266
+ 193:Application/power_measure.c ****     }
+ 879              		.loc 1 193 20 is_stmt 0 view .LVU267
+ 880 0022 124B     		ldr	r3, .L40+8
+ 881 0024 0022     		movs	r2, #0
+ 882 0026 1A60     		str	r2, [r3]
+ 883              	.L38:
+ 207:Application/power_measure.c ****     return value;
+ 884              		.loc 1 207 5 is_stmt 1 view .LVU268
+ 207:Application/power_measure.c ****     return value;
+ 885              		.loc 1 207 18 is_stmt 0 view .LVU269
+ 886 0028 9DF81400 		ldrb	r0, [sp, #20]	@ zero_extendqisi2
+ 207:Application/power_measure.c ****     return value;
+ 887              		.loc 1 207 34 view .LVU270
+ 888 002c 9DF81530 		ldrb	r3, [sp, #21]	@ zero_extendqisi2
+ 889              	.LVL59:
+ 208:Application/power_measure.c **** }
+ 890              		.loc 1 208 5 is_stmt 1 view .LVU271
+ 209:Application/power_measure.c **** 
+ 891              		.loc 1 209 1 is_stmt 0 view .LVU272
+ 892 0030 43EA0020 		orr	r0, r3, r0, lsl #8
+ 893              	.LVL60:
+ 209:Application/power_measure.c **** 
+ 894              		.loc 1 209 1 view .LVU273
+ 895 0034 07B0     		add	sp, sp, #28
+ 896              	.LCFI8:
+ 897              		.cfi_remember_state
+ 898              		.cfi_def_cfa_offset 4
+ 899              		@ sp needed
+ 900 0036 5DF804FB 		ldr	pc, [sp], #4
+ 901              	.LVL61:
+ 902              	.L37:
+ 903              	.LCFI9:
+ 904              		.cfi_restore_state
+ 197:Application/power_measure.c ****         MX_I2C3_Init();
+ 905              		.loc 1 197 9 is_stmt 1 view .LVU274
+ 906 003a FFF7FEFF 		bl	MX_I2C1_Init
+ 907              	.LVL62:
+ 198:Application/power_measure.c ****         lost_count++;
+ 908              		.loc 1 198 9 view .LVU275
+ 909 003e FFF7FEFF 		bl	MX_I2C3_Init
+ 910              	.LVL63:
+ 199:Application/power_measure.c ****         if (lost_count > 30)
+ 911              		.loc 1 199 9 view .LVU276
+ 199:Application/power_measure.c ****         if (lost_count > 30)
+ 912              		.loc 1 199 19 is_stmt 0 view .LVU277
+ 913 0042 0A4A     		ldr	r2, .L40+8
+ 914 0044 1368     		ldr	r3, [r2]
+ 915 0046 0133     		adds	r3, r3, #1
+ 916 0048 1360     		str	r3, [r2]
+ 200:Application/power_measure.c ****         {
+ 917              		.loc 1 200 9 is_stmt 1 view .LVU278
+ 200:Application/power_measure.c ****         {
+ 918              		.loc 1 200 12 is_stmt 0 view .LVU279
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 26
+
+
+ 919 004a 1E2B     		cmp	r3, #30
+ 920 004c ECD9     		bls	.L38
+ 202:Application/power_measure.c ****             HAL_NVIC_SystemReset();
+ 921              		.loc 1 202 13 is_stmt 1 view .LVU280
+ 922 004e 0021     		movs	r1, #0
+ 923 0050 0091     		str	r1, [sp]
+ 924 0052 0B46     		mov	r3, r1
+ 925 0054 0A46     		mov	r2, r1
+ 926 0056 0648     		ldr	r0, .L40+12
+ 927 0058 FFF7FEFF 		bl	Send_Motor_Current_1_4
+ 928              	.LVL64:
+ 203:Application/power_measure.c ****         }
+ 929              		.loc 1 203 13 view .LVU281
+ 930 005c FFF7FEFF 		bl	HAL_NVIC_SystemReset
+ 931              	.LVL65:
+ 932 0060 E2E7     		b	.L38
+ 933              	.L41:
+ 934 0062 00BF     		.align	2
+ 935              	.L40:
+ 936 0064 00000000 		.word	hi2c3
+ 937 0068 00000000 		.word	hiwdg
+ 938 006c 00000000 		.word	.LANCHOR8
+ 939 0070 00000000 		.word	hcan1
+ 940              		.cfi_endproc
+ 941              	.LFE173:
+ 943              		.global	lost_count
+ 944              		.global	INA226_I2C_Lost
+ 945              		.global	Receive_buff
+ 946              		.global	reg_buff
+ 947              		.global	Votage_buff
+ 948              		.global	id_buff
+ 949              		.global	ina226
+ 950              		.global	ina226_reg
+ 951              		.global	Ina226_0_Power_Window
+ 952              		.global	Ina226_0_Vol
+ 953              		.global	Ina226_0_Power
+ 954              		.global	inaIic
+ 955              		.section	.bss.INA226_I2C_Lost,"aw",%nobits
+ 958              	INA226_I2C_Lost:
+ 959 0000 00       		.space	1
+ 960              		.section	.bss.Ina226_0_Power,"aw",%nobits
+ 961              		.align	2
+ 962              		.set	.LANCHOR1,. + 0
+ 965              	Ina226_0_Power:
+ 966 0000 00000000 		.space	16
+ 966      00000000 
+ 966      00000000 
+ 966      00000000 
+ 967              		.section	.bss.Ina226_0_Power_Window,"aw",%nobits
+ 968              		.align	2
+ 969              		.set	.LANCHOR3,. + 0
+ 972              	Ina226_0_Power_Window:
+ 973 0000 00000000 		.space	16
+ 973      00000000 
+ 973      00000000 
+ 973      00000000 
+ 974              		.section	.bss.Ina226_0_Vol,"aw",%nobits
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 27
+
+
+ 975              		.align	2
+ 976              		.set	.LANCHOR2,. + 0
+ 979              	Ina226_0_Vol:
+ 980 0000 00000000 		.space	16
+ 980      00000000 
+ 980      00000000 
+ 980      00000000 
+ 981              		.section	.bss.Receive_buff,"aw",%nobits
+ 982              		.align	2
+ 985              	Receive_buff:
+ 986 0000 00000000 		.space	14
+ 986      00000000 
+ 986      00000000 
+ 986      0000
+ 987              		.section	.bss.Votage_buff,"aw",%nobits
+ 988              		.align	2
+ 991              	Votage_buff:
+ 992 0000 0000     		.space	2
+ 993              		.section	.bss.buff.1,"aw",%nobits
+ 994              		.align	2
+ 995              		.set	.LANCHOR5,. + 0
+ 998              	buff.1:
+ 999 0000 0000     		.space	2
+ 1000              		.section	.bss.id_buff,"aw",%nobits
+ 1001              		.align	2
+ 1004              	id_buff:
+ 1005 0000 0000     		.space	2
+ 1006              		.section	.bss.ina226,"aw",%nobits
+ 1007              		.align	2
+ 1008              		.set	.LANCHOR7,. + 0
+ 1011              	ina226:
+ 1012 0000 00000000 		.space	108
+ 1012      00000000 
+ 1012      00000000 
+ 1012      00000000 
+ 1012      00000000 
+ 1013              		.section	.bss.ina226_reg,"aw",%nobits
+ 1014              		.align	2
+ 1015              		.set	.LANCHOR6,. + 0
+ 1018              	ina226_reg:
+ 1019 0000 00000000 		.space	14
+ 1019      00000000 
+ 1019      00000000 
+ 1019      0000
+ 1020              		.section	.bss.inaIic,"aw",%nobits
+ 1021              		.align	2
+ 1022              		.set	.LANCHOR0,. + 0
+ 1025              	inaIic:
+ 1026 0000 00000000 		.space	16
+ 1026      00000000 
+ 1026      00000000 
+ 1026      00000000 
+ 1027              		.section	.bss.lost_count,"aw",%nobits
+ 1028              		.align	2
+ 1029              		.set	.LANCHOR4,. + 0
+ 1032              	lost_count:
+ 1033 0000 00000000 		.space	4
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 28
+
+
+ 1034              		.section	.bss.lost_count.0,"aw",%nobits
+ 1035              		.align	2
+ 1036              		.set	.LANCHOR8,. + 0
+ 1039              	lost_count.0:
+ 1040 0000 00000000 		.space	4
+ 1041              		.section	.data.reg_buff,"aw"
+ 1042              		.align	2
+ 1045              	reg_buff:
+ 1046 0000 00010203 		.ascii	"\000\001\002\003\004\005\377"
+ 1046      0405FF
+ 1047              		.text
+ 1048              	.Letext0:
+ 1049              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1050              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1051              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 1052              		.file 5 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 1053              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 1054              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 1055              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_can.h"
+ 1056              		.file 9 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c.h"
+ 1057              		.file 10 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_iwdg.h"
+ 1058              		.file 11 "Application/power_measure.h"
+ 1059              		.file 12 "Inc/i2c.h"
+ 1060              		.file 13 "Components/filter32.h"
+ 1061              		.file 14 "Inc/can.h"
+ 1062              		.file 15 "Inc/iwdg.h"
+ 1063              		.file 16 "Bsp/bsp_i2c.h"
+ 1064              		.file 17 "Application/motor.h"
+ 1065              		.file 18 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h"
+ 1066              		.file 19 "Application/detect_task.h"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 29
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 power_measure.c
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:20     .text.INA_writeData:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:25     .text.INA_writeData:00000000 INA_writeData
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:130    .text.INA_writeData:00000070 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:135    .text.INA226_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:141    .text.INA226_Init:00000000 INA226_Init
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:251    .text.INA226_Init:00000084 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:264    .text.INA_readLen:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:269    .text.INA_readLen:00000000 INA_readLen
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:437    .text.INA_readLen:000000b0 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:443    .text.INA226_Read_Registers:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:449    .text.INA226_Read_Registers:00000000 INA226_Read_Registers
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:820    .text.INA226_Read_Registers:00000258 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:833    .text.INA226_Read_a_Reg:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:839    .text.INA226_Read_a_Reg:00000000 INA226_Read_a_Reg
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:936    .text.INA226_Read_a_Reg:00000064 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1032   .bss.lost_count:00000000 lost_count
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:958    .bss.INA226_I2C_Lost:00000000 INA226_I2C_Lost
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:985    .bss.Receive_buff:00000000 Receive_buff
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1045   .data.reg_buff:00000000 reg_buff
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:991    .bss.Votage_buff:00000000 Votage_buff
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1004   .bss.id_buff:00000000 id_buff
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1011   .bss.ina226:00000000 ina226
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1018   .bss.ina226_reg:00000000 ina226_reg
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:972    .bss.Ina226_0_Power_Window:00000000 Ina226_0_Power_Window
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:979    .bss.Ina226_0_Vol:00000000 Ina226_0_Vol
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:965    .bss.Ina226_0_Power:00000000 Ina226_0_Power
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1025   .bss.inaIic:00000000 inaIic
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:959    .bss.INA226_I2C_Lost:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:961    .bss.Ina226_0_Power:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:968    .bss.Ina226_0_Power_Window:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:975    .bss.Ina226_0_Vol:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:982    .bss.Receive_buff:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:988    .bss.Votage_buff:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:994    .bss.buff.1:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:998    .bss.buff.1:00000000 buff.1
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1001   .bss.id_buff:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1007   .bss.ina226:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1014   .bss.ina226_reg:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1021   .bss.inaIic:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1028   .bss.lost_count:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1035   .bss.lost_count.0:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1039   .bss.lost_count.0:00000000 lost_count.0
+C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s:1042   .data.reg_buff:00000000 $d
+
+UNDEFINED SYMBOLS
+IIC_Start
+IIC_writeByte
+IIC_waitAck
+IIC_Stop
+IIC_Init
+First_Order_Filter_Init
+Window_Filter_Init
+IIC_readByte
+IIC_ack
+Window_Filter_Calculate
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccRo83Xg.s 			page 30
+
+
+First_Order_Filter_Calculate
+HAL_I2C_Mem_Read
+HAL_IWDG_Refresh
+MX_I2C1_Init
+MX_I2C3_Init
+Send_Motor_Current_1_4
+HAL_NVIC_SystemReset
+hi2c3
+hiwdg
+hcan1

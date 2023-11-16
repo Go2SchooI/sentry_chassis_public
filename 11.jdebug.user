@@ -1,0 +1,56 @@
+
+GraphedExpression="(Chassis).posZ", Color=#a00909
+GraphedExpression="SpinningValidTheta", Color=#09a01b
+GraphedExpression="preFollowTheta", Color=#09a087
+GraphedExpression="(shoot_data).bullet_speed", Color=#0984a0
+OpenDocument="chassis_task.c", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/Application/chassis_task.c", Line=701
+OpenDocument="startup_stm32f407xx.s", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/startup_stm32f407xx.s", Line=48
+OpenDocument="main.c", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/Src/main.c", Line=61
+OpenDocument="judgement_info.c", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/Application/judgement_info.c", Line=58
+OpenDocument="tasks.c", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/Middlewares/Third_Party/FreeRTOS/Source/tasks.c", Line=3360
+OpenDocument="motor.c", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/Application/motor.c", Line=72
+OpenDocument="bsp_CAN.c", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/Bsp/bsp_CAN.c", Line=189
+OpenDocument="chassis_task.h", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/Application/chassis_task.h", Line=129
+OpenDocument="kalman_filter.c", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/Components/kalman_filter.c", Line=376
+OpenDocument="freertos.c", FilePath="D:/RoboMaster2023/RMUC_Sentry_2023/Sentry_Chassis_2023/Src/freertos.c", Line=264
+OpenToolbar="Debug", Floating=0, x=0, y=0
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=451, h=919, TabPos=0, TopOfStack=0, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=0, w=451, h=919, TabPos=1, TopOfStack=1, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Data Sampling", DockArea=RIGHT, x=0, y=1, w=787, h=467, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
+OpenWindow="Timeline", DockArea=RIGHT, x=0, y=0, w=787, h=467, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=1, DataPaneShown=1, PowerPaneShown=0, CodePaneShown=0, PinCursor="Cursor Movable", TimePerDiv="2 s / Div", TimeStampFormat="Time", DataGraphDrawAsPoints=0, DataGraphLegendShown=1, DataGraphUniformSampleSpacing=0, DataGraphLegendPosition="141;0", PowerGraphDrawAsPoints=0, PowerGraphLegendShown=0, PowerGraphAvgFilterTime=Off, PowerGraphAvgFilterLen=Off, PowerGraphUniformSampleSpacing=0, PowerGraphLegendPosition="586;0", CodeGraphLegendShown=0, CodeGraphLegendPosition="600;0"
+TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[233;100;100;100;910]
+TableHeader="Data Sampling Table", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";" (Chassis).posZ";" SpinningValidTheta";" preFollowTheta";" (shoot_data).bullet_speed"], ColWidths=[100;100;100;100;100;100]
+TableHeader="Data Sampling Setup", SortCol="Expression", SortOrder="DESCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[190;100;100;100;100;100;100;107;107]
+TableHeader="Power Sampling", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;1720]
+TableHeader="Task List", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Run Count";"Priority";"Status";"Timeout";"Stack Info (Free / Size)";"ID";"Mutex Count";"Notified Value";"Notify State"], ColWidths=[110;110;110;110;110;110;110;110;110;110]
+TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh"], ColWidths=[266;118;110;100]
+TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[200;100;100;351]
+WatchedExpression="Gimbal", RefreshRate=1, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="Chassis", RefreshRate=2, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="remote_control", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="Temp_Vy", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="tempVal", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="motor.c::dt", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="RMD_data", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="robot_state", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="chassis_task.c::dt", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="nanCount", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="CountPosition", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="power_heat_data_t", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="shoot_data", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="game_status", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="method", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="aimassist_online", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="huart_count", RefreshRate=1, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="judgement_info.c::p_header", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="judgement_receive", RefreshRate=1, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="game_robot_HP", RefreshRate=1, DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="tempBuff", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_HEX, Window=Watched Data 1
+WatchedExpression="enemy_outpost_HP", Window=Watched Data 1
+WatchedExpression="SpinningValidTheta", Window=Watched Data 1
+WatchedExpression="preFollowTheta", Window=Watched Data 1
+WatchedExpression="shoot_data", Window=Watched Data 1
+WatchedExpression="outpost_HP", Window=Watched Data 1
+WatchedExpression="sentry_HP", Window=Watched Data 1
+WatchedExpression="use_spinningmove", Window=Watched Data 1

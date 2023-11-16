@@ -1,0 +1,2790 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"judgement_info.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Judge_Control_Init,"ax",%progbits
+  20              		.align	1
+  21              		.global	Judge_Control_Init
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	Judge_Control_Init:
+  27              	.LVL0:
+  28              	.LFB171:
+  29              		.file 1 "Application/judgement_info.c"
+   1:Application/judgement_info.c **** #include "judgement_info.h"
+   2:Application/judgement_info.c **** #include "bsp_usart_idle.h"
+   3:Application/judgement_info.c **** #include "string.h"
+   4:Application/judgement_info.c **** #include "detect_task.h"
+   5:Application/judgement_info.c **** 
+   6:Application/judgement_info.c **** #include "power_measure.h"
+   7:Application/judgement_info.c **** #include "includes.h"
+   8:Application/judgement_info.c **** 
+   9:Application/judgement_info.c **** judge_receive_t judgement_receive;
+  10:Application/judgement_info.c **** // judgement_race_t judgement_race_data;
+  11:Application/judgement_info.c **** static uint8_t *p_header, count;
+  12:Application/judgement_info.c **** static uint16_t data_length;
+  13:Application/judgement_info.c **** UART_HandleTypeDef *JudgeUSART;
+  14:Application/judgement_info.c **** uint8_t JudgeRxValid = 0;
+  15:Application/judgement_info.c **** uint8_t JudgeRxData[8] = {0};
+  16:Application/judgement_info.c **** 
+  17:Application/judgement_info.c **** uint8_t Shoot_Updata = 0;
+  18:Application/judgement_info.c **** 
+  19:Application/judgement_info.c **** ext_game_status_t game_status;                                   // ����״̬����
+  20:Application/judgement_info.c **** ext_game_result_t game_result;                                   // �����������
+  21:Application/judgement_info.c **** ext_game_robot_HP_t game_robot_HP;                               // ������Ѫ����
+  22:Application/judgement_info.c **** ext_dart_status_t dart_status;                                   // ���ڷ���״̬
+  23:Application/judgement_info.c **** ext_ICRA_buff_debuff_zone_status_t ICRA_buff_debuff_zone_status; // �˹�������ս�
+  24:Application/judgement_info.c **** ext_event_data_t event_data;                                     // �����¼�����
+  25:Application/judgement_info.c **** ext_supply_projectile_action_t supply_projectile_action;         // ����վ������
+  26:Application/judgement_info.c **** ext_referee_warning_t referee_warning;                           // ���о�����Ϣ
+  27:Application/judgement_info.c **** ext_dart_remaining_time_t dart_remaining_time;                   // ���ڷ���ڵ���
+  28:Application/judgement_info.c **** ext_game_robot_status_t robot_state;                             // �����������
+  29:Application/judgement_info.c **** ext_power_heat_data_t power_heat_data_t;                         // ʵʱ���������
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 2
+
+
+  30:Application/judgement_info.c **** ext_game_robot_pos_t game_robot_pos;                             // ������λ��
+  31:Application/judgement_info.c **** ext_buff_musk_t buff_musk;                                       // ����������
+  32:Application/judgement_info.c **** aerial_robot_energy_t robot_energy;                              // ���л�������
+  33:Application/judgement_info.c **** ext_robot_hurt_t robot_hurt;                                     // �˺�״̬
+  34:Application/judgement_info.c **** ext_shoot_data_t shoot_data;                                     // ʵʱ�����Ϣ
+  35:Application/judgement_info.c **** ext_rfid_status_t rfid_status;                                   // �ӵ�ʣ�෢����
+  36:Application/judgement_info.c **** ext_bullet_remaining_t bullet_remaining;                         // ������RFID״̬
+  37:Application/judgement_info.c **** ext_dart_client_cmd_t dart_client_cmd;                           // ���ڻ����˿ͻ��
+  38:Application/judgement_info.c **** 
+  39:Application/judgement_info.c **** ext_student_interactive_header_data_t student_interactive_header_data; // �������ݽ�
+  40:Application/judgement_info.c **** 
+  41:Application/judgement_info.c **** ext_robot_interactive_data_t robot_interactive_data; // �������ݽ�����Ϣ
+  42:Application/judgement_info.c **** 
+  43:Application/judgement_info.c **** ext_map_interactivity_t map_interactivity; // С��ͼ������Ϣ��ʶ
+  44:Application/judgement_info.c **** 
+  45:Application/judgement_info.c **** void Judge_Control_Init(UART_HandleTypeDef *huart)
+  46:Application/judgement_info.c **** {
+  30              		.loc 1 46 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		.loc 1 46 1 is_stmt 0 view .LVU1
+  35 0000 08B5     		push	{r3, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 8
+  38              		.cfi_offset 3, -8
+  39              		.cfi_offset 14, -4
+  47:Application/judgement_info.c ****     JudgeUSART = huart;
+  40              		.loc 1 47 5 is_stmt 1 view .LVU2
+  41              		.loc 1 47 16 is_stmt 0 view .LVU3
+  42 0002 034B     		ldr	r3, .L3
+  43 0004 1860     		str	r0, [r3]
+  48:Application/judgement_info.c ****     USART_IDLE_Init(huart, judgement_receive.buf, 100);
+  44              		.loc 1 48 5 is_stmt 1 view .LVU4
+  45 0006 6422     		movs	r2, #100
+  46 0008 0249     		ldr	r1, .L3+4
+  47 000a FFF7FEFF 		bl	USART_IDLE_Init
+  48              	.LVL1:
+  49:Application/judgement_info.c **** }
+  49              		.loc 1 49 1 is_stmt 0 view .LVU5
+  50 000e 08BD     		pop	{r3, pc}
+  51              	.L4:
+  52              		.align	2
+  53              	.L3:
+  54 0010 00000000 		.word	.LANCHOR0
+  55 0014 00000000 		.word	.LANCHOR1
+  56              		.cfi_endproc
+  57              	.LFE171:
+  59              		.section	.text.judgement_data_decode,"ax",%progbits
+  60              		.align	1
+  61              		.global	judgement_data_decode
+  62              		.syntax unified
+  63              		.thumb
+  64              		.thumb_func
+  66              	judgement_data_decode:
+  67              	.LFB175:
+  50:Application/judgement_info.c **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 3
+
+
+  51:Application/judgement_info.c **** void USER_UART_RxIdleCallback(UART_HandleTypeDef *huart)
+  52:Application/judgement_info.c **** {
+  53:Application/judgement_info.c ****     if (huart == JudgeUSART)
+  54:Application/judgement_info.c ****     {
+  55:Application/judgement_info.c ****         unpack_fifo_handle(judgement_receive.buf);
+  56:Application/judgement_info.c ****         Detect_Hook(JUDGE_TOE);
+  57:Application/judgement_info.c ****     }
+  58:Application/judgement_info.c ****     else if (huart == remote_control.RC_USART)
+  59:Application/judgement_info.c ****     {
+  60:Application/judgement_info.c ****         Callback_RC_Handle(&remote_control, sbus_rx_buf);
+  61:Application/judgement_info.c ****     }
+  62:Application/judgement_info.c **** }
+  63:Application/judgement_info.c **** 
+  64:Application/judgement_info.c **** void unpack_fifo_handle(uint8_t *prxbuf) //
+  65:Application/judgement_info.c **** {
+  66:Application/judgement_info.c ****     p_header = prxbuf; // �ҵ�֡ͷȻ����
+  67:Application/judgement_info.c ****     count = 0;
+  68:Application/judgement_info.c ****     while (count < 98)
+  69:Application/judgement_info.c ****     {
+  70:Application/judgement_info.c ****         if (*p_header == JUDGE_SOF)
+  71:Application/judgement_info.c ****         {
+  72:Application/judgement_info.c ****             memcpy(&data_length, (p_header + 1), 2);
+  73:Application/judgement_info.c ****             if (data_length <= 32 && count + data_length + 9 < 100)
+  74:Application/judgement_info.c ****             {
+  75:Application/judgement_info.c ****                 judgement_info_handle();
+  76:Application/judgement_info.c ****             }
+  77:Application/judgement_info.c ****         }
+  78:Application/judgement_info.c ****         else
+  79:Application/judgement_info.c ****             p_header++;
+  80:Application/judgement_info.c **** 
+  81:Application/judgement_info.c ****         count = p_header - prxbuf;
+  82:Application/judgement_info.c ****     }
+  83:Application/judgement_info.c **** }
+  84:Application/judgement_info.c **** // frame_header (5-byte) cmd_id (2-byte) data (n-byte) frame_tail (2-byte��CRC16�����
+  85:Application/judgement_info.c **** // ����frame_header
+  86:Application/judgement_info.c **** // �� 					ƫ��λ��  ��С���ֽڣ�  ��ϸ����
+  87:Application/judgement_info.c **** // SOF 				0 				1 						����֡��ʼ�ֽڣ��̶�ֵΪ 0xA5
+  88:Application/judgement_info.c **** // data_length       1 				2 						����֡�� data �ĳ���
+  89:Application/judgement_info.c **** // seq 				3 				1 						�����
+  90:Application/judgement_info.c **** // CRC8 				4 				1 						֡ͷ CRC8 У��
+  91:Application/judgement_info.c **** void judgement_info_handle(void)
+  92:Application/judgement_info.c **** {
+  93:Application/judgement_info.c ****     if ((Verify_CRC8_Check_Sum(p_header, 5) == 0) || (Verify_CRC16_Check_Sum(p_header, (9 + data_le
+  94:Application/judgement_info.c ****     {
+  95:Application/judgement_info.c ****         p_header++;
+  96:Application/judgement_info.c ****         return;
+  97:Application/judgement_info.c ****     }
+  98:Application/judgement_info.c **** 
+  99:Application/judgement_info.c ****     memcpy(judgement_receive.header, p_header, (data_length + 9));
+ 100:Application/judgement_info.c ****     judgement_data_decode();
+ 101:Application/judgement_info.c ****     p_header = p_header + data_length + 9;
+ 102:Application/judgement_info.c **** }
+ 103:Application/judgement_info.c **** 
+ 104:Application/judgement_info.c **** void judgement_data_decode(void)
+ 105:Application/judgement_info.c **** {
+  68              		.loc 1 105 1 is_stmt 1 view -0
+  69              		.cfi_startproc
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 4
+
+
+  70              		@ args = 0, pretend = 0, frame = 0
+  71              		@ frame_needed = 0, uses_anonymous_args = 0
+  72 0000 70B5     		push	{r4, r5, r6, lr}
+  73              	.LCFI1:
+  74              		.cfi_def_cfa_offset 16
+  75              		.cfi_offset 4, -16
+  76              		.cfi_offset 5, -12
+  77              		.cfi_offset 6, -8
+  78              		.cfi_offset 14, -4
+ 106:Application/judgement_info.c ****     switch (judgement_receive.cmd)
+  79              		.loc 1 106 5 view .LVU7
+  80              		.loc 1 106 30 is_stmt 0 view .LVU8
+  81 0002 A04B     		ldr	r3, .L40
+  82 0004 B3F86920 		ldrh	r2, [r3, #105]	@ unaligned
+  83 0008 93B2     		uxth	r3, r2
+  84              		.loc 1 106 5 view .LVU9
+  85 000a 40F20A21 		movw	r1, #522
+  86 000e 8B42     		cmp	r3, r1
+  87 0010 2ED8     		bhi	.L6
+  88 0012 B3F5007F 		cmp	r3, #512
+  89 0016 0CD8     		bhi	.L7
+  90 0018 052B     		cmp	r3, #5
+  91 001a 1AD8     		bhi	.L8
+  92 001c 12B2     		sxth	r2, r2
+  93 001e 002A     		cmp	r2, #0
+  94 0020 60D0     		beq	.L5
+  95 0022 013B     		subs	r3, r3, #1
+  96 0024 042B     		cmp	r3, #4
+  97 0026 5DD8     		bhi	.L5
+  98 0028 DFE803F0 		tbb	[pc, r3]
+  99              	.L28:
+ 100 002c 4F       		.byte	(.L32-.L28)/2
+ 101 002d 5D       		.byte	(.L31-.L28)/2
+ 102 002e 63       		.byte	(.L30-.L28)/2
+ 103 002f 78       		.byte	(.L29-.L28)/2
+ 104 0030 7E       		.byte	(.L27-.L28)/2
+ 105 0031 00       		.p2align 1
+ 106              	.L7:
+ 107 0032 A3F20123 		subw	r3, r3, #513
+ 108 0036 092B     		cmp	r3, #9
+ 109 0038 54D8     		bhi	.L5
+ 110 003a DFE813F0 		tbh	[pc, r3, lsl #1]
+ 111              	.L12:
+ 112 003e 9700     		.2byte	(.L21-.L12)/2
+ 113 0040 BB00     		.2byte	(.L20-.L12)/2
+ 114 0042 CA00     		.2byte	(.L19-.L12)/2
+ 115 0044 D600     		.2byte	(.L18-.L12)/2
+ 116 0046 DC00     		.2byte	(.L17-.L12)/2
+ 117 0048 E200     		.2byte	(.L16-.L12)/2
+ 118 004a E800     		.2byte	(.L15-.L12)/2
+ 119 004c F300     		.2byte	(.L14-.L12)/2
+ 120 004e FC00     		.2byte	(.L13-.L12)/2
+ 121 0050 0201     		.2byte	(.L11-.L12)/2
+ 122              		.p2align 1
+ 123              	.L8:
+ 124 0052 B3F5837F 		cmp	r3, #262
+ 125 0056 45D2     		bcs	.L5
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 5
+
+
+ 126 0058 B3F5807F 		cmp	r3, #256
+ 127 005c 42D9     		bls	.L5
+ 128 005e A3F20113 		subw	r3, r3, #257
+ 129 0062 042B     		cmp	r3, #4
+ 130 0064 3ED8     		bhi	.L5
+ 131 0066 DFE803F0 		tbb	[pc, r3]
+ 132              	.L23:
+ 133 006a 69       		.byte	(.L26-.L23)/2
+ 134 006b 6F       		.byte	(.L25-.L23)/2
+ 135 006c 3D       		.byte	(.L5-.L23)/2
+ 136 006d 75       		.byte	(.L24-.L23)/2
+ 137 006e 7B       		.byte	(.L22-.L23)/2
+ 138 006f 00       		.p2align 1
+ 139              	.L6:
+ 140 0070 40F20232 		movw	r2, #770
+ 141 0074 9342     		cmp	r3, r2
+ 142 0076 00F0EE80 		beq	.L34
+ 143 007a 40F20332 		movw	r2, #771
+ 144 007e 9342     		cmp	r3, r2
+ 145 0080 0BD1     		bne	.L39
+ 107:Application/judgement_info.c ****     {
+ 108:Application/judgement_info.c ****     case GAME_STATUS_CMD_ID:
+ 109:Application/judgement_info.c ****     {
+ 110:Application/judgement_info.c ****         memcpy(&game_status, judgement_receive.data, sizeof(ext_game_status_t));
+ 111:Application/judgement_info.c ****         // game_status.game_type = judgement_receive.data[0] & 0x0f;
+ 112:Application/judgement_info.c ****         // game_status.game_progress = (judgement_receive.data[0] & 0xf0) >> 4;
+ 113:Application/judgement_info.c ****         // game_status.stage_remain_time = (uint16_t)(judgement_receive.data[2] << 8 | judgement_re
+ 114:Application/judgement_info.c ****         // memcpy(&game_status.SyncTimeStamp, judgement_receive.data + 3, 8);
+ 115:Application/judgement_info.c ****     }
+ 116:Application/judgement_info.c ****     break;
+ 117:Application/judgement_info.c ****     case GAME_RESULT_CMD_ID:
+ 118:Application/judgement_info.c ****     {
+ 119:Application/judgement_info.c ****         memcpy(&game_result, judgement_receive.data, sizeof(ext_game_result_t));
+ 120:Application/judgement_info.c ****     }
+ 121:Application/judgement_info.c ****     break;
+ 122:Application/judgement_info.c ****     case GAME_ROBOT_HP_CMD_ID:
+ 123:Application/judgement_info.c ****     {
+ 124:Application/judgement_info.c ****         memcpy(&game_robot_HP, judgement_receive.data, sizeof(ext_game_robot_HP_t));
+ 125:Application/judgement_info.c ****     }
+ 126:Application/judgement_info.c ****     break;
+ 127:Application/judgement_info.c ****     case DART_STATUS_CMD_ID:
+ 128:Application/judgement_info.c ****     {
+ 129:Application/judgement_info.c ****         memcpy(&dart_status, judgement_receive.data, sizeof(ext_dart_status_t));
+ 130:Application/judgement_info.c ****     }
+ 131:Application/judgement_info.c ****     break;
+ 132:Application/judgement_info.c ****     case ICRA_BUFF_DEBUFF_ZONE_STATUS_CMD_ID:
+ 133:Application/judgement_info.c ****     {
+ 134:Application/judgement_info.c ****         memcpy(&ICRA_buff_debuff_zone_status, judgement_receive.data, sizeof(ext_ICRA_buff_debuff_z
+ 135:Application/judgement_info.c ****     }
+ 136:Application/judgement_info.c ****     break;
+ 137:Application/judgement_info.c ****     case EVEN_DATA_CMD_ID:
+ 138:Application/judgement_info.c ****     {
+ 139:Application/judgement_info.c ****         memcpy(&event_data, judgement_receive.data, sizeof(ext_event_data_t));
+ 140:Application/judgement_info.c ****     }
+ 141:Application/judgement_info.c ****     break;
+ 142:Application/judgement_info.c ****     case SUPPLY_PROJECTILE_ACTION_CMD_ID:
+ 143:Application/judgement_info.c ****     {
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 6
+
+
+ 144:Application/judgement_info.c ****         memcpy(&supply_projectile_action, judgement_receive.data, sizeof(ext_supply_projectile_acti
+ 145:Application/judgement_info.c ****     }
+ 146:Application/judgement_info.c ****     break;
+ 147:Application/judgement_info.c ****     case REFEREE_WARNING_CMD_ID:
+ 148:Application/judgement_info.c ****     {
+ 149:Application/judgement_info.c ****         memcpy(&referee_warning, judgement_receive.data, sizeof(ext_referee_warning_t));
+ 150:Application/judgement_info.c ****     }
+ 151:Application/judgement_info.c ****     break;
+ 152:Application/judgement_info.c ****     case DART_REMAINING_TIME_CMD_ID:
+ 153:Application/judgement_info.c ****     {
+ 154:Application/judgement_info.c ****         memcpy(&dart_remaining_time, judgement_receive.data, sizeof(ext_dart_remaining_time_t));
+ 155:Application/judgement_info.c ****     }
+ 156:Application/judgement_info.c ****     break;
+ 157:Application/judgement_info.c ****     case GAME_ROBOT_STATUS_CMD_ID:
+ 158:Application/judgement_info.c ****     {
+ 159:Application/judgement_info.c ****         memcpy(&robot_state, judgement_receive.data, sizeof(ext_game_robot_status_t));
+ 160:Application/judgement_info.c ****         if (robot_state.chassis_power_limit >= 10240)
+ 161:Application/judgement_info.c ****             robot_state.chassis_power_limit /= 256;
+ 162:Application/judgement_info.c ****         if (robot_state.chassis_power_limit >= 200)
+ 163:Application/judgement_info.c ****             robot_state.chassis_power_limit /= 5;
+ 164:Application/judgement_info.c ****     }
+ 165:Application/judgement_info.c ****     break;
+ 166:Application/judgement_info.c ****     case POWER_HEAT_DATA_CMD_ID:
+ 167:Application/judgement_info.c ****     {
+ 168:Application/judgement_info.c ****         memcpy(&power_heat_data_t, judgement_receive.data, sizeof(ext_power_heat_data_t));
+ 169:Application/judgement_info.c ****         Shoot_Updata = 1;
+ 170:Application/judgement_info.c ****     }
+ 171:Application/judgement_info.c ****     break;
+ 172:Application/judgement_info.c ****     case GAME_ROBOT_POS_CMD_ID:
+ 173:Application/judgement_info.c ****     {
+ 174:Application/judgement_info.c ****         memcpy(&game_robot_pos, judgement_receive.data, sizeof(ext_game_robot_pos_t));
+ 175:Application/judgement_info.c ****     }
+ 176:Application/judgement_info.c ****     break;
+ 177:Application/judgement_info.c ****     case BUFF_MUSK_CMD_ID:
+ 178:Application/judgement_info.c ****     {
+ 179:Application/judgement_info.c ****         memcpy(&buff_musk, judgement_receive.data, sizeof(ext_buff_musk_t));
+ 180:Application/judgement_info.c ****     }
+ 181:Application/judgement_info.c ****     break;
+ 182:Application/judgement_info.c ****     case ROBOT_ENERGY_CMD_ID:
+ 183:Application/judgement_info.c ****     {
+ 184:Application/judgement_info.c ****         memcpy(&robot_energy, judgement_receive.data, sizeof(aerial_robot_energy_t));
+ 185:Application/judgement_info.c ****     }
+ 186:Application/judgement_info.c ****     break;
+ 187:Application/judgement_info.c ****     case ROBOT_HURT_CMD_ID:
+ 188:Application/judgement_info.c ****     {
+ 189:Application/judgement_info.c ****         memcpy(&robot_hurt, judgement_receive.data, sizeof(ext_robot_hurt_t));
+ 190:Application/judgement_info.c ****     }
+ 191:Application/judgement_info.c ****     break;
+ 192:Application/judgement_info.c ****     case SHOOT_DATA_CMD_ID:
+ 193:Application/judgement_info.c ****     {
+ 194:Application/judgement_info.c ****         memcpy(&shoot_data, judgement_receive.data, sizeof(ext_shoot_data_t));
+ 195:Application/judgement_info.c ****         Shoot_Updata = 1;
+ 196:Application/judgement_info.c ****     }
+ 197:Application/judgement_info.c ****     break;
+ 198:Application/judgement_info.c ****     case BULLET_REMAINING_CMD_ID:
+ 199:Application/judgement_info.c ****     {
+ 200:Application/judgement_info.c ****         memcpy(&bullet_remaining, judgement_receive.data, sizeof(ext_bullet_remaining_t));
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 7
+
+
+ 201:Application/judgement_info.c ****     }
+ 202:Application/judgement_info.c ****     break;
+ 203:Application/judgement_info.c ****     case RFID_STATUS_CMD_ID:
+ 204:Application/judgement_info.c ****     {
+ 205:Application/judgement_info.c ****         memcpy(&rfid_status, judgement_receive.data, sizeof(ext_rfid_status_t));
+ 206:Application/judgement_info.c ****     }
+ 207:Application/judgement_info.c ****     break;
+ 208:Application/judgement_info.c ****     case DART_CLIENT_CMD_ID:
+ 209:Application/judgement_info.c ****     {
+ 210:Application/judgement_info.c ****         memcpy(&dart_client_cmd, judgement_receive.data, sizeof(ext_dart_client_cmd_t));
+ 211:Application/judgement_info.c ****     }
+ 212:Application/judgement_info.c ****     break;
+ 213:Application/judgement_info.c ****     case STUDENT_INTERACTIVE_HEADER_DATA_CMD_ID:
+ 214:Application/judgement_info.c ****     {
+ 215:Application/judgement_info.c ****         memcpy(&student_interactive_header_data, judgement_receive.data, sizeof(ext_student_interac
+ 216:Application/judgement_info.c ****         switch (student_interactive_header_data.data_cmd_id)
+ 217:Application/judgement_info.c ****         {
+ 218:Application/judgement_info.c ****         case 0X201:
+ 219:Application/judgement_info.c ****             JudgeRxData[0] = student_interactive_header_data.data[0];
+ 220:Application/judgement_info.c ****             JudgeRxData[1] = student_interactive_header_data.data[1];
+ 221:Application/judgement_info.c ****             JudgeRxValid = 1;
+ 222:Application/judgement_info.c ****             break;
+ 223:Application/judgement_info.c ****         }
+ 224:Application/judgement_info.c ****     }
+ 225:Application/judgement_info.c ****     break;
+ 226:Application/judgement_info.c ****     case INTERACTIVE_DATA_CMD_ID:
+ 227:Application/judgement_info.c ****     {
+ 228:Application/judgement_info.c ****         memcpy(&robot_interactive_data, judgement_receive.data, sizeof(ext_robot_interactive_data_t
+ 229:Application/judgement_info.c ****     }
+ 230:Application/judgement_info.c ****     break;
+ 231:Application/judgement_info.c ****     case MAP_INTERACTIVITY_CMD_ID:
+ 232:Application/judgement_info.c ****     {
+ 233:Application/judgement_info.c ****         memcpy(&map_interactivity, judgement_receive.data, sizeof(ext_map_interactivity_t));
+ 146              		.loc 1 233 9 is_stmt 1 view .LVU10
+ 147 0082 804B     		ldr	r3, .L40
+ 148 0084 804C     		ldr	r4, .L40+4
+ 149 0086 D3F86B00 		ldr	r0, [r3, #107]	@ unaligned
+ 150 008a D3F86F10 		ldr	r1, [r3, #111]	@ unaligned
+ 151 008e D3F87320 		ldr	r2, [r3, #115]	@ unaligned
+ 152 0092 D3F87730 		ldr	r3, [r3, #119]	@ unaligned
+ 153 0096 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 234:Application/judgement_info.c ****     }
+ 235:Application/judgement_info.c ****     break;
+ 154              		.loc 1 235 5 view .LVU11
+ 236:Application/judgement_info.c ****     default:
+ 237:Application/judgement_info.c ****     {
+ 238:Application/judgement_info.c ****         break;
+ 239:Application/judgement_info.c ****     }
+ 240:Application/judgement_info.c ****     }
+ 241:Application/judgement_info.c **** }
+ 155              		.loc 1 241 1 is_stmt 0 view .LVU12
+ 156 0098 24E0     		b	.L5
+ 157              	.L39:
+ 106:Application/judgement_info.c ****     {
+ 158              		.loc 1 106 5 view .LVU13
+ 159 009a 40F20132 		movw	r2, #769
+ 160 009e 9342     		cmp	r3, r2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 8
+
+
+ 161 00a0 20D1     		bne	.L5
+ 215:Application/judgement_info.c ****         switch (student_interactive_header_data.data_cmd_id)
+ 162              		.loc 1 215 9 is_stmt 1 view .LVU14
+ 163 00a2 7A4C     		ldr	r4, .L40+8
+ 164 00a4 7C22     		movs	r2, #124
+ 165 00a6 7A49     		ldr	r1, .L40+12
+ 166 00a8 2046     		mov	r0, r4
+ 167 00aa FFF7FEFF 		bl	memcpy
+ 168              	.LVL2:
+ 216:Application/judgement_info.c ****         {
+ 169              		.loc 1 216 9 view .LVU15
+ 216:Application/judgement_info.c ****         {
+ 170              		.loc 1 216 48 is_stmt 0 view .LVU16
+ 171 00ae 2288     		ldrh	r2, [r4]
+ 172 00b0 40F20123 		movw	r3, #513
+ 173 00b4 9A42     		cmp	r2, r3
+ 174 00b6 15D1     		bne	.L5
+ 219:Application/judgement_info.c ****             JudgeRxData[1] = student_interactive_header_data.data[1];
+ 175              		.loc 1 219 13 is_stmt 1 view .LVU17
+ 219:Application/judgement_info.c ****             JudgeRxData[1] = student_interactive_header_data.data[1];
+ 176              		.loc 1 219 66 is_stmt 0 view .LVU18
+ 177 00b8 A179     		ldrb	r1, [r4, #6]	@ zero_extendqisi2
+ 219:Application/judgement_info.c ****             JudgeRxData[1] = student_interactive_header_data.data[1];
+ 178              		.loc 1 219 28 view .LVU19
+ 179 00ba 764B     		ldr	r3, .L40+16
+ 180 00bc 1970     		strb	r1, [r3]
+ 220:Application/judgement_info.c ****             JudgeRxValid = 1;
+ 181              		.loc 1 220 13 is_stmt 1 view .LVU20
+ 220:Application/judgement_info.c ****             JudgeRxValid = 1;
+ 182              		.loc 1 220 66 is_stmt 0 view .LVU21
+ 183 00be E279     		ldrb	r2, [r4, #7]	@ zero_extendqisi2
+ 220:Application/judgement_info.c ****             JudgeRxValid = 1;
+ 184              		.loc 1 220 28 view .LVU22
+ 185 00c0 5A70     		strb	r2, [r3, #1]
+ 221:Application/judgement_info.c ****             break;
+ 186              		.loc 1 221 13 is_stmt 1 view .LVU23
+ 221:Application/judgement_info.c ****             break;
+ 187              		.loc 1 221 26 is_stmt 0 view .LVU24
+ 188 00c2 754B     		ldr	r3, .L40+20
+ 189 00c4 0122     		movs	r2, #1
+ 190 00c6 1A70     		strb	r2, [r3]
+ 222:Application/judgement_info.c ****         }
+ 191              		.loc 1 222 13 is_stmt 1 view .LVU25
+ 192 00c8 0CE0     		b	.L5
+ 193              	.L32:
+ 110:Application/judgement_info.c ****         // game_status.game_type = judgement_receive.data[0] & 0x0f;
+ 194              		.loc 1 110 9 view .LVU26
+ 195 00ca 6E4A     		ldr	r2, .L40
+ 196 00cc 734B     		ldr	r3, .L40+24
+ 197 00ce D2F86B00 		ldr	r0, [r2, #107]	@ unaligned
+ 198 00d2 D2F86F10 		ldr	r1, [r2, #111]	@ unaligned
+ 199 00d6 03C3     		stmia	r3!, {r0, r1}
+ 200 00d8 B2F87310 		ldrh	r1, [r2, #115]	@ unaligned
+ 201 00dc 92F87520 		ldrb	r2, [r2, #117]	@ zero_extendqisi2
+ 202 00e0 1980     		strh	r1, [r3]	@ unaligned
+ 203 00e2 9A70     		strb	r2, [r3, #2]
+ 116:Application/judgement_info.c ****     case GAME_RESULT_CMD_ID:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 9
+
+
+ 204              		.loc 1 116 5 view .LVU27
+ 205              	.L5:
+ 206              		.loc 1 241 1 is_stmt 0 view .LVU28
+ 207 00e4 70BD     		pop	{r4, r5, r6, pc}
+ 208              	.L31:
+ 119:Application/judgement_info.c ****     }
+ 209              		.loc 1 119 9 is_stmt 1 view .LVU29
+ 210 00e6 674B     		ldr	r3, .L40
+ 211 00e8 93F86B20 		ldrb	r2, [r3, #107]	@ zero_extendqisi2
+ 212 00ec 6C4B     		ldr	r3, .L40+28
+ 213 00ee 1A70     		strb	r2, [r3]
+ 121:Application/judgement_info.c ****     case GAME_ROBOT_HP_CMD_ID:
+ 214              		.loc 1 121 5 view .LVU30
+ 215 00f0 F8E7     		b	.L5
+ 216              	.L30:
+ 124:Application/judgement_info.c ****     }
+ 217              		.loc 1 124 9 view .LVU31
+ 218 00f2 644D     		ldr	r5, .L40
+ 219 00f4 6B4C     		ldr	r4, .L40+32
+ 220 00f6 D5F86B00 		ldr	r0, [r5, #107]	@ unaligned
+ 221 00fa D5F86F10 		ldr	r1, [r5, #111]	@ unaligned
+ 222 00fe D5F87320 		ldr	r2, [r5, #115]	@ unaligned
+ 223 0102 D5F87730 		ldr	r3, [r5, #119]	@ unaligned
+ 224 0106 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 225 0108 D5F87B00 		ldr	r0, [r5, #123]	@ unaligned
+ 226 010c D5F87F10 		ldr	r1, [r5, #127]	@ unaligned
+ 227 0110 D5F88320 		ldr	r2, [r5, #131]	@ unaligned
+ 228 0114 D5F88730 		ldr	r3, [r5, #135]	@ unaligned
+ 229 0118 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 126:Application/judgement_info.c ****     case DART_STATUS_CMD_ID:
+ 230              		.loc 1 126 5 view .LVU32
+ 231 011a E3E7     		b	.L5
+ 232              	.L29:
+ 129:Application/judgement_info.c ****     }
+ 233              		.loc 1 129 9 view .LVU33
+ 234 011c 594B     		ldr	r3, .L40
+ 235 011e D3F86B20 		ldr	r2, [r3, #107]	@ unaligned
+ 236 0122 614B     		ldr	r3, .L40+36
+ 237 0124 1A60     		str	r2, [r3]
+ 131:Application/judgement_info.c ****     case ICRA_BUFF_DEBUFF_ZONE_STATUS_CMD_ID:
+ 238              		.loc 1 131 5 view .LVU34
+ 239 0126 DDE7     		b	.L5
+ 240              	.L27:
+ 134:Application/judgement_info.c ****     }
+ 241              		.loc 1 134 9 view .LVU35
+ 242 0128 564A     		ldr	r2, .L40
+ 243 012a 604B     		ldr	r3, .L40+40
+ 244 012c D2F86B00 		ldr	r0, [r2, #107]	@ unaligned
+ 245 0130 D2F86F10 		ldr	r1, [r2, #111]	@ unaligned
+ 246 0134 D2F87320 		ldr	r2, [r2, #115]	@ unaligned
+ 247 0138 07C3     		stmia	r3!, {r0, r1, r2}
+ 136:Application/judgement_info.c ****     case EVEN_DATA_CMD_ID:
+ 248              		.loc 1 136 5 view .LVU36
+ 249 013a D3E7     		b	.L5
+ 250              	.L26:
+ 139:Application/judgement_info.c ****     }
+ 251              		.loc 1 139 9 view .LVU37
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 10
+
+
+ 252 013c 514B     		ldr	r3, .L40
+ 253 013e D3F86B20 		ldr	r2, [r3, #107]	@ unaligned
+ 254 0142 5B4B     		ldr	r3, .L40+44
+ 255 0144 1A60     		str	r2, [r3]
+ 141:Application/judgement_info.c ****     case SUPPLY_PROJECTILE_ACTION_CMD_ID:
+ 256              		.loc 1 141 5 view .LVU38
+ 257 0146 CDE7     		b	.L5
+ 258              	.L25:
+ 144:Application/judgement_info.c ****     }
+ 259              		.loc 1 144 9 view .LVU39
+ 260 0148 4E4B     		ldr	r3, .L40
+ 261 014a D3F86B20 		ldr	r2, [r3, #107]	@ unaligned
+ 262 014e 594B     		ldr	r3, .L40+48
+ 263 0150 1A60     		str	r2, [r3]
+ 146:Application/judgement_info.c ****     case REFEREE_WARNING_CMD_ID:
+ 264              		.loc 1 146 5 view .LVU40
+ 265 0152 C7E7     		b	.L5
+ 266              	.L24:
+ 149:Application/judgement_info.c ****     }
+ 267              		.loc 1 149 9 view .LVU41
+ 268 0154 4B4B     		ldr	r3, .L40
+ 269 0156 B3F86B20 		ldrh	r2, [r3, #107]	@ unaligned
+ 270 015a 574B     		ldr	r3, .L40+52
+ 271 015c 1A80     		strh	r2, [r3]	@ movhi
+ 151:Application/judgement_info.c ****     case DART_REMAINING_TIME_CMD_ID:
+ 272              		.loc 1 151 5 view .LVU42
+ 273 015e C1E7     		b	.L5
+ 274              	.L22:
+ 154:Application/judgement_info.c ****     }
+ 275              		.loc 1 154 9 view .LVU43
+ 276 0160 484B     		ldr	r3, .L40
+ 277 0162 93F86B20 		ldrb	r2, [r3, #107]	@ zero_extendqisi2
+ 278 0166 554B     		ldr	r3, .L40+56
+ 279 0168 1A70     		strb	r2, [r3]
+ 156:Application/judgement_info.c ****     case GAME_ROBOT_STATUS_CMD_ID:
+ 280              		.loc 1 156 5 view .LVU44
+ 281 016a BBE7     		b	.L5
+ 282              	.L21:
+ 159:Application/judgement_info.c ****         if (robot_state.chassis_power_limit >= 10240)
+ 283              		.loc 1 159 9 view .LVU45
+ 284 016c 544E     		ldr	r6, .L40+60
+ 285 016e 454D     		ldr	r5, .L40
+ 286 0170 3446     		mov	r4, r6
+ 287 0172 D5F86B00 		ldr	r0, [r5, #107]	@ unaligned
+ 288 0176 D5F86F10 		ldr	r1, [r5, #111]	@ unaligned
+ 289 017a D5F87320 		ldr	r2, [r5, #115]	@ unaligned
+ 290 017e D5F87730 		ldr	r3, [r5, #119]	@ unaligned
+ 291 0182 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 292 0184 D5F87B00 		ldr	r0, [r5, #123]	@ unaligned
+ 293 0188 D5F87F10 		ldr	r1, [r5, #127]	@ unaligned
+ 294 018c D5F88320 		ldr	r2, [r5, #131]	@ unaligned
+ 295 0190 07C4     		stmia	r4!, {r0, r1, r2}
+ 160:Application/judgement_info.c ****             robot_state.chassis_power_limit /= 256;
+ 296              		.loc 1 160 9 view .LVU46
+ 160:Application/judgement_info.c ****             robot_state.chassis_power_limit /= 256;
+ 297              		.loc 1 160 24 is_stmt 0 view .LVU47
+ 298 0192 338B     		ldrh	r3, [r6, #24]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 11
+
+
+ 160:Application/judgement_info.c ****             robot_state.chassis_power_limit /= 256;
+ 299              		.loc 1 160 12 view .LVU48
+ 300 0194 B3F5205F 		cmp	r3, #10240
+ 301 0198 01D3     		bcc	.L37
+ 161:Application/judgement_info.c ****         if (robot_state.chassis_power_limit >= 200)
+ 302              		.loc 1 161 13 is_stmt 1 view .LVU49
+ 161:Application/judgement_info.c ****         if (robot_state.chassis_power_limit >= 200)
+ 303              		.loc 1 161 45 is_stmt 0 view .LVU50
+ 304 019a 1B0A     		lsrs	r3, r3, #8
+ 305 019c 3383     		strh	r3, [r6, #24]	@ movhi
+ 306              	.L37:
+ 162:Application/judgement_info.c ****             robot_state.chassis_power_limit /= 5;
+ 307              		.loc 1 162 9 is_stmt 1 view .LVU51
+ 162:Application/judgement_info.c ****             robot_state.chassis_power_limit /= 5;
+ 308              		.loc 1 162 24 is_stmt 0 view .LVU52
+ 309 019e 484B     		ldr	r3, .L40+60
+ 310 01a0 1B8B     		ldrh	r3, [r3, #24]
+ 162:Application/judgement_info.c ****             robot_state.chassis_power_limit /= 5;
+ 311              		.loc 1 162 12 view .LVU53
+ 312 01a2 C72B     		cmp	r3, #199
+ 313 01a4 9ED9     		bls	.L5
+ 163:Application/judgement_info.c ****     }
+ 314              		.loc 1 163 13 is_stmt 1 view .LVU54
+ 163:Application/judgement_info.c ****     }
+ 315              		.loc 1 163 45 is_stmt 0 view .LVU55
+ 316 01a6 474A     		ldr	r2, .L40+64
+ 317 01a8 A2FB0323 		umull	r2, r3, r2, r3
+ 318 01ac 9B08     		lsrs	r3, r3, #2
+ 319 01ae 444A     		ldr	r2, .L40+60
+ 320 01b0 1383     		strh	r3, [r2, #24]	@ movhi
+ 321 01b2 97E7     		b	.L5
+ 322              	.L20:
+ 168:Application/judgement_info.c ****         Shoot_Updata = 1;
+ 323              		.loc 1 168 9 is_stmt 1 view .LVU56
+ 324 01b4 334B     		ldr	r3, .L40
+ 325 01b6 444C     		ldr	r4, .L40+68
+ 326 01b8 D3F86B00 		ldr	r0, [r3, #107]	@ unaligned
+ 327 01bc D3F86F10 		ldr	r1, [r3, #111]	@ unaligned
+ 328 01c0 D3F87320 		ldr	r2, [r3, #115]	@ unaligned
+ 329 01c4 D3F87730 		ldr	r3, [r3, #119]	@ unaligned
+ 330 01c8 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 169:Application/judgement_info.c ****     }
+ 331              		.loc 1 169 9 view .LVU57
+ 169:Application/judgement_info.c ****     }
+ 332              		.loc 1 169 22 is_stmt 0 view .LVU58
+ 333 01ca 404B     		ldr	r3, .L40+72
+ 334 01cc 0122     		movs	r2, #1
+ 335 01ce 1A70     		strb	r2, [r3]
+ 171:Application/judgement_info.c ****     case GAME_ROBOT_POS_CMD_ID:
+ 336              		.loc 1 171 5 is_stmt 1 view .LVU59
+ 337 01d0 88E7     		b	.L5
+ 338              	.L19:
+ 174:Application/judgement_info.c ****     }
+ 339              		.loc 1 174 9 view .LVU60
+ 340 01d2 2C4B     		ldr	r3, .L40
+ 341 01d4 3E4C     		ldr	r4, .L40+76
+ 342 01d6 D3F86B00 		ldr	r0, [r3, #107]	@ unaligned
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 12
+
+
+ 343 01da D3F86F10 		ldr	r1, [r3, #111]	@ unaligned
+ 344 01de D3F87320 		ldr	r2, [r3, #115]	@ unaligned
+ 345 01e2 D3F87730 		ldr	r3, [r3, #119]	@ unaligned
+ 346 01e6 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 176:Application/judgement_info.c ****     case BUFF_MUSK_CMD_ID:
+ 347              		.loc 1 176 5 view .LVU61
+ 348 01e8 7CE7     		b	.L5
+ 349              	.L18:
+ 179:Application/judgement_info.c ****     }
+ 350              		.loc 1 179 9 view .LVU62
+ 351 01ea 264B     		ldr	r3, .L40
+ 352 01ec 93F86B20 		ldrb	r2, [r3, #107]	@ zero_extendqisi2
+ 353 01f0 384B     		ldr	r3, .L40+80
+ 354 01f2 1A70     		strb	r2, [r3]
+ 181:Application/judgement_info.c ****     case ROBOT_ENERGY_CMD_ID:
+ 355              		.loc 1 181 5 view .LVU63
+ 356 01f4 76E7     		b	.L5
+ 357              	.L17:
+ 184:Application/judgement_info.c ****     }
+ 358              		.loc 1 184 9 view .LVU64
+ 359 01f6 234B     		ldr	r3, .L40
+ 360 01f8 93F86B20 		ldrb	r2, [r3, #107]	@ zero_extendqisi2
+ 361 01fc 364B     		ldr	r3, .L40+84
+ 362 01fe 1A70     		strb	r2, [r3]
+ 186:Application/judgement_info.c ****     case ROBOT_HURT_CMD_ID:
+ 363              		.loc 1 186 5 view .LVU65
+ 364 0200 70E7     		b	.L5
+ 365              	.L16:
+ 189:Application/judgement_info.c ****     }
+ 366              		.loc 1 189 9 view .LVU66
+ 367 0202 204B     		ldr	r3, .L40
+ 368 0204 93F86B20 		ldrb	r2, [r3, #107]	@ zero_extendqisi2
+ 369 0208 344B     		ldr	r3, .L40+88
+ 370 020a 1A70     		strb	r2, [r3]
+ 191:Application/judgement_info.c ****     case SHOOT_DATA_CMD_ID:
+ 371              		.loc 1 191 5 view .LVU67
+ 372 020c 6AE7     		b	.L5
+ 373              	.L15:
+ 194:Application/judgement_info.c ****         Shoot_Updata = 1;
+ 374              		.loc 1 194 9 view .LVU68
+ 375 020e 1D4A     		ldr	r2, .L40
+ 376 0210 334B     		ldr	r3, .L40+92
+ 377 0212 D2F86B00 		ldr	r0, [r2, #107]	@ unaligned
+ 378 0216 D2F86F10 		ldr	r1, [r2, #111]	@ unaligned
+ 379 021a 03C3     		stmia	r3!, {r0, r1}
+ 195:Application/judgement_info.c ****     }
+ 380              		.loc 1 195 9 view .LVU69
+ 195:Application/judgement_info.c ****     }
+ 381              		.loc 1 195 22 is_stmt 0 view .LVU70
+ 382 021c 2B4B     		ldr	r3, .L40+72
+ 383 021e 0122     		movs	r2, #1
+ 384 0220 1A70     		strb	r2, [r3]
+ 197:Application/judgement_info.c ****     case BULLET_REMAINING_CMD_ID:
+ 385              		.loc 1 197 5 is_stmt 1 view .LVU71
+ 386 0222 5FE7     		b	.L5
+ 387              	.L14:
+ 200:Application/judgement_info.c ****     }
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 13
+
+
+ 388              		.loc 1 200 9 view .LVU72
+ 389 0224 2F4B     		ldr	r3, .L40+96
+ 390 0226 174A     		ldr	r2, .L40
+ 391 0228 D2F86B00 		ldr	r0, [r2, #107]	@ unaligned
+ 392 022c 1860     		str	r0, [r3]
+ 393 022e B2F86F20 		ldrh	r2, [r2, #111]	@ unaligned
+ 394 0232 9A80     		strh	r2, [r3, #4]	@ unaligned
+ 202:Application/judgement_info.c ****     case RFID_STATUS_CMD_ID:
+ 395              		.loc 1 202 5 view .LVU73
+ 396 0234 56E7     		b	.L5
+ 397              	.L13:
+ 205:Application/judgement_info.c ****     }
+ 398              		.loc 1 205 9 view .LVU74
+ 399 0236 134B     		ldr	r3, .L40
+ 400 0238 D3F86B20 		ldr	r2, [r3, #107]	@ unaligned
+ 401 023c 2A4B     		ldr	r3, .L40+100
+ 402 023e 1A60     		str	r2, [r3]
+ 207:Application/judgement_info.c ****     case DART_CLIENT_CMD_ID:
+ 403              		.loc 1 207 5 view .LVU75
+ 404 0240 50E7     		b	.L5
+ 405              	.L11:
+ 210:Application/judgement_info.c ****     }
+ 406              		.loc 1 210 9 view .LVU76
+ 407 0242 104A     		ldr	r2, .L40
+ 408 0244 294B     		ldr	r3, .L40+104
+ 409 0246 D2F86B00 		ldr	r0, [r2, #107]	@ unaligned
+ 410 024a D2F86F10 		ldr	r1, [r2, #111]	@ unaligned
+ 411 024e D2F87320 		ldr	r2, [r2, #115]	@ unaligned
+ 412 0252 07C3     		stmia	r3!, {r0, r1, r2}
+ 212:Application/judgement_info.c ****     case STUDENT_INTERACTIVE_HEADER_DATA_CMD_ID:
+ 413              		.loc 1 212 5 view .LVU77
+ 414 0254 46E7     		b	.L5
+ 415              	.L34:
+ 228:Application/judgement_info.c ****     }
+ 416              		.loc 1 228 9 view .LVU78
+ 417 0256 0B4D     		ldr	r5, .L40
+ 418 0258 254C     		ldr	r4, .L40+108
+ 419 025a D5F86B00 		ldr	r0, [r5, #107]	@ unaligned
+ 420 025e D5F86F10 		ldr	r1, [r5, #111]	@ unaligned
+ 421 0262 D5F87320 		ldr	r2, [r5, #115]	@ unaligned
+ 422 0266 D5F87730 		ldr	r3, [r5, #119]	@ unaligned
+ 423 026a 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 424 026c D5F87B00 		ldr	r0, [r5, #123]	@ unaligned
+ 425 0270 D5F87F10 		ldr	r1, [r5, #127]	@ unaligned
+ 426 0274 D5F88320 		ldr	r2, [r5, #131]	@ unaligned
+ 427 0278 07C4     		stmia	r4!, {r0, r1, r2}
+ 428 027a B5F88730 		ldrh	r3, [r5, #135]	@ unaligned
+ 429 027e 2380     		strh	r3, [r4]	@ unaligned
+ 230:Application/judgement_info.c ****     case MAP_INTERACTIVITY_CMD_ID:
+ 430              		.loc 1 230 5 view .LVU79
+ 431 0280 30E7     		b	.L5
+ 432              	.L41:
+ 433 0282 00BF     		.align	2
+ 434              	.L40:
+ 435 0284 00000000 		.word	.LANCHOR1
+ 436 0288 00000000 		.word	.LANCHOR26
+ 437 028c 00000000 		.word	.LANCHOR22
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 14
+
+
+ 438 0290 6B000000 		.word	.LANCHOR1+107
+ 439 0294 00000000 		.word	.LANCHOR23
+ 440 0298 00000000 		.word	.LANCHOR24
+ 441 029c 00000000 		.word	.LANCHOR2
+ 442 02a0 00000000 		.word	.LANCHOR3
+ 443 02a4 00000000 		.word	.LANCHOR4
+ 444 02a8 00000000 		.word	.LANCHOR5
+ 445 02ac 00000000 		.word	.LANCHOR6
+ 446 02b0 00000000 		.word	.LANCHOR7
+ 447 02b4 00000000 		.word	.LANCHOR8
+ 448 02b8 00000000 		.word	.LANCHOR9
+ 449 02bc 00000000 		.word	.LANCHOR10
+ 450 02c0 00000000 		.word	.LANCHOR11
+ 451 02c4 CDCCCCCC 		.word	-858993459
+ 452 02c8 00000000 		.word	.LANCHOR12
+ 453 02cc 00000000 		.word	.LANCHOR13
+ 454 02d0 00000000 		.word	.LANCHOR14
+ 455 02d4 00000000 		.word	.LANCHOR15
+ 456 02d8 00000000 		.word	.LANCHOR16
+ 457 02dc 00000000 		.word	.LANCHOR17
+ 458 02e0 00000000 		.word	.LANCHOR18
+ 459 02e4 00000000 		.word	.LANCHOR19
+ 460 02e8 00000000 		.word	.LANCHOR20
+ 461 02ec 00000000 		.word	.LANCHOR21
+ 462 02f0 00000000 		.word	.LANCHOR25
+ 463              		.cfi_endproc
+ 464              	.LFE175:
+ 466              		.section	.text.judgement_info_updata,"ax",%progbits
+ 467              		.align	1
+ 468              		.global	judgement_info_updata
+ 469              		.syntax unified
+ 470              		.thumb
+ 471              		.thumb_func
+ 473              	judgement_info_updata:
+ 474              	.LFB176:
+ 242:Application/judgement_info.c **** 
+ 243:Application/judgement_info.c **** void judgement_info_updata(void)
+ 244:Application/judgement_info.c **** {
+ 475              		.loc 1 244 1 view -0
+ 476              		.cfi_startproc
+ 477              		@ args = 0, pretend = 0, frame = 0
+ 478              		@ frame_needed = 0, uses_anonymous_args = 0
+ 479              		@ link register save eliminated.
+ 245:Application/judgement_info.c **** }
+ 480              		.loc 1 245 1 view .LVU81
+ 481 0000 7047     		bx	lr
+ 482              		.cfi_endproc
+ 483              	.LFE176:
+ 485              		.section	.text.Get_CRC8_Check_Sum,"ax",%progbits
+ 486              		.align	1
+ 487              		.global	Get_CRC8_Check_Sum
+ 488              		.syntax unified
+ 489              		.thumb
+ 490              		.thumb_func
+ 492              	Get_CRC8_Check_Sum:
+ 493              	.LVL3:
+ 494              	.LFB177:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 15
+
+
+ 246:Application/judgement_info.c **** 
+ 247:Application/judgement_info.c **** // crc8 generator polynomial:G(x)=x8+x5+x4+1
+ 248:Application/judgement_info.c **** const uint8_t CRC8_INIT = 0xff;
+ 249:Application/judgement_info.c **** const unsigned char CRC8_TAB[256] =
+ 250:Application/judgement_info.c ****     {
+ 251:Application/judgement_info.c ****         0x00,
+ 252:Application/judgement_info.c ****         0x5e,
+ 253:Application/judgement_info.c ****         0xbc,
+ 254:Application/judgement_info.c ****         0xe2,
+ 255:Application/judgement_info.c ****         0x61,
+ 256:Application/judgement_info.c ****         0x3f,
+ 257:Application/judgement_info.c ****         0xdd,
+ 258:Application/judgement_info.c ****         0x83,
+ 259:Application/judgement_info.c ****         0xc2,
+ 260:Application/judgement_info.c ****         0x9c,
+ 261:Application/judgement_info.c ****         0x7e,
+ 262:Application/judgement_info.c ****         0x20,
+ 263:Application/judgement_info.c ****         0xa3,
+ 264:Application/judgement_info.c ****         0xfd,
+ 265:Application/judgement_info.c ****         0x1f,
+ 266:Application/judgement_info.c ****         0x41,
+ 267:Application/judgement_info.c ****         0x9d,
+ 268:Application/judgement_info.c ****         0xc3,
+ 269:Application/judgement_info.c ****         0x21,
+ 270:Application/judgement_info.c ****         0x7f,
+ 271:Application/judgement_info.c ****         0xfc,
+ 272:Application/judgement_info.c ****         0xa2,
+ 273:Application/judgement_info.c ****         0x40,
+ 274:Application/judgement_info.c ****         0x1e,
+ 275:Application/judgement_info.c ****         0x5f,
+ 276:Application/judgement_info.c ****         0x01,
+ 277:Application/judgement_info.c ****         0xe3,
+ 278:Application/judgement_info.c ****         0xbd,
+ 279:Application/judgement_info.c ****         0x3e,
+ 280:Application/judgement_info.c ****         0x60,
+ 281:Application/judgement_info.c ****         0x82,
+ 282:Application/judgement_info.c ****         0xdc,
+ 283:Application/judgement_info.c ****         0x23,
+ 284:Application/judgement_info.c ****         0x7d,
+ 285:Application/judgement_info.c ****         0x9f,
+ 286:Application/judgement_info.c ****         0xc1,
+ 287:Application/judgement_info.c ****         0x42,
+ 288:Application/judgement_info.c ****         0x1c,
+ 289:Application/judgement_info.c ****         0xfe,
+ 290:Application/judgement_info.c ****         0xa0,
+ 291:Application/judgement_info.c ****         0xe1,
+ 292:Application/judgement_info.c ****         0xbf,
+ 293:Application/judgement_info.c ****         0x5d,
+ 294:Application/judgement_info.c ****         0x03,
+ 295:Application/judgement_info.c ****         0x80,
+ 296:Application/judgement_info.c ****         0xde,
+ 297:Application/judgement_info.c ****         0x3c,
+ 298:Application/judgement_info.c ****         0x62,
+ 299:Application/judgement_info.c ****         0xbe,
+ 300:Application/judgement_info.c ****         0xe0,
+ 301:Application/judgement_info.c ****         0x02,
+ 302:Application/judgement_info.c ****         0x5c,
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 16
+
+
+ 303:Application/judgement_info.c ****         0xdf,
+ 304:Application/judgement_info.c ****         0x81,
+ 305:Application/judgement_info.c ****         0x63,
+ 306:Application/judgement_info.c ****         0x3d,
+ 307:Application/judgement_info.c ****         0x7c,
+ 308:Application/judgement_info.c ****         0x22,
+ 309:Application/judgement_info.c ****         0xc0,
+ 310:Application/judgement_info.c ****         0x9e,
+ 311:Application/judgement_info.c ****         0x1d,
+ 312:Application/judgement_info.c ****         0x43,
+ 313:Application/judgement_info.c ****         0xa1,
+ 314:Application/judgement_info.c ****         0xff,
+ 315:Application/judgement_info.c ****         0x46,
+ 316:Application/judgement_info.c ****         0x18,
+ 317:Application/judgement_info.c ****         0xfa,
+ 318:Application/judgement_info.c ****         0xa4,
+ 319:Application/judgement_info.c ****         0x27,
+ 320:Application/judgement_info.c ****         0x79,
+ 321:Application/judgement_info.c ****         0x9b,
+ 322:Application/judgement_info.c ****         0xc5,
+ 323:Application/judgement_info.c ****         0x84,
+ 324:Application/judgement_info.c ****         0xda,
+ 325:Application/judgement_info.c ****         0x38,
+ 326:Application/judgement_info.c ****         0x66,
+ 327:Application/judgement_info.c ****         0xe5,
+ 328:Application/judgement_info.c ****         0xbb,
+ 329:Application/judgement_info.c ****         0x59,
+ 330:Application/judgement_info.c ****         0x07,
+ 331:Application/judgement_info.c ****         0xdb,
+ 332:Application/judgement_info.c ****         0x85,
+ 333:Application/judgement_info.c ****         0x67,
+ 334:Application/judgement_info.c ****         0x39,
+ 335:Application/judgement_info.c ****         0xba,
+ 336:Application/judgement_info.c ****         0xe4,
+ 337:Application/judgement_info.c ****         0x06,
+ 338:Application/judgement_info.c ****         0x58,
+ 339:Application/judgement_info.c ****         0x19,
+ 340:Application/judgement_info.c ****         0x47,
+ 341:Application/judgement_info.c ****         0xa5,
+ 342:Application/judgement_info.c ****         0xfb,
+ 343:Application/judgement_info.c ****         0x78,
+ 344:Application/judgement_info.c ****         0x26,
+ 345:Application/judgement_info.c ****         0xc4,
+ 346:Application/judgement_info.c ****         0x9a,
+ 347:Application/judgement_info.c ****         0x65,
+ 348:Application/judgement_info.c ****         0x3b,
+ 349:Application/judgement_info.c ****         0xd9,
+ 350:Application/judgement_info.c ****         0x87,
+ 351:Application/judgement_info.c ****         0x04,
+ 352:Application/judgement_info.c ****         0x5a,
+ 353:Application/judgement_info.c ****         0xb8,
+ 354:Application/judgement_info.c ****         0xe6,
+ 355:Application/judgement_info.c ****         0xa7,
+ 356:Application/judgement_info.c ****         0xf9,
+ 357:Application/judgement_info.c ****         0x1b,
+ 358:Application/judgement_info.c ****         0x45,
+ 359:Application/judgement_info.c ****         0xc6,
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 17
+
+
+ 360:Application/judgement_info.c ****         0x98,
+ 361:Application/judgement_info.c ****         0x7a,
+ 362:Application/judgement_info.c ****         0x24,
+ 363:Application/judgement_info.c ****         0xf8,
+ 364:Application/judgement_info.c ****         0xa6,
+ 365:Application/judgement_info.c ****         0x44,
+ 366:Application/judgement_info.c ****         0x1a,
+ 367:Application/judgement_info.c ****         0x99,
+ 368:Application/judgement_info.c ****         0xc7,
+ 369:Application/judgement_info.c ****         0x25,
+ 370:Application/judgement_info.c ****         0x7b,
+ 371:Application/judgement_info.c ****         0x3a,
+ 372:Application/judgement_info.c ****         0x64,
+ 373:Application/judgement_info.c ****         0x86,
+ 374:Application/judgement_info.c ****         0xd8,
+ 375:Application/judgement_info.c ****         0x5b,
+ 376:Application/judgement_info.c ****         0x05,
+ 377:Application/judgement_info.c ****         0xe7,
+ 378:Application/judgement_info.c ****         0xb9,
+ 379:Application/judgement_info.c ****         0x8c,
+ 380:Application/judgement_info.c ****         0xd2,
+ 381:Application/judgement_info.c ****         0x30,
+ 382:Application/judgement_info.c ****         0x6e,
+ 383:Application/judgement_info.c ****         0xed,
+ 384:Application/judgement_info.c ****         0xb3,
+ 385:Application/judgement_info.c ****         0x51,
+ 386:Application/judgement_info.c ****         0x0f,
+ 387:Application/judgement_info.c ****         0x4e,
+ 388:Application/judgement_info.c ****         0x10,
+ 389:Application/judgement_info.c ****         0xf2,
+ 390:Application/judgement_info.c ****         0xac,
+ 391:Application/judgement_info.c ****         0x2f,
+ 392:Application/judgement_info.c ****         0x71,
+ 393:Application/judgement_info.c ****         0x93,
+ 394:Application/judgement_info.c ****         0xcd,
+ 395:Application/judgement_info.c ****         0x11,
+ 396:Application/judgement_info.c ****         0x4f,
+ 397:Application/judgement_info.c ****         0xad,
+ 398:Application/judgement_info.c ****         0xf3,
+ 399:Application/judgement_info.c ****         0x70,
+ 400:Application/judgement_info.c ****         0x2e,
+ 401:Application/judgement_info.c ****         0xcc,
+ 402:Application/judgement_info.c ****         0x92,
+ 403:Application/judgement_info.c ****         0xd3,
+ 404:Application/judgement_info.c ****         0x8d,
+ 405:Application/judgement_info.c ****         0x6f,
+ 406:Application/judgement_info.c ****         0x31,
+ 407:Application/judgement_info.c ****         0xb2,
+ 408:Application/judgement_info.c ****         0xec,
+ 409:Application/judgement_info.c ****         0x0e,
+ 410:Application/judgement_info.c ****         0x50,
+ 411:Application/judgement_info.c ****         0xaf,
+ 412:Application/judgement_info.c ****         0xf1,
+ 413:Application/judgement_info.c ****         0x13,
+ 414:Application/judgement_info.c ****         0x4d,
+ 415:Application/judgement_info.c ****         0xce,
+ 416:Application/judgement_info.c ****         0x90,
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 18
+
+
+ 417:Application/judgement_info.c ****         0x72,
+ 418:Application/judgement_info.c ****         0x2c,
+ 419:Application/judgement_info.c ****         0x6d,
+ 420:Application/judgement_info.c ****         0x33,
+ 421:Application/judgement_info.c ****         0xd1,
+ 422:Application/judgement_info.c ****         0x8f,
+ 423:Application/judgement_info.c ****         0x0c,
+ 424:Application/judgement_info.c ****         0x52,
+ 425:Application/judgement_info.c ****         0xb0,
+ 426:Application/judgement_info.c ****         0xee,
+ 427:Application/judgement_info.c ****         0x32,
+ 428:Application/judgement_info.c ****         0x6c,
+ 429:Application/judgement_info.c ****         0x8e,
+ 430:Application/judgement_info.c ****         0xd0,
+ 431:Application/judgement_info.c ****         0x53,
+ 432:Application/judgement_info.c ****         0x0d,
+ 433:Application/judgement_info.c ****         0xef,
+ 434:Application/judgement_info.c ****         0xb1,
+ 435:Application/judgement_info.c ****         0xf0,
+ 436:Application/judgement_info.c ****         0xae,
+ 437:Application/judgement_info.c ****         0x4c,
+ 438:Application/judgement_info.c ****         0x12,
+ 439:Application/judgement_info.c ****         0x91,
+ 440:Application/judgement_info.c ****         0xcf,
+ 441:Application/judgement_info.c ****         0x2d,
+ 442:Application/judgement_info.c ****         0x73,
+ 443:Application/judgement_info.c ****         0xca,
+ 444:Application/judgement_info.c ****         0x94,
+ 445:Application/judgement_info.c ****         0x76,
+ 446:Application/judgement_info.c ****         0x28,
+ 447:Application/judgement_info.c ****         0xab,
+ 448:Application/judgement_info.c ****         0xf5,
+ 449:Application/judgement_info.c ****         0x17,
+ 450:Application/judgement_info.c ****         0x49,
+ 451:Application/judgement_info.c ****         0x08,
+ 452:Application/judgement_info.c ****         0x56,
+ 453:Application/judgement_info.c ****         0xb4,
+ 454:Application/judgement_info.c ****         0xea,
+ 455:Application/judgement_info.c ****         0x69,
+ 456:Application/judgement_info.c ****         0x37,
+ 457:Application/judgement_info.c ****         0xd5,
+ 458:Application/judgement_info.c ****         0x8b,
+ 459:Application/judgement_info.c ****         0x57,
+ 460:Application/judgement_info.c ****         0x09,
+ 461:Application/judgement_info.c ****         0xeb,
+ 462:Application/judgement_info.c ****         0xb5,
+ 463:Application/judgement_info.c ****         0x36,
+ 464:Application/judgement_info.c ****         0x68,
+ 465:Application/judgement_info.c ****         0x8a,
+ 466:Application/judgement_info.c ****         0xd4,
+ 467:Application/judgement_info.c ****         0x95,
+ 468:Application/judgement_info.c ****         0xcb,
+ 469:Application/judgement_info.c ****         0x29,
+ 470:Application/judgement_info.c ****         0x77,
+ 471:Application/judgement_info.c ****         0xf4,
+ 472:Application/judgement_info.c ****         0xaa,
+ 473:Application/judgement_info.c ****         0x48,
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 19
+
+
+ 474:Application/judgement_info.c ****         0x16,
+ 475:Application/judgement_info.c ****         0xe9,
+ 476:Application/judgement_info.c ****         0xb7,
+ 477:Application/judgement_info.c ****         0x55,
+ 478:Application/judgement_info.c ****         0x0b,
+ 479:Application/judgement_info.c ****         0x88,
+ 480:Application/judgement_info.c ****         0xd6,
+ 481:Application/judgement_info.c ****         0x34,
+ 482:Application/judgement_info.c ****         0x6a,
+ 483:Application/judgement_info.c ****         0x2b,
+ 484:Application/judgement_info.c ****         0x75,
+ 485:Application/judgement_info.c ****         0x97,
+ 486:Application/judgement_info.c ****         0xc9,
+ 487:Application/judgement_info.c ****         0x4a,
+ 488:Application/judgement_info.c ****         0x14,
+ 489:Application/judgement_info.c ****         0xf6,
+ 490:Application/judgement_info.c ****         0xa8,
+ 491:Application/judgement_info.c ****         0x74,
+ 492:Application/judgement_info.c ****         0x2a,
+ 493:Application/judgement_info.c ****         0xc8,
+ 494:Application/judgement_info.c ****         0x96,
+ 495:Application/judgement_info.c ****         0x15,
+ 496:Application/judgement_info.c ****         0x4b,
+ 497:Application/judgement_info.c ****         0xa9,
+ 498:Application/judgement_info.c ****         0xf7,
+ 499:Application/judgement_info.c ****         0xb6,
+ 500:Application/judgement_info.c ****         0xe8,
+ 501:Application/judgement_info.c ****         0x0a,
+ 502:Application/judgement_info.c ****         0x54,
+ 503:Application/judgement_info.c ****         0xd7,
+ 504:Application/judgement_info.c ****         0x89,
+ 505:Application/judgement_info.c ****         0x6b,
+ 506:Application/judgement_info.c ****         0x35,
+ 507:Application/judgement_info.c **** };
+ 508:Application/judgement_info.c **** 
+ 509:Application/judgement_info.c **** uint16_t CRC_INIT = 0xffff;
+ 510:Application/judgement_info.c **** const uint16_t wCRC_Table[256] = {
+ 511:Application/judgement_info.c ****     0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
+ 512:Application/judgement_info.c ****     0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
+ 513:Application/judgement_info.c ****     0x1081, 0x0108, 0x3393, 0x221a, 0x56a5, 0x472c, 0x75b7, 0x643e,
+ 514:Application/judgement_info.c ****     0x9cc9, 0x8d40, 0xbfdb, 0xae52, 0xdaed, 0xcb64, 0xf9ff, 0xe876,
+ 515:Application/judgement_info.c ****     0x2102, 0x308b, 0x0210, 0x1399, 0x6726, 0x76af, 0x4434, 0x55bd,
+ 516:Application/judgement_info.c ****     0xad4a, 0xbcc3, 0x8e58, 0x9fd1, 0xeb6e, 0xfae7, 0xc87c, 0xd9f5,
+ 517:Application/judgement_info.c ****     0x3183, 0x200a, 0x1291, 0x0318, 0x77a7, 0x662e, 0x54b5, 0x453c,
+ 518:Application/judgement_info.c ****     0xbdcb, 0xac42, 0x9ed9, 0x8f50, 0xfbef, 0xea66, 0xd8fd, 0xc974,
+ 519:Application/judgement_info.c ****     0x4204, 0x538d, 0x6116, 0x709f, 0x0420, 0x15a9, 0x2732, 0x36bb,
+ 520:Application/judgement_info.c ****     0xce4c, 0xdfc5, 0xed5e, 0xfcd7, 0x8868, 0x99e1, 0xab7a, 0xbaf3,
+ 521:Application/judgement_info.c ****     0x5285, 0x430c, 0x7197, 0x601e, 0x14a1, 0x0528, 0x37b3, 0x263a,
+ 522:Application/judgement_info.c ****     0xdecd, 0xcf44, 0xfddf, 0xec56, 0x98e9, 0x8960, 0xbbfb, 0xaa72,
+ 523:Application/judgement_info.c ****     0x6306, 0x728f, 0x4014, 0x519d, 0x2522, 0x34ab, 0x0630, 0x17b9,
+ 524:Application/judgement_info.c ****     0xef4e, 0xfec7, 0xcc5c, 0xddd5, 0xa96a, 0xb8e3, 0x8a78, 0x9bf1,
+ 525:Application/judgement_info.c ****     0x7387, 0x620e, 0x5095, 0x411c, 0x35a3, 0x242a, 0x16b1, 0x0738,
+ 526:Application/judgement_info.c ****     0xffcf, 0xee46, 0xdcdd, 0xcd54, 0xb9eb, 0xa862, 0x9af9, 0x8b70,
+ 527:Application/judgement_info.c ****     0x8408, 0x9581, 0xa71a, 0xb693, 0xc22c, 0xd3a5, 0xe13e, 0xf0b7,
+ 528:Application/judgement_info.c ****     0x0840, 0x19c9, 0x2b52, 0x3adb, 0x4e64, 0x5fed, 0x6d76, 0x7cff,
+ 529:Application/judgement_info.c ****     0x9489, 0x8500, 0xb79b, 0xa612, 0xd2ad, 0xc324, 0xf1bf, 0xe036,
+ 530:Application/judgement_info.c ****     0x18c1, 0x0948, 0x3bd3, 0x2a5a, 0x5ee5, 0x4f6c, 0x7df7, 0x6c7e,
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 20
+
+
+ 531:Application/judgement_info.c ****     0xa50a, 0xb483, 0x8618, 0x9791, 0xe32e, 0xf2a7, 0xc03c, 0xd1b5,
+ 532:Application/judgement_info.c ****     0x2942, 0x38cb, 0x0a50, 0x1bd9, 0x6f66, 0x7eef, 0x4c74, 0x5dfd,
+ 533:Application/judgement_info.c ****     0xb58b, 0xa402, 0x9699, 0x8710, 0xf3af, 0xe226, 0xd0bd, 0xc134,
+ 534:Application/judgement_info.c ****     0x39c3, 0x284a, 0x1ad1, 0x0b58, 0x7fe7, 0x6e6e, 0x5cf5, 0x4d7c,
+ 535:Application/judgement_info.c ****     0xc60c, 0xd785, 0xe51e, 0xf497, 0x8028, 0x91a1, 0xa33a, 0xb2b3,
+ 536:Application/judgement_info.c ****     0x4a44, 0x5bcd, 0x6956, 0x78df, 0x0c60, 0x1de9, 0x2f72, 0x3efb,
+ 537:Application/judgement_info.c ****     0xd68d, 0xc704, 0xf59f, 0xe416, 0x90a9, 0x8120, 0xb3bb, 0xa232,
+ 538:Application/judgement_info.c ****     0x5ac5, 0x4b4c, 0x79d7, 0x685e, 0x1ce1, 0x0d68, 0x3ff3, 0x2e7a,
+ 539:Application/judgement_info.c ****     0xe70e, 0xf687, 0xc41c, 0xd595, 0xa12a, 0xb0a3, 0x8238, 0x93b1,
+ 540:Application/judgement_info.c ****     0x6b46, 0x7acf, 0x4854, 0x59dd, 0x2d62, 0x3ceb, 0x0e70, 0x1ff9,
+ 541:Application/judgement_info.c ****     0xf78f, 0xe606, 0xd49d, 0xc514, 0xb1ab, 0xa022, 0x92b9, 0x8330,
+ 542:Application/judgement_info.c ****     0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78};
+ 543:Application/judgement_info.c **** 
+ 544:Application/judgement_info.c **** unsigned char Get_CRC8_Check_Sum(unsigned char *pchMessage, unsigned int dwLength, unsigned char uc
+ 545:Application/judgement_info.c **** {
+ 495              		.loc 1 545 1 view -0
+ 496              		.cfi_startproc
+ 497              		@ args = 0, pretend = 0, frame = 0
+ 498              		@ frame_needed = 0, uses_anonymous_args = 0
+ 499              		@ link register save eliminated.
+ 500              		.loc 1 545 1 is_stmt 0 view .LVU83
+ 501 0000 0346     		mov	r3, r0
+ 502 0002 1046     		mov	r0, r2
+ 503              	.LVL4:
+ 546:Application/judgement_info.c ****     unsigned char ucIndex;
+ 504              		.loc 1 546 5 is_stmt 1 view .LVU84
+ 547:Application/judgement_info.c ****     while (dwLength--)
+ 505              		.loc 1 547 5 view .LVU85
+ 506              		.loc 1 547 11 is_stmt 0 view .LVU86
+ 507 0004 05E0     		b	.L44
+ 508              	.LVL5:
+ 509              	.L45:
+ 548:Application/judgement_info.c ****     {
+ 549:Application/judgement_info.c ****         ucIndex = ucCRC8 ^ (*pchMessage++);
+ 510              		.loc 1 549 9 is_stmt 1 view .LVU87
+ 511              		.loc 1 549 29 is_stmt 0 view .LVU88
+ 512 0006 13F8011B 		ldrb	r1, [r3], #1	@ zero_extendqisi2
+ 513              	.LVL6:
+ 514              		.loc 1 549 17 view .LVU89
+ 515 000a 4140     		eors	r1, r1, r0
+ 516              	.LVL7:
+ 550:Application/judgement_info.c ****         ucCRC8 = CRC8_TAB[ucIndex];
+ 517              		.loc 1 550 9 is_stmt 1 view .LVU90
+ 518              		.loc 1 550 16 is_stmt 0 view .LVU91
+ 519 000c 0348     		ldr	r0, .L46
+ 520              	.LVL8:
+ 521              		.loc 1 550 16 view .LVU92
+ 522 000e 405C     		ldrb	r0, [r0, r1]	@ zero_extendqisi2
+ 523              	.LVL9:
+ 547:Application/judgement_info.c ****     while (dwLength--)
+ 524              		.loc 1 547 20 view .LVU93
+ 525 0010 1146     		mov	r1, r2
+ 526              	.LVL10:
+ 527              	.L44:
+ 547:Application/judgement_info.c ****     while (dwLength--)
+ 528              		.loc 1 547 11 is_stmt 1 view .LVU94
+ 547:Application/judgement_info.c ****     while (dwLength--)
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 21
+
+
+ 529              		.loc 1 547 20 is_stmt 0 view .LVU95
+ 530 0012 4A1E     		subs	r2, r1, #1
+ 531              	.LVL11:
+ 547:Application/judgement_info.c ****     while (dwLength--)
+ 532              		.loc 1 547 11 view .LVU96
+ 533 0014 0029     		cmp	r1, #0
+ 534 0016 F6D1     		bne	.L45
+ 551:Application/judgement_info.c ****     }
+ 552:Application/judgement_info.c ****     return (ucCRC8);
+ 535              		.loc 1 552 5 is_stmt 1 view .LVU97
+ 553:Application/judgement_info.c **** }
+ 536              		.loc 1 553 1 is_stmt 0 view .LVU98
+ 537 0018 7047     		bx	lr
+ 538              	.L47:
+ 539 001a 00BF     		.align	2
+ 540              	.L46:
+ 541 001c 00000000 		.word	.LANCHOR27
+ 542              		.cfi_endproc
+ 543              	.LFE177:
+ 545              		.section	.text.Verify_CRC8_Check_Sum,"ax",%progbits
+ 546              		.align	1
+ 547              		.global	Verify_CRC8_Check_Sum
+ 548              		.syntax unified
+ 549              		.thumb
+ 550              		.thumb_func
+ 552              	Verify_CRC8_Check_Sum:
+ 553              	.LVL12:
+ 554              	.LFB178:
+ 554:Application/judgement_info.c **** /*
+ 555:Application/judgement_info.c **** ** Descriptions: CRC8 Verify function
+ 556:Application/judgement_info.c **** ** Input: Data to Verify,Stream length = Data + checksum
+ 557:Application/judgement_info.c **** ** Output: True or False (CRC Verify Result)
+ 558:Application/judgement_info.c **** */
+ 559:Application/judgement_info.c **** unsigned int Verify_CRC8_Check_Sum(unsigned char *pchMessage, unsigned int dwLength)
+ 560:Application/judgement_info.c **** {
+ 555              		.loc 1 560 1 is_stmt 1 view -0
+ 556              		.cfi_startproc
+ 557              		@ args = 0, pretend = 0, frame = 0
+ 558              		@ frame_needed = 0, uses_anonymous_args = 0
+ 561:Application/judgement_info.c ****     unsigned char ucExpected = 0;
+ 559              		.loc 1 561 5 view .LVU100
+ 562:Application/judgement_info.c ****     if ((pchMessage == 0) || (dwLength <= 2))
+ 560              		.loc 1 562 5 view .LVU101
+ 561              		.loc 1 562 8 is_stmt 0 view .LVU102
+ 562 0000 70B1     		cbz	r0, .L50
+ 560:Application/judgement_info.c ****     unsigned char ucExpected = 0;
+ 563              		.loc 1 560 1 discriminator 1 view .LVU103
+ 564 0002 38B5     		push	{r3, r4, r5, lr}
+ 565              	.LCFI2:
+ 566              		.cfi_def_cfa_offset 16
+ 567              		.cfi_offset 3, -16
+ 568              		.cfi_offset 4, -12
+ 569              		.cfi_offset 5, -8
+ 570              		.cfi_offset 14, -4
+ 571 0004 0546     		mov	r5, r0
+ 572              		.loc 1 562 27 discriminator 1 view .LVU104
+ 573 0006 0229     		cmp	r1, #2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 22
+
+
+ 574 0008 0CD9     		bls	.L51
+ 563:Application/judgement_info.c ****         return 0;
+ 564:Application/judgement_info.c ****     ucExpected = Get_CRC8_Check_Sum(pchMessage, dwLength - 1, CRC8_INIT);
+ 575              		.loc 1 564 5 is_stmt 1 view .LVU105
+ 576              		.loc 1 564 18 is_stmt 0 view .LVU106
+ 577 000a 4C1E     		subs	r4, r1, #1
+ 578 000c FF22     		movs	r2, #255
+ 579 000e 2146     		mov	r1, r4
+ 580              	.LVL13:
+ 581              		.loc 1 564 18 view .LVU107
+ 582 0010 FFF7FEFF 		bl	Get_CRC8_Check_Sum
+ 583              	.LVL14:
+ 565:Application/judgement_info.c ****     return (ucExpected == pchMessage[dwLength - 1]);
+ 584              		.loc 1 565 5 is_stmt 1 view .LVU108
+ 585              		.loc 1 565 37 is_stmt 0 view .LVU109
+ 586 0014 2B5D     		ldrb	r3, [r5, r4]	@ zero_extendqisi2
+ 587              		.loc 1 565 24 view .LVU110
+ 588 0016 8342     		cmp	r3, r0
+ 589 0018 14BF     		ite	ne
+ 590 001a 0020     		movne	r0, #0
+ 591              	.LVL15:
+ 592              		.loc 1 565 24 view .LVU111
+ 593 001c 0120     		moveq	r0, #1
+ 594              	.LVL16:
+ 595              	.L48:
+ 566:Application/judgement_info.c **** }
+ 596              		.loc 1 566 1 view .LVU112
+ 597 001e 38BD     		pop	{r3, r4, r5, pc}
+ 598              	.LVL17:
+ 599              	.L50:
+ 600              	.LCFI3:
+ 601              		.cfi_def_cfa_offset 0
+ 602              		.cfi_restore 3
+ 603              		.cfi_restore 4
+ 604              		.cfi_restore 5
+ 605              		.cfi_restore 14
+ 563:Application/judgement_info.c ****         return 0;
+ 606              		.loc 1 563 16 view .LVU113
+ 607 0020 0020     		movs	r0, #0
+ 608              	.LVL18:
+ 609              		.loc 1 566 1 view .LVU114
+ 610 0022 7047     		bx	lr
+ 611              	.LVL19:
+ 612              	.L51:
+ 613              	.LCFI4:
+ 614              		.cfi_def_cfa_offset 16
+ 615              		.cfi_offset 3, -16
+ 616              		.cfi_offset 4, -12
+ 617              		.cfi_offset 5, -8
+ 618              		.cfi_offset 14, -4
+ 563:Application/judgement_info.c ****         return 0;
+ 619              		.loc 1 563 16 view .LVU115
+ 620 0024 0020     		movs	r0, #0
+ 621              	.LVL20:
+ 563:Application/judgement_info.c ****         return 0;
+ 622              		.loc 1 563 16 view .LVU116
+ 623 0026 FAE7     		b	.L48
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 23
+
+
+ 624              		.cfi_endproc
+ 625              	.LFE178:
+ 627              		.section	.text.Append_CRC8_Check_Sum,"ax",%progbits
+ 628              		.align	1
+ 629              		.global	Append_CRC8_Check_Sum
+ 630              		.syntax unified
+ 631              		.thumb
+ 632              		.thumb_func
+ 634              	Append_CRC8_Check_Sum:
+ 635              	.LVL21:
+ 636              	.LFB179:
+ 567:Application/judgement_info.c **** /*
+ 568:Application/judgement_info.c **** ** Descriptions: append CRC8 to the end of data
+ 569:Application/judgement_info.c **** ** Input: Data to CRC and append,Stream length = Data + checksum
+ 570:Application/judgement_info.c **** ** Output: True or False (CRC Verify Result)
+ 571:Application/judgement_info.c **** */
+ 572:Application/judgement_info.c **** void Append_CRC8_Check_Sum(unsigned char *pchMessage, unsigned int dwLength)
+ 573:Application/judgement_info.c **** {
+ 637              		.loc 1 573 1 is_stmt 1 view -0
+ 638              		.cfi_startproc
+ 639              		@ args = 0, pretend = 0, frame = 0
+ 640              		@ frame_needed = 0, uses_anonymous_args = 0
+ 574:Application/judgement_info.c ****     unsigned char ucCRC = 0;
+ 641              		.loc 1 574 5 view .LVU118
+ 575:Application/judgement_info.c ****     if ((pchMessage == 0) || (dwLength <= 2))
+ 642              		.loc 1 575 5 view .LVU119
+ 643              		.loc 1 575 8 is_stmt 0 view .LVU120
+ 644 0000 50B1     		cbz	r0, .L59
+ 573:Application/judgement_info.c ****     unsigned char ucCRC = 0;
+ 645              		.loc 1 573 1 discriminator 1 view .LVU121
+ 646 0002 38B5     		push	{r3, r4, r5, lr}
+ 647              	.LCFI5:
+ 648              		.cfi_def_cfa_offset 16
+ 649              		.cfi_offset 3, -16
+ 650              		.cfi_offset 4, -12
+ 651              		.cfi_offset 5, -8
+ 652              		.cfi_offset 14, -4
+ 653 0004 0546     		mov	r5, r0
+ 654              		.loc 1 575 27 discriminator 1 view .LVU122
+ 655 0006 0229     		cmp	r1, #2
+ 656 0008 05D9     		bls	.L56
+ 576:Application/judgement_info.c ****         return;
+ 577:Application/judgement_info.c ****     ucCRC = Get_CRC8_Check_Sum((unsigned char *)pchMessage, dwLength - 1, CRC8_INIT);
+ 657              		.loc 1 577 5 is_stmt 1 view .LVU123
+ 658              		.loc 1 577 13 is_stmt 0 view .LVU124
+ 659 000a 4C1E     		subs	r4, r1, #1
+ 660 000c FF22     		movs	r2, #255
+ 661 000e 2146     		mov	r1, r4
+ 662              	.LVL22:
+ 663              		.loc 1 577 13 view .LVU125
+ 664 0010 FFF7FEFF 		bl	Get_CRC8_Check_Sum
+ 665              	.LVL23:
+ 578:Application/judgement_info.c ****     pchMessage[dwLength - 1] = ucCRC;
+ 666              		.loc 1 578 5 is_stmt 1 view .LVU126
+ 667              		.loc 1 578 30 is_stmt 0 view .LVU127
+ 668 0014 2855     		strb	r0, [r5, r4]
+ 669              	.LVL24:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 24
+
+
+ 670              	.L56:
+ 579:Application/judgement_info.c **** }
+ 671              		.loc 1 579 1 view .LVU128
+ 672 0016 38BD     		pop	{r3, r4, r5, pc}
+ 673              	.LVL25:
+ 674              	.L59:
+ 675              	.LCFI6:
+ 676              		.cfi_def_cfa_offset 0
+ 677              		.cfi_restore 3
+ 678              		.cfi_restore 4
+ 679              		.cfi_restore 5
+ 680              		.cfi_restore 14
+ 681              		.loc 1 579 1 view .LVU129
+ 682 0018 7047     		bx	lr
+ 683              		.cfi_endproc
+ 684              	.LFE179:
+ 686              		.section	.text.Get_CRC16_Check_Sum,"ax",%progbits
+ 687              		.align	1
+ 688              		.global	Get_CRC16_Check_Sum
+ 689              		.syntax unified
+ 690              		.thumb
+ 691              		.thumb_func
+ 693              	Get_CRC16_Check_Sum:
+ 694              	.LVL26:
+ 695              	.LFB180:
+ 580:Application/judgement_info.c **** 
+ 581:Application/judgement_info.c **** /*
+ 582:Application/judgement_info.c **** ** Descriptions: CRC16 checksum function
+ 583:Application/judgement_info.c **** ** Input: Data to check,Stream length, initialized checksum
+ 584:Application/judgement_info.c **** ** Output: CRC checksum
+ 585:Application/judgement_info.c **** */
+ 586:Application/judgement_info.c **** uint16_t Get_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength, uint16_t wCRC)
+ 587:Application/judgement_info.c **** {
+ 696              		.loc 1 587 1 is_stmt 1 view -0
+ 697              		.cfi_startproc
+ 698              		@ args = 0, pretend = 0, frame = 0
+ 699              		@ frame_needed = 0, uses_anonymous_args = 0
+ 700              		@ link register save eliminated.
+ 588:Application/judgement_info.c ****     uint8_t chData;
+ 701              		.loc 1 588 5 view .LVU131
+ 589:Application/judgement_info.c ****     if (pchMessage == NULL)
+ 702              		.loc 1 589 5 view .LVU132
+ 703              		.loc 1 589 8 is_stmt 0 view .LVU133
+ 704 0000 0346     		mov	r3, r0
+ 705 0002 98B1     		cbz	r0, .L72
+ 590:Application/judgement_info.c ****     {
+ 591:Application/judgement_info.c ****         return 0xFFFF;
+ 592:Application/judgement_info.c ****     }
+ 593:Application/judgement_info.c ****     while (dwLength--)
+ 706              		.loc 1 593 11 is_stmt 1 view .LVU134
+ 707              		.loc 1 593 20 is_stmt 0 view .LVU135
+ 708 0004 481E     		subs	r0, r1, #1
+ 709              	.LVL27:
+ 710              		.loc 1 593 11 view .LVU136
+ 711 0006 99B1     		cbz	r1, .L70
+ 587:Application/judgement_info.c ****     uint8_t chData;
+ 712              		.loc 1 587 1 view .LVU137
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 25
+
+
+ 713 0008 10B4     		push	{r4}
+ 714              	.LCFI7:
+ 715              		.cfi_def_cfa_offset 4
+ 716              		.cfi_offset 4, -4
+ 717              	.L65:
+ 594:Application/judgement_info.c ****     {
+ 595:Application/judgement_info.c ****         chData = *pchMessage++;
+ 718              		.loc 1 595 9 is_stmt 1 view .LVU138
+ 719              	.LVL28:
+ 720              		.loc 1 595 16 is_stmt 0 view .LVU139
+ 721 000a 13F8011B 		ldrb	r1, [r3], #1	@ zero_extendqisi2
+ 722              	.LVL29:
+ 596:Application/judgement_info.c ****         (wCRC) = ((uint16_t)(wCRC) >> 8) ^ wCRC_Table[((uint16_t)(wCRC) ^ (uint16_t)(chData)) & 0x0
+ 723              		.loc 1 596 9 is_stmt 1 view .LVU140
+ 724              		.loc 1 596 73 is_stmt 0 view .LVU141
+ 725 000e 5140     		eors	r1, r1, r2
+ 726              	.LVL30:
+ 727              		.loc 1 596 95 view .LVU142
+ 728 0010 C9B2     		uxtb	r1, r1
+ 729              		.loc 1 596 54 view .LVU143
+ 730 0012 084C     		ldr	r4, .L73
+ 731 0014 34F81110 		ldrh	r1, [r4, r1, lsl #1]
+ 732              		.loc 1 596 16 view .LVU144
+ 733 0018 81EA1222 		eor	r2, r1, r2, lsr #8
+ 734              	.LVL31:
+ 593:Application/judgement_info.c ****     {
+ 735              		.loc 1 593 20 view .LVU145
+ 736 001c 0146     		mov	r1, r0
+ 737              	.LVL32:
+ 593:Application/judgement_info.c ****     {
+ 738              		.loc 1 593 11 is_stmt 1 view .LVU146
+ 593:Application/judgement_info.c ****     {
+ 739              		.loc 1 593 20 is_stmt 0 view .LVU147
+ 740 001e 0138     		subs	r0, r0, #1
+ 741              	.LVL33:
+ 593:Application/judgement_info.c ****     {
+ 742              		.loc 1 593 11 view .LVU148
+ 743 0020 0029     		cmp	r1, #0
+ 744 0022 F2D1     		bne	.L65
+ 597:Application/judgement_info.c ****     }
+ 598:Application/judgement_info.c ****     return wCRC;
+ 599:Application/judgement_info.c **** }
+ 745              		.loc 1 599 1 view .LVU149
+ 746 0024 1046     		mov	r0, r2
+ 747              	.LVL34:
+ 748              		.loc 1 599 1 view .LVU150
+ 749 0026 5DF8044B 		ldr	r4, [sp], #4
+ 750              	.LCFI8:
+ 751              		.cfi_restore 4
+ 752              		.cfi_def_cfa_offset 0
+ 753 002a 7047     		bx	lr
+ 754              	.LVL35:
+ 755              	.L72:
+ 591:Application/judgement_info.c ****     }
+ 756              		.loc 1 591 16 view .LVU151
+ 757 002c 4FF6FF72 		movw	r2, #65535
+ 758              	.LVL36:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 26
+
+
+ 759              	.L70:
+ 760              		.loc 1 599 1 view .LVU152
+ 761 0030 1046     		mov	r0, r2
+ 762 0032 7047     		bx	lr
+ 763              	.L74:
+ 764              		.align	2
+ 765              	.L73:
+ 766 0034 00000000 		.word	.LANCHOR28
+ 767              		.cfi_endproc
+ 768              	.LFE180:
+ 770              		.section	.text.Verify_CRC16_Check_Sum,"ax",%progbits
+ 771              		.align	1
+ 772              		.global	Verify_CRC16_Check_Sum
+ 773              		.syntax unified
+ 774              		.thumb
+ 775              		.thumb_func
+ 777              	Verify_CRC16_Check_Sum:
+ 778              	.LVL37:
+ 779              	.LFB181:
+ 600:Application/judgement_info.c **** 
+ 601:Application/judgement_info.c **** /*
+ 602:Application/judgement_info.c **** ** Descriptions: CRC16 Verify function
+ 603:Application/judgement_info.c **** ** Input: Data to Verify,Stream length = Data + checksum
+ 604:Application/judgement_info.c **** ** Output: True or False (CRC Verify Result)
+ 605:Application/judgement_info.c **** */
+ 606:Application/judgement_info.c **** uint8_t Verify_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
+ 607:Application/judgement_info.c **** {
+ 780              		.loc 1 607 1 is_stmt 1 view -0
+ 781              		.cfi_startproc
+ 782              		@ args = 0, pretend = 0, frame = 0
+ 783              		@ frame_needed = 0, uses_anonymous_args = 0
+ 608:Application/judgement_info.c ****     uint16_t wExpected = 0;
+ 784              		.loc 1 608 5 view .LVU154
+ 609:Application/judgement_info.c ****     if ((pchMessage == NULL) || (dwLength <= 2))
+ 785              		.loc 1 609 5 view .LVU155
+ 786              		.loc 1 609 8 is_stmt 0 view .LVU156
+ 787 0000 E0B1     		cbz	r0, .L78
+ 607:Application/judgement_info.c ****     uint16_t wExpected = 0;
+ 788              		.loc 1 607 1 discriminator 1 view .LVU157
+ 789 0002 70B5     		push	{r4, r5, r6, lr}
+ 790              	.LCFI9:
+ 791              		.cfi_def_cfa_offset 16
+ 792              		.cfi_offset 4, -16
+ 793              		.cfi_offset 5, -12
+ 794              		.cfi_offset 6, -8
+ 795              		.cfi_offset 14, -4
+ 796 0004 0C46     		mov	r4, r1
+ 797 0006 0646     		mov	r6, r0
+ 798              		.loc 1 609 30 discriminator 1 view .LVU158
+ 799 0008 0229     		cmp	r1, #2
+ 800 000a 19D9     		bls	.L79
+ 610:Application/judgement_info.c ****     {
+ 611:Application/judgement_info.c ****         return 0;
+ 612:Application/judgement_info.c ****     }
+ 613:Application/judgement_info.c ****     wExpected = Get_CRC16_Check_Sum(pchMessage, dwLength - 2, CRC_INIT);
+ 801              		.loc 1 613 5 is_stmt 1 view .LVU159
+ 802              		.loc 1 613 17 is_stmt 0 view .LVU160
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 27
+
+
+ 803 000c 8D1E     		subs	r5, r1, #2
+ 804 000e 0D4B     		ldr	r3, .L87
+ 805 0010 1A88     		ldrh	r2, [r3]
+ 806 0012 2946     		mov	r1, r5
+ 807              	.LVL38:
+ 808              		.loc 1 613 17 view .LVU161
+ 809 0014 FFF7FEFF 		bl	Get_CRC16_Check_Sum
+ 810              	.LVL39:
+ 614:Application/judgement_info.c ****     return ((wExpected & 0xff) == pchMessage[dwLength - 2] && ((wExpected >> 8) & 0xff) == pchMessa
+ 811              		.loc 1 614 5 is_stmt 1 view .LVU162
+ 812              		.loc 1 614 60 is_stmt 0 view .LVU163
+ 813 0018 C2B2     		uxtb	r2, r0
+ 814 001a 735D     		ldrb	r3, [r6, r5]	@ zero_extendqisi2
+ 815 001c 9A42     		cmp	r2, r3
+ 816 001e 02D0     		beq	.L86
+ 817 0020 0020     		movs	r0, #0
+ 818              	.LVL40:
+ 819              	.L77:
+ 820              		.loc 1 614 60 discriminator 6 view .LVU164
+ 821 0022 C0B2     		uxtb	r0, r0
+ 822              	.LVL41:
+ 823              	.L76:
+ 615:Application/judgement_info.c **** }
+ 824              		.loc 1 615 1 view .LVU165
+ 825 0024 70BD     		pop	{r4, r5, r6, pc}
+ 826              	.LVL42:
+ 827              	.L86:
+ 614:Application/judgement_info.c ****     return ((wExpected & 0xff) == pchMessage[dwLength - 2] && ((wExpected >> 8) & 0xff) == pchMessa
+ 828              		.loc 1 614 81 discriminator 1 view .LVU166
+ 829 0026 C0F30F20 		ubfx	r0, r0, #8, #16
+ 830              	.LVL43:
+ 614:Application/judgement_info.c ****     return ((wExpected & 0xff) == pchMessage[dwLength - 2] && ((wExpected >> 8) & 0xff) == pchMessa
+ 831              		.loc 1 614 102 discriminator 1 view .LVU167
+ 832 002a 3444     		add	r4, r4, r6
+ 833              	.LVL44:
+ 614:Application/judgement_info.c ****     return ((wExpected & 0xff) == pchMessage[dwLength - 2] && ((wExpected >> 8) & 0xff) == pchMessa
+ 834              		.loc 1 614 60 discriminator 1 view .LVU168
+ 835 002c 14F8013C 		ldrb	r3, [r4, #-1]	@ zero_extendqisi2
+ 836 0030 9842     		cmp	r0, r3
+ 837 0032 01D0     		beq	.L81
+ 614:Application/judgement_info.c ****     return ((wExpected & 0xff) == pchMessage[dwLength - 2] && ((wExpected >> 8) & 0xff) == pchMessa
+ 838              		.loc 1 614 60 view .LVU169
+ 839 0034 0020     		movs	r0, #0
+ 840 0036 F4E7     		b	.L77
+ 841              	.L81:
+ 842 0038 0120     		movs	r0, #1
+ 843 003a F2E7     		b	.L77
+ 844              	.LVL45:
+ 845              	.L78:
+ 846              	.LCFI10:
+ 847              		.cfi_def_cfa_offset 0
+ 848              		.cfi_restore 4
+ 849              		.cfi_restore 5
+ 850              		.cfi_restore 6
+ 851              		.cfi_restore 14
+ 611:Application/judgement_info.c ****     }
+ 852              		.loc 1 611 16 view .LVU170
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 28
+
+
+ 853 003c 0020     		movs	r0, #0
+ 854              	.LVL46:
+ 855              		.loc 1 615 1 view .LVU171
+ 856 003e 7047     		bx	lr
+ 857              	.LVL47:
+ 858              	.L79:
+ 859              	.LCFI11:
+ 860              		.cfi_def_cfa_offset 16
+ 861              		.cfi_offset 4, -16
+ 862              		.cfi_offset 5, -12
+ 863              		.cfi_offset 6, -8
+ 864              		.cfi_offset 14, -4
+ 611:Application/judgement_info.c ****     }
+ 865              		.loc 1 611 16 view .LVU172
+ 866 0040 0020     		movs	r0, #0
+ 867              	.LVL48:
+ 611:Application/judgement_info.c ****     }
+ 868              		.loc 1 611 16 view .LVU173
+ 869 0042 EFE7     		b	.L76
+ 870              	.L88:
+ 871              		.align	2
+ 872              	.L87:
+ 873 0044 00000000 		.word	.LANCHOR29
+ 874              		.cfi_endproc
+ 875              	.LFE181:
+ 877              		.section	.text.judgement_info_handle,"ax",%progbits
+ 878              		.align	1
+ 879              		.global	judgement_info_handle
+ 880              		.syntax unified
+ 881              		.thumb
+ 882              		.thumb_func
+ 884              	judgement_info_handle:
+ 885              	.LFB174:
+  92:Application/judgement_info.c ****     if ((Verify_CRC8_Check_Sum(p_header, 5) == 0) || (Verify_CRC16_Check_Sum(p_header, (9 + data_le
+ 886              		.loc 1 92 1 is_stmt 1 view -0
+ 887              		.cfi_startproc
+ 888              		@ args = 0, pretend = 0, frame = 0
+ 889              		@ frame_needed = 0, uses_anonymous_args = 0
+ 890 0000 38B5     		push	{r3, r4, r5, lr}
+ 891              	.LCFI12:
+ 892              		.cfi_def_cfa_offset 16
+ 893              		.cfi_offset 3, -16
+ 894              		.cfi_offset 4, -12
+ 895              		.cfi_offset 5, -8
+ 896              		.cfi_offset 14, -4
+  93:Application/judgement_info.c ****     {
+ 897              		.loc 1 93 5 view .LVU175
+  93:Application/judgement_info.c ****     {
+ 898              		.loc 1 93 10 is_stmt 0 view .LVU176
+ 899 0002 114B     		ldr	r3, .L94
+ 900 0004 1C68     		ldr	r4, [r3]
+ 901 0006 0521     		movs	r1, #5
+ 902 0008 2046     		mov	r0, r4
+ 903 000a FFF7FEFF 		bl	Verify_CRC8_Check_Sum
+ 904              	.LVL49:
+  93:Application/judgement_info.c ****     {
+ 905              		.loc 1 93 8 view .LVU177
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 29
+
+
+ 906 000e 38B1     		cbz	r0, .L90
+  93:Application/judgement_info.c ****     {
+ 907              		.loc 1 93 91 discriminator 1 view .LVU178
+ 908 0010 0E4B     		ldr	r3, .L94+4
+ 909 0012 1D88     		ldrh	r5, [r3]
+ 910 0014 0935     		adds	r5, r5, #9
+  93:Application/judgement_info.c ****     {
+ 911              		.loc 1 93 55 discriminator 1 view .LVU179
+ 912 0016 2946     		mov	r1, r5
+ 913 0018 2046     		mov	r0, r4
+ 914 001a FFF7FEFF 		bl	Verify_CRC16_Check_Sum
+ 915              	.LVL50:
+  93:Application/judgement_info.c ****     {
+ 916              		.loc 1 93 51 discriminator 1 view .LVU180
+ 917 001e 18B9     		cbnz	r0, .L91
+ 918              	.L90:
+  95:Application/judgement_info.c ****         return;
+ 919              		.loc 1 95 9 is_stmt 1 view .LVU181
+  95:Application/judgement_info.c ****         return;
+ 920              		.loc 1 95 17 is_stmt 0 view .LVU182
+ 921 0020 0134     		adds	r4, r4, #1
+ 922 0022 094B     		ldr	r3, .L94
+ 923 0024 1C60     		str	r4, [r3]
+  96:Application/judgement_info.c ****     }
+ 924              		.loc 1 96 9 is_stmt 1 view .LVU183
+ 925              	.L89:
+ 102:Application/judgement_info.c **** 
+ 926              		.loc 1 102 1 is_stmt 0 view .LVU184
+ 927 0026 38BD     		pop	{r3, r4, r5, pc}
+ 928              	.L91:
+  99:Application/judgement_info.c ****     judgement_data_decode();
+ 929              		.loc 1 99 5 is_stmt 1 view .LVU185
+ 930 0028 2A46     		mov	r2, r5
+ 931 002a 2146     		mov	r1, r4
+ 932 002c 0848     		ldr	r0, .L94+8
+ 933 002e FFF7FEFF 		bl	memcpy
+ 934              	.LVL51:
+ 100:Application/judgement_info.c ****     p_header = p_header + data_length + 9;
+ 935              		.loc 1 100 5 view .LVU186
+ 936 0032 FFF7FEFF 		bl	judgement_data_decode
+ 937              	.LVL52:
+ 101:Application/judgement_info.c **** }
+ 938              		.loc 1 101 5 view .LVU187
+ 101:Application/judgement_info.c **** }
+ 939              		.loc 1 101 39 is_stmt 0 view .LVU188
+ 940 0036 0449     		ldr	r1, .L94
+ 941 0038 044B     		ldr	r3, .L94+4
+ 942 003a 1B88     		ldrh	r3, [r3]
+ 943 003c 03F10902 		add	r2, r3, #9
+ 944 0040 0B68     		ldr	r3, [r1]
+ 945 0042 1344     		add	r3, r3, r2
+ 101:Application/judgement_info.c **** }
+ 946              		.loc 1 101 14 view .LVU189
+ 947 0044 0B60     		str	r3, [r1]
+ 948 0046 EEE7     		b	.L89
+ 949              	.L95:
+ 950              		.align	2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 30
+
+
+ 951              	.L94:
+ 952 0048 00000000 		.word	.LANCHOR30
+ 953 004c 00000000 		.word	.LANCHOR31
+ 954 0050 64000000 		.word	.LANCHOR1+100
+ 955              		.cfi_endproc
+ 956              	.LFE174:
+ 958              		.section	.text.unpack_fifo_handle,"ax",%progbits
+ 959              		.align	1
+ 960              		.global	unpack_fifo_handle
+ 961              		.syntax unified
+ 962              		.thumb
+ 963              		.thumb_func
+ 965              	unpack_fifo_handle:
+ 966              	.LVL53:
+ 967              	.LFB173:
+  65:Application/judgement_info.c ****     p_header = prxbuf; // �ҵ�֡ͷȻ����
+ 968              		.loc 1 65 1 is_stmt 1 view -0
+ 969              		.cfi_startproc
+ 970              		@ args = 0, pretend = 0, frame = 0
+ 971              		@ frame_needed = 0, uses_anonymous_args = 0
+  65:Application/judgement_info.c ****     p_header = prxbuf; // �ҵ�֡ͷȻ����
+ 972              		.loc 1 65 1 is_stmt 0 view .LVU191
+ 973 0000 10B5     		push	{r4, lr}
+ 974              	.LCFI13:
+ 975              		.cfi_def_cfa_offset 8
+ 976              		.cfi_offset 4, -8
+ 977              		.cfi_offset 14, -4
+ 978 0002 0446     		mov	r4, r0
+  66:Application/judgement_info.c ****     count = 0;
+ 979              		.loc 1 66 5 is_stmt 1 view .LVU192
+  66:Application/judgement_info.c ****     count = 0;
+ 980              		.loc 1 66 14 is_stmt 0 view .LVU193
+ 981 0004 124B     		ldr	r3, .L105
+ 982 0006 1860     		str	r0, [r3]
+  67:Application/judgement_info.c ****     while (count < 98)
+ 983              		.loc 1 67 5 is_stmt 1 view .LVU194
+  67:Application/judgement_info.c ****     while (count < 98)
+ 984              		.loc 1 67 11 is_stmt 0 view .LVU195
+ 985 0008 124B     		ldr	r3, .L105+4
+ 986 000a 0022     		movs	r2, #0
+ 987 000c 1A70     		strb	r2, [r3]
+  68:Application/judgement_info.c ****     {
+ 988              		.loc 1 68 5 is_stmt 1 view .LVU196
+  68:Application/judgement_info.c ****     {
+ 989              		.loc 1 68 11 is_stmt 0 view .LVU197
+ 990 000e 0DE0     		b	.L97
+ 991              	.LVL54:
+ 992              	.L104:
+  72:Application/judgement_info.c ****             if (data_length <= 32 && count + data_length + 9 < 100)
+ 993              		.loc 1 72 13 is_stmt 1 view .LVU198
+ 994 0010 B3F80130 		ldrh	r3, [r3, #1]	@ unaligned
+ 995 0014 1049     		ldr	r1, .L105+8
+ 996 0016 0B80     		strh	r3, [r1]	@ movhi
+  73:Application/judgement_info.c ****             {
+ 997              		.loc 1 73 13 view .LVU199
+  73:Application/judgement_info.c ****             {
+ 998              		.loc 1 73 16 is_stmt 0 view .LVU200
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 31
+
+
+ 999 0018 202B     		cmp	r3, #32
+ 1000 001a 02D8     		bhi	.L99
+  73:Application/judgement_info.c ****             {
+ 1001              		.loc 1 73 44 discriminator 1 view .LVU201
+ 1002 001c 1A44     		add	r2, r2, r3
+  73:Application/judgement_info.c ****             {
+ 1003              		.loc 1 73 35 discriminator 1 view .LVU202
+ 1004 001e 5A2A     		cmp	r2, #90
+ 1005 0020 11DD     		ble	.L102
+ 1006              	.L99:
+  81:Application/judgement_info.c ****     }
+ 1007              		.loc 1 81 9 is_stmt 1 view .LVU203
+  81:Application/judgement_info.c ****     }
+ 1008              		.loc 1 81 26 is_stmt 0 view .LVU204
+ 1009 0022 0B4B     		ldr	r3, .L105
+ 1010 0024 1B68     		ldr	r3, [r3]
+ 1011 0026 1B1B     		subs	r3, r3, r4
+  81:Application/judgement_info.c ****     }
+ 1012              		.loc 1 81 15 view .LVU205
+ 1013 0028 0A4A     		ldr	r2, .L105+4
+ 1014 002a 1370     		strb	r3, [r2]
+ 1015              	.L97:
+  68:Application/judgement_info.c ****     {
+ 1016              		.loc 1 68 11 is_stmt 1 view .LVU206
+  68:Application/judgement_info.c ****     {
+ 1017              		.loc 1 68 18 is_stmt 0 view .LVU207
+ 1018 002c 094B     		ldr	r3, .L105+4
+ 1019 002e 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+  68:Application/judgement_info.c ****     {
+ 1020              		.loc 1 68 11 view .LVU208
+ 1021 0030 612A     		cmp	r2, #97
+ 1022 0032 0BD8     		bhi	.L103
+  70:Application/judgement_info.c ****         {
+ 1023              		.loc 1 70 9 is_stmt 1 view .LVU209
+  70:Application/judgement_info.c ****         {
+ 1024              		.loc 1 70 13 is_stmt 0 view .LVU210
+ 1025 0034 064B     		ldr	r3, .L105
+ 1026 0036 1B68     		ldr	r3, [r3]
+ 1027 0038 1978     		ldrb	r1, [r3]	@ zero_extendqisi2
+  70:Application/judgement_info.c ****         {
+ 1028              		.loc 1 70 12 view .LVU211
+ 1029 003a A529     		cmp	r1, #165
+ 1030 003c E8D0     		beq	.L104
+  79:Application/judgement_info.c **** 
+ 1031              		.loc 1 79 13 is_stmt 1 view .LVU212
+  79:Application/judgement_info.c **** 
+ 1032              		.loc 1 79 21 is_stmt 0 view .LVU213
+ 1033 003e 0133     		adds	r3, r3, #1
+ 1034 0040 034A     		ldr	r2, .L105
+ 1035 0042 1360     		str	r3, [r2]
+ 1036 0044 EDE7     		b	.L99
+ 1037              	.L102:
+  75:Application/judgement_info.c ****             }
+ 1038              		.loc 1 75 17 is_stmt 1 view .LVU214
+ 1039 0046 FFF7FEFF 		bl	judgement_info_handle
+ 1040              	.LVL55:
+ 1041 004a EAE7     		b	.L99
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 32
+
+
+ 1042              	.L103:
+  83:Application/judgement_info.c **** // frame_header (5-byte) cmd_id (2-byte) data (n-byte) frame_tail (2-byte��CRC16�����
+ 1043              		.loc 1 83 1 is_stmt 0 view .LVU215
+ 1044 004c 10BD     		pop	{r4, pc}
+ 1045              	.LVL56:
+ 1046              	.L106:
+  83:Application/judgement_info.c **** // frame_header (5-byte) cmd_id (2-byte) data (n-byte) frame_tail (2-byte��CRC16�����
+ 1047              		.loc 1 83 1 view .LVU216
+ 1048 004e 00BF     		.align	2
+ 1049              	.L105:
+ 1050 0050 00000000 		.word	.LANCHOR30
+ 1051 0054 00000000 		.word	.LANCHOR32
+ 1052 0058 00000000 		.word	.LANCHOR31
+ 1053              		.cfi_endproc
+ 1054              	.LFE173:
+ 1056              		.section	.text.USER_UART_RxIdleCallback,"ax",%progbits
+ 1057              		.align	1
+ 1058              		.weak	USER_UART_RxIdleCallback
+ 1059              		.syntax unified
+ 1060              		.thumb
+ 1061              		.thumb_func
+ 1063              	USER_UART_RxIdleCallback:
+ 1064              	.LVL57:
+ 1065              	.LFB172:
+  52:Application/judgement_info.c ****     if (huart == JudgeUSART)
+ 1066              		.loc 1 52 1 is_stmt 1 view -0
+ 1067              		.cfi_startproc
+ 1068              		@ args = 0, pretend = 0, frame = 0
+ 1069              		@ frame_needed = 0, uses_anonymous_args = 0
+  52:Application/judgement_info.c ****     if (huart == JudgeUSART)
+ 1070              		.loc 1 52 1 is_stmt 0 view .LVU218
+ 1071 0000 08B5     		push	{r3, lr}
+ 1072              	.LCFI14:
+ 1073              		.cfi_def_cfa_offset 8
+ 1074              		.cfi_offset 3, -8
+ 1075              		.cfi_offset 14, -4
+  53:Application/judgement_info.c ****     {
+ 1076              		.loc 1 53 5 is_stmt 1 view .LVU219
+  53:Application/judgement_info.c ****     {
+ 1077              		.loc 1 53 15 is_stmt 0 view .LVU220
+ 1078 0002 0A4B     		ldr	r3, .L113
+ 1079 0004 1B68     		ldr	r3, [r3]
+  53:Application/judgement_info.c ****     {
+ 1080              		.loc 1 53 8 view .LVU221
+ 1081 0006 8342     		cmp	r3, r0
+ 1082 0008 04D0     		beq	.L111
+  58:Application/judgement_info.c ****     {
+ 1083              		.loc 1 58 10 is_stmt 1 view .LVU222
+  58:Application/judgement_info.c ****     {
+ 1084              		.loc 1 58 37 is_stmt 0 view .LVU223
+ 1085 000a 094B     		ldr	r3, .L113+4
+ 1086 000c 1B68     		ldr	r3, [r3]
+  58:Application/judgement_info.c ****     {
+ 1087              		.loc 1 58 13 view .LVU224
+ 1088 000e 8342     		cmp	r3, r0
+ 1089 0010 07D0     		beq	.L112
+ 1090              	.LVL58:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 33
+
+
+ 1091              	.L107:
+  62:Application/judgement_info.c **** 
+ 1092              		.loc 1 62 1 view .LVU225
+ 1093 0012 08BD     		pop	{r3, pc}
+ 1094              	.LVL59:
+ 1095              	.L111:
+  55:Application/judgement_info.c ****         Detect_Hook(JUDGE_TOE);
+ 1096              		.loc 1 55 9 is_stmt 1 view .LVU226
+ 1097 0014 0748     		ldr	r0, .L113+8
+ 1098              	.LVL60:
+  55:Application/judgement_info.c ****         Detect_Hook(JUDGE_TOE);
+ 1099              		.loc 1 55 9 is_stmt 0 view .LVU227
+ 1100 0016 FFF7FEFF 		bl	unpack_fifo_handle
+ 1101              	.LVL61:
+  56:Application/judgement_info.c ****     }
+ 1102              		.loc 1 56 9 is_stmt 1 view .LVU228
+ 1103 001a 0620     		movs	r0, #6
+ 1104 001c FFF7FEFF 		bl	Detect_Hook
+ 1105              	.LVL62:
+ 1106 0020 F7E7     		b	.L107
+ 1107              	.LVL63:
+ 1108              	.L112:
+  60:Application/judgement_info.c ****     }
+ 1109              		.loc 1 60 9 view .LVU229
+ 1110 0022 0549     		ldr	r1, .L113+12
+ 1111 0024 0248     		ldr	r0, .L113+4
+ 1112              	.LVL64:
+  60:Application/judgement_info.c ****     }
+ 1113              		.loc 1 60 9 is_stmt 0 view .LVU230
+ 1114 0026 FFF7FEFF 		bl	Callback_RC_Handle
+ 1115              	.LVL65:
+  62:Application/judgement_info.c **** 
+ 1116              		.loc 1 62 1 view .LVU231
+ 1117 002a F2E7     		b	.L107
+ 1118              	.L114:
+ 1119              		.align	2
+ 1120              	.L113:
+ 1121 002c 00000000 		.word	.LANCHOR0
+ 1122 0030 00000000 		.word	remote_control
+ 1123 0034 00000000 		.word	.LANCHOR1
+ 1124 0038 00000000 		.word	sbus_rx_buf
+ 1125              		.cfi_endproc
+ 1126              	.LFE172:
+ 1128              		.section	.text.Append_CRC16_Check_Sum,"ax",%progbits
+ 1129              		.align	1
+ 1130              		.global	Append_CRC16_Check_Sum
+ 1131              		.syntax unified
+ 1132              		.thumb
+ 1133              		.thumb_func
+ 1135              	Append_CRC16_Check_Sum:
+ 1136              	.LVL66:
+ 1137              	.LFB182:
+ 616:Application/judgement_info.c **** 
+ 617:Application/judgement_info.c **** /*
+ 618:Application/judgement_info.c **** ** Descriptions: append CRC16 to the end of data
+ 619:Application/judgement_info.c **** ** Input: Data to CRC and append,Stream length = Data + checksum
+ 620:Application/judgement_info.c **** ** Output: True or False (CRC Verify Result)
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 34
+
+
+ 621:Application/judgement_info.c **** */
+ 622:Application/judgement_info.c **** void Append_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
+ 623:Application/judgement_info.c **** {
+ 1138              		.loc 1 623 1 is_stmt 1 view -0
+ 1139              		.cfi_startproc
+ 1140              		@ args = 0, pretend = 0, frame = 0
+ 1141              		@ frame_needed = 0, uses_anonymous_args = 0
+ 624:Application/judgement_info.c ****     uint16_t wCRC = 0;
+ 1142              		.loc 1 624 5 view .LVU233
+ 625:Application/judgement_info.c ****     if ((pchMessage == NULL) || (dwLength <= 2))
+ 1143              		.loc 1 625 5 view .LVU234
+ 1144              		.loc 1 625 8 is_stmt 0 view .LVU235
+ 1145 0000 80B1     		cbz	r0, .L118
+ 623:Application/judgement_info.c ****     uint16_t wCRC = 0;
+ 1146              		.loc 1 623 1 discriminator 1 view .LVU236
+ 1147 0002 70B5     		push	{r4, r5, r6, lr}
+ 1148              	.LCFI15:
+ 1149              		.cfi_def_cfa_offset 16
+ 1150              		.cfi_offset 4, -16
+ 1151              		.cfi_offset 5, -12
+ 1152              		.cfi_offset 6, -8
+ 1153              		.cfi_offset 14, -4
+ 1154 0004 0C46     		mov	r4, r1
+ 1155 0006 0546     		mov	r5, r0
+ 1156              		.loc 1 625 30 discriminator 1 view .LVU237
+ 1157 0008 0229     		cmp	r1, #2
+ 1158 000a 0AD9     		bls	.L115
+ 626:Application/judgement_info.c ****     {
+ 627:Application/judgement_info.c ****         return;
+ 628:Application/judgement_info.c ****     }
+ 629:Application/judgement_info.c ****     wCRC = Get_CRC16_Check_Sum((uint8_t *)pchMessage, dwLength - 2, CRC_INIT);
+ 1159              		.loc 1 629 5 is_stmt 1 view .LVU238
+ 1160              		.loc 1 629 12 is_stmt 0 view .LVU239
+ 1161 000c 8E1E     		subs	r6, r1, #2
+ 1162 000e 064B     		ldr	r3, .L121
+ 1163 0010 1A88     		ldrh	r2, [r3]
+ 1164 0012 3146     		mov	r1, r6
+ 1165              	.LVL67:
+ 1166              		.loc 1 629 12 view .LVU240
+ 1167 0014 FFF7FEFF 		bl	Get_CRC16_Check_Sum
+ 1168              	.LVL68:
+ 630:Application/judgement_info.c ****     pchMessage[dwLength - 2] = (uint8_t)(wCRC & 0x00ff);
+ 1169              		.loc 1 630 5 is_stmt 1 view .LVU241
+ 1170              		.loc 1 630 30 is_stmt 0 view .LVU242
+ 1171 0018 A855     		strb	r0, [r5, r6]
+ 631:Application/judgement_info.c ****     pchMessage[dwLength - 1] = (uint8_t)((wCRC >> 8) & 0x00ff);
+ 1172              		.loc 1 631 5 is_stmt 1 view .LVU243
+ 1173              		.loc 1 631 15 is_stmt 0 view .LVU244
+ 1174 001a 013C     		subs	r4, r4, #1
+ 1175              	.LVL69:
+ 1176              		.loc 1 631 32 view .LVU245
+ 1177 001c C0F30720 		ubfx	r0, r0, #8, #8
+ 1178              	.LVL70:
+ 1179              		.loc 1 631 30 view .LVU246
+ 1180 0020 2855     		strb	r0, [r5, r4]
+ 1181              	.LVL71:
+ 1182              	.L115:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 35
+
+
+ 632:Application/judgement_info.c **** }
+ 1183              		.loc 1 632 1 view .LVU247
+ 1184 0022 70BD     		pop	{r4, r5, r6, pc}
+ 1185              	.LVL72:
+ 1186              	.L118:
+ 1187              	.LCFI16:
+ 1188              		.cfi_def_cfa_offset 0
+ 1189              		.cfi_restore 4
+ 1190              		.cfi_restore 5
+ 1191              		.cfi_restore 6
+ 1192              		.cfi_restore 14
+ 1193              		.loc 1 632 1 view .LVU248
+ 1194 0024 7047     		bx	lr
+ 1195              	.L122:
+ 1196 0026 00BF     		.align	2
+ 1197              	.L121:
+ 1198 0028 00000000 		.word	.LANCHOR29
+ 1199              		.cfi_endproc
+ 1200              	.LFE182:
+ 1202              		.global	wCRC_Table
+ 1203              		.global	CRC_INIT
+ 1204              		.global	CRC8_TAB
+ 1205              		.global	CRC8_INIT
+ 1206              		.global	map_interactivity
+ 1207              		.global	robot_interactive_data
+ 1208              		.global	student_interactive_header_data
+ 1209              		.global	dart_client_cmd
+ 1210              		.global	bullet_remaining
+ 1211              		.global	rfid_status
+ 1212              		.global	shoot_data
+ 1213              		.global	robot_hurt
+ 1214              		.global	robot_energy
+ 1215              		.global	buff_musk
+ 1216              		.global	game_robot_pos
+ 1217              		.global	power_heat_data_t
+ 1218              		.global	robot_state
+ 1219              		.global	dart_remaining_time
+ 1220              		.global	referee_warning
+ 1221              		.global	supply_projectile_action
+ 1222              		.global	event_data
+ 1223              		.global	ICRA_buff_debuff_zone_status
+ 1224              		.global	dart_status
+ 1225              		.global	game_robot_HP
+ 1226              		.global	game_result
+ 1227              		.global	game_status
+ 1228              		.global	Shoot_Updata
+ 1229              		.global	JudgeRxData
+ 1230              		.global	JudgeRxValid
+ 1231              		.global	JudgeUSART
+ 1232              		.global	judgement_receive
+ 1233              		.section	.bss.ICRA_buff_debuff_zone_status,"aw",%nobits
+ 1234              		.align	2
+ 1235              		.set	.LANCHOR6,. + 0
+ 1238              	ICRA_buff_debuff_zone_status:
+ 1239 0000 00000000 		.space	12
+ 1239      00000000 
+ 1239      00000000 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 36
+
+
+ 1240              		.section	.bss.JudgeRxData,"aw",%nobits
+ 1241              		.align	2
+ 1242              		.set	.LANCHOR23,. + 0
+ 1245              	JudgeRxData:
+ 1246 0000 00000000 		.space	8
+ 1246      00000000 
+ 1247              		.section	.bss.JudgeRxValid,"aw",%nobits
+ 1248              		.set	.LANCHOR24,. + 0
+ 1251              	JudgeRxValid:
+ 1252 0000 00       		.space	1
+ 1253              		.section	.bss.JudgeUSART,"aw",%nobits
+ 1254              		.align	2
+ 1255              		.set	.LANCHOR0,. + 0
+ 1258              	JudgeUSART:
+ 1259 0000 00000000 		.space	4
+ 1260              		.section	.bss.Shoot_Updata,"aw",%nobits
+ 1261              		.set	.LANCHOR13,. + 0
+ 1264              	Shoot_Updata:
+ 1265 0000 00       		.space	1
+ 1266              		.section	.bss.buff_musk,"aw",%nobits
+ 1267              		.align	2
+ 1268              		.set	.LANCHOR15,. + 0
+ 1271              	buff_musk:
+ 1272 0000 00       		.space	1
+ 1273              		.section	.bss.bullet_remaining,"aw",%nobits
+ 1274              		.align	2
+ 1275              		.set	.LANCHOR19,. + 0
+ 1278              	bullet_remaining:
+ 1279 0000 00000000 		.space	6
+ 1279      0000
+ 1280              		.section	.bss.count,"aw",%nobits
+ 1281              		.set	.LANCHOR32,. + 0
+ 1284              	count:
+ 1285 0000 00       		.space	1
+ 1286              		.section	.bss.dart_client_cmd,"aw",%nobits
+ 1287              		.align	2
+ 1288              		.set	.LANCHOR21,. + 0
+ 1291              	dart_client_cmd:
+ 1292 0000 00000000 		.space	12
+ 1292      00000000 
+ 1292      00000000 
+ 1293              		.section	.bss.dart_remaining_time,"aw",%nobits
+ 1294              		.align	2
+ 1295              		.set	.LANCHOR10,. + 0
+ 1298              	dart_remaining_time:
+ 1299 0000 00       		.space	1
+ 1300              		.section	.bss.dart_status,"aw",%nobits
+ 1301              		.align	2
+ 1302              		.set	.LANCHOR5,. + 0
+ 1305              	dart_status:
+ 1306 0000 00000000 		.space	4
+ 1307              		.section	.bss.data_length,"aw",%nobits
+ 1308              		.align	1
+ 1309              		.set	.LANCHOR31,. + 0
+ 1312              	data_length:
+ 1313 0000 0000     		.space	2
+ 1314              		.section	.bss.event_data,"aw",%nobits
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 37
+
+
+ 1315              		.align	2
+ 1316              		.set	.LANCHOR7,. + 0
+ 1319              	event_data:
+ 1320 0000 00000000 		.space	4
+ 1321              		.section	.bss.game_result,"aw",%nobits
+ 1322              		.align	2
+ 1323              		.set	.LANCHOR3,. + 0
+ 1326              	game_result:
+ 1327 0000 00       		.space	1
+ 1328              		.section	.bss.game_robot_HP,"aw",%nobits
+ 1329              		.align	2
+ 1330              		.set	.LANCHOR4,. + 0
+ 1333              	game_robot_HP:
+ 1334 0000 00000000 		.space	32
+ 1334      00000000 
+ 1334      00000000 
+ 1334      00000000 
+ 1334      00000000 
+ 1335              		.section	.bss.game_robot_pos,"aw",%nobits
+ 1336              		.align	2
+ 1337              		.set	.LANCHOR14,. + 0
+ 1340              	game_robot_pos:
+ 1341 0000 00000000 		.space	16
+ 1341      00000000 
+ 1341      00000000 
+ 1341      00000000 
+ 1342              		.section	.bss.game_status,"aw",%nobits
+ 1343              		.align	2
+ 1344              		.set	.LANCHOR2,. + 0
+ 1347              	game_status:
+ 1348 0000 00000000 		.space	11
+ 1348      00000000 
+ 1348      000000
+ 1349              		.section	.bss.judgement_receive,"aw",%nobits
+ 1350              		.align	2
+ 1351              		.set	.LANCHOR1,. + 0
+ 1354              	judgement_receive:
+ 1355 0000 00000000 		.space	141
+ 1355      00000000 
+ 1355      00000000 
+ 1355      00000000 
+ 1355      00000000 
+ 1356              		.section	.bss.map_interactivity,"aw",%nobits
+ 1357              		.align	2
+ 1358              		.set	.LANCHOR26,. + 0
+ 1361              	map_interactivity:
+ 1362 0000 00000000 		.space	16
+ 1362      00000000 
+ 1362      00000000 
+ 1362      00000000 
+ 1363              		.section	.bss.p_header,"aw",%nobits
+ 1364              		.align	2
+ 1365              		.set	.LANCHOR30,. + 0
+ 1368              	p_header:
+ 1369 0000 00000000 		.space	4
+ 1370              		.section	.bss.power_heat_data_t,"aw",%nobits
+ 1371              		.align	2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 38
+
+
+ 1372              		.set	.LANCHOR12,. + 0
+ 1375              	power_heat_data_t:
+ 1376 0000 00000000 		.space	16
+ 1376      00000000 
+ 1376      00000000 
+ 1376      00000000 
+ 1377              		.section	.bss.referee_warning,"aw",%nobits
+ 1378              		.align	2
+ 1379              		.set	.LANCHOR9,. + 0
+ 1382              	referee_warning:
+ 1383 0000 0000     		.space	2
+ 1384              		.section	.bss.rfid_status,"aw",%nobits
+ 1385              		.align	2
+ 1386              		.set	.LANCHOR20,. + 0
+ 1389              	rfid_status:
+ 1390 0000 00000000 		.space	4
+ 1391              		.section	.bss.robot_energy,"aw",%nobits
+ 1392              		.align	2
+ 1393              		.set	.LANCHOR16,. + 0
+ 1396              	robot_energy:
+ 1397 0000 00       		.space	1
+ 1398              		.section	.bss.robot_hurt,"aw",%nobits
+ 1399              		.align	2
+ 1400              		.set	.LANCHOR17,. + 0
+ 1403              	robot_hurt:
+ 1404 0000 00       		.space	1
+ 1405              		.section	.bss.robot_interactive_data,"aw",%nobits
+ 1406              		.align	2
+ 1407              		.set	.LANCHOR25,. + 0
+ 1410              	robot_interactive_data:
+ 1411 0000 00000000 		.space	30
+ 1411      00000000 
+ 1411      00000000 
+ 1411      00000000 
+ 1411      00000000 
+ 1412              		.section	.bss.robot_state,"aw",%nobits
+ 1413              		.align	2
+ 1414              		.set	.LANCHOR11,. + 0
+ 1417              	robot_state:
+ 1418 0000 00000000 		.space	28
+ 1418      00000000 
+ 1418      00000000 
+ 1418      00000000 
+ 1418      00000000 
+ 1419              		.section	.bss.shoot_data,"aw",%nobits
+ 1420              		.align	2
+ 1421              		.set	.LANCHOR18,. + 0
+ 1424              	shoot_data:
+ 1425 0000 00000000 		.space	8
+ 1425      00000000 
+ 1426              		.section	.bss.student_interactive_header_data,"aw",%nobits
+ 1427              		.align	2
+ 1428              		.set	.LANCHOR22,. + 0
+ 1431              	student_interactive_header_data:
+ 1432 0000 00000000 		.space	124
+ 1432      00000000 
+ 1432      00000000 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 39
+
+
+ 1432      00000000 
+ 1432      00000000 
+ 1433              		.section	.bss.supply_projectile_action,"aw",%nobits
+ 1434              		.align	2
+ 1435              		.set	.LANCHOR8,. + 0
+ 1438              	supply_projectile_action:
+ 1439 0000 00000000 		.space	4
+ 1440              		.section	.data.CRC_INIT,"aw"
+ 1441              		.align	1
+ 1442              		.set	.LANCHOR29,. + 0
+ 1445              	CRC_INIT:
+ 1446 0000 FFFF     		.short	-1
+ 1447              		.section	.rodata.CRC8_INIT,"a"
+ 1450              	CRC8_INIT:
+ 1451 0000 FF       		.byte	-1
+ 1452              		.section	.rodata.CRC8_TAB,"a"
+ 1453              		.align	2
+ 1454              		.set	.LANCHOR27,. + 0
+ 1457              	CRC8_TAB:
+ 1458 0000 005EBCE2 		.ascii	"\000^\274\342a?\335\203\302\234~ \243\375\037A\235\303"
+ 1458      613FDD83 
+ 1458      C29C7E20 
+ 1458      A3FD1F41 
+ 1458      9DC3
+ 1459 0012 217FFCA2 		.ascii	"!\177\374\242@\036_\001\343\275>`\202\334#}\237\301"
+ 1459      401E5F01 
+ 1459      E3BD3E60 
+ 1459      82DC237D 
+ 1459      9FC1
+ 1460 0024 421CFEA0 		.ascii	"B\034\376\240\341\277]\003\200\336<b\276\340\002\\\337"
+ 1460      E1BF5D03 
+ 1460      80DE3C62 
+ 1460      BEE0025C 
+ 1460      DF
+ 1461 0035 81633D7C 		.ascii	"\201c=|\"\300\236\035C\241\377F\030\372\244'y\233\305"
+ 1461      22C09E1D 
+ 1461      43A1FF46 
+ 1461      18FAA427 
+ 1461      799BC5
+ 1462 0048 84DA3866 		.ascii	"\204\3328f\345\273Y\007\333\205g9\272\344\006X\031G"
+ 1462      E5BB5907 
+ 1462      DB856739 
+ 1462      BAE40658 
+ 1462      1947
+ 1463 005a A5FB7826 		.ascii	"\245\373x&\304\232e;\331\207\004Z\270\346\247\371\033"
+ 1463      C49A653B 
+ 1463      D987045A 
+ 1463      B8E6A7F9 
+ 1463      1B
+ 1464 006b 45C6987A 		.ascii	"E\306\230z$\370\246D\032\231\307%{:d\206\330[\005\347"
+ 1464      24F8A644 
+ 1464      1A99C725 
+ 1464      7B3A6486 
+ 1464      D85B05E7 
+ 1465 007f B98CD230 		.ascii	"\271\214\3220n\355\263Q\017N\020\362\254/q\223\315\021"
+ 1465      6EEDB351 
+ 1465      0F4E10F2 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 40
+
+
+ 1465      AC2F7193 
+ 1465      CD11
+ 1466 0091 4FADF370 		.ascii	"O\255\363p.\314\222\323\215o1\262\354\016P\257\361\023"
+ 1466      2ECC92D3 
+ 1466      8D6F31B2 
+ 1466      EC0E50AF 
+ 1466      F113
+ 1467 00a3 4DCE9072 		.ascii	"M\316\220r,m3\321\217\014R\260\3562l\216\320S\015\357"
+ 1467      2C6D33D1 
+ 1467      8F0C52B0 
+ 1467      EE326C8E 
+ 1467      D0530DEF 
+ 1468 00b7 B1F0AE4C 		.ascii	"\261\360\256L\022\221\317-s\312\224v(\253\365\027I\010"
+ 1468      1291CF2D 
+ 1468      73CA9476 
+ 1468      28ABF517 
+ 1468      4908
+ 1469 00c9 56B4EA69 		.ascii	"V\264\352i7\325\213W\011\353\2656h\212\324\225\313)"
+ 1469      37D58B57 
+ 1469      09EBB536 
+ 1469      688AD495 
+ 1469      CB29
+ 1470 00db 77F4AA48 		.ascii	"w\364\252H\026\351\267U\013\210\3264j+u\227\311J\024"
+ 1470      16E9B755 
+ 1470      0B88D634 
+ 1470      6A2B7597 
+ 1470      C94A14
+ 1471 00ee F6A8742A 		.ascii	"\366\250t*\310\226\025K\251\367\266\350\012T\327\211"
+ 1471      C896154B 
+ 1471      A9F7B6E8 
+ 1471      0A54D789 
+ 1472 00fe 6B35     		.ascii	"k5"
+ 1473              		.section	.rodata.wCRC_Table,"a"
+ 1474              		.align	2
+ 1475              		.set	.LANCHOR28,. + 0
+ 1478              	wCRC_Table:
+ 1479 0000 0000     		.short	0
+ 1480 0002 8911     		.short	4489
+ 1481 0004 1223     		.short	8978
+ 1482 0006 9B32     		.short	12955
+ 1483 0008 2446     		.short	17956
+ 1484 000a AD57     		.short	22445
+ 1485 000c 3665     		.short	25910
+ 1486 000e BF74     		.short	29887
+ 1487 0010 488C     		.short	-29624
+ 1488 0012 C19D     		.short	-25151
+ 1489 0014 5AAF     		.short	-20646
+ 1490 0016 D3BE     		.short	-16685
+ 1491 0018 6CCA     		.short	-13716
+ 1492 001a E5DB     		.short	-9243
+ 1493 001c 7EE9     		.short	-5762
+ 1494 001e F7F8     		.short	-1801
+ 1495 0020 8110     		.short	4225
+ 1496 0022 0801     		.short	264
+ 1497 0024 9333     		.short	13203
+ 1498 0026 1A22     		.short	8730
+ 1499 0028 A556     		.short	22181
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 41
+
+
+ 1500 002a 2C47     		.short	18220
+ 1501 002c B775     		.short	30135
+ 1502 002e 3E64     		.short	25662
+ 1503 0030 C99C     		.short	-25399
+ 1504 0032 408D     		.short	-29376
+ 1505 0034 DBBF     		.short	-16421
+ 1506 0036 52AE     		.short	-20910
+ 1507 0038 EDDA     		.short	-9491
+ 1508 003a 64CB     		.short	-13468
+ 1509 003c FFF9     		.short	-1537
+ 1510 003e 76E8     		.short	-6026
+ 1511 0040 0221     		.short	8450
+ 1512 0042 8B30     		.short	12427
+ 1513 0044 1002     		.short	528
+ 1514 0046 9913     		.short	5017
+ 1515 0048 2667     		.short	26406
+ 1516 004a AF76     		.short	30383
+ 1517 004c 3444     		.short	17460
+ 1518 004e BD55     		.short	21949
+ 1519 0050 4AAD     		.short	-21174
+ 1520 0052 C3BC     		.short	-17213
+ 1521 0054 588E     		.short	-29096
+ 1522 0056 D19F     		.short	-24623
+ 1523 0058 6EEB     		.short	-5266
+ 1524 005a E7FA     		.short	-1305
+ 1525 005c 7CC8     		.short	-14212
+ 1526 005e F5D9     		.short	-9739
+ 1527 0060 8331     		.short	12675
+ 1528 0062 0A20     		.short	8202
+ 1529 0064 9112     		.short	4753
+ 1530 0066 1803     		.short	792
+ 1531 0068 A777     		.short	30631
+ 1532 006a 2E66     		.short	26158
+ 1533 006c B554     		.short	21685
+ 1534 006e 3C45     		.short	17724
+ 1535 0070 CBBD     		.short	-16949
+ 1536 0072 42AC     		.short	-21438
+ 1537 0074 D99E     		.short	-24871
+ 1538 0076 508F     		.short	-28848
+ 1539 0078 EFFB     		.short	-1041
+ 1540 007a 66EA     		.short	-5530
+ 1541 007c FDD8     		.short	-9987
+ 1542 007e 74C9     		.short	-13964
+ 1543 0080 0442     		.short	16900
+ 1544 0082 8D53     		.short	21389
+ 1545 0084 1661     		.short	24854
+ 1546 0086 9F70     		.short	28831
+ 1547 0088 2004     		.short	1056
+ 1548 008a A915     		.short	5545
+ 1549 008c 3227     		.short	10034
+ 1550 008e BB36     		.short	14011
+ 1551 0090 4CCE     		.short	-12724
+ 1552 0092 C5DF     		.short	-8251
+ 1553 0094 5EED     		.short	-4770
+ 1554 0096 D7FC     		.short	-809
+ 1555 0098 6888     		.short	-30616
+ 1556 009a E199     		.short	-26143
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 42
+
+
+ 1557 009c 7AAB     		.short	-21638
+ 1558 009e F3BA     		.short	-17677
+ 1559 00a0 8552     		.short	21125
+ 1560 00a2 0C43     		.short	17164
+ 1561 00a4 9771     		.short	29079
+ 1562 00a6 1E60     		.short	24606
+ 1563 00a8 A114     		.short	5281
+ 1564 00aa 2805     		.short	1320
+ 1565 00ac B337     		.short	14259
+ 1566 00ae 3A26     		.short	9786
+ 1567 00b0 CDDE     		.short	-8499
+ 1568 00b2 44CF     		.short	-12476
+ 1569 00b4 DFFD     		.short	-545
+ 1570 00b6 56EC     		.short	-5034
+ 1571 00b8 E998     		.short	-26391
+ 1572 00ba 6089     		.short	-30368
+ 1573 00bc FBBB     		.short	-17413
+ 1574 00be 72AA     		.short	-21902
+ 1575 00c0 0663     		.short	25350
+ 1576 00c2 8F72     		.short	29327
+ 1577 00c4 1440     		.short	16404
+ 1578 00c6 9D51     		.short	20893
+ 1579 00c8 2225     		.short	9506
+ 1580 00ca AB34     		.short	13483
+ 1581 00cc 3006     		.short	1584
+ 1582 00ce B917     		.short	6073
+ 1583 00d0 4EEF     		.short	-4274
+ 1584 00d2 C7FE     		.short	-313
+ 1585 00d4 5CCC     		.short	-13220
+ 1586 00d6 D5DD     		.short	-8747
+ 1587 00d8 6AA9     		.short	-22166
+ 1588 00da E3B8     		.short	-18205
+ 1589 00dc 788A     		.short	-30088
+ 1590 00de F19B     		.short	-25615
+ 1591 00e0 8773     		.short	29575
+ 1592 00e2 0E62     		.short	25102
+ 1593 00e4 9550     		.short	20629
+ 1594 00e6 1C41     		.short	16668
+ 1595 00e8 A335     		.short	13731
+ 1596 00ea 2A24     		.short	9258
+ 1597 00ec B116     		.short	5809
+ 1598 00ee 3807     		.short	1848
+ 1599 00f0 CFFF     		.short	-49
+ 1600 00f2 46EE     		.short	-4538
+ 1601 00f4 DDDC     		.short	-8995
+ 1602 00f6 54CD     		.short	-12972
+ 1603 00f8 EBB9     		.short	-17941
+ 1604 00fa 62A8     		.short	-22430
+ 1605 00fc F99A     		.short	-25863
+ 1606 00fe 708B     		.short	-29840
+ 1607 0100 0884     		.short	-31736
+ 1608 0102 8195     		.short	-27263
+ 1609 0104 1AA7     		.short	-22758
+ 1610 0106 93B6     		.short	-18797
+ 1611 0108 2CC2     		.short	-15828
+ 1612 010a A5D3     		.short	-11355
+ 1613 010c 3EE1     		.short	-7874
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 43
+
+
+ 1614 010e B7F0     		.short	-3913
+ 1615 0110 4008     		.short	2112
+ 1616 0112 C919     		.short	6601
+ 1617 0114 522B     		.short	11090
+ 1618 0116 DB3A     		.short	15067
+ 1619 0118 644E     		.short	20068
+ 1620 011a ED5F     		.short	24557
+ 1621 011c 766D     		.short	28022
+ 1622 011e FF7C     		.short	31999
+ 1623 0120 8994     		.short	-27511
+ 1624 0122 0085     		.short	-31488
+ 1625 0124 9BB7     		.short	-18533
+ 1626 0126 12A6     		.short	-23022
+ 1627 0128 ADD2     		.short	-11603
+ 1628 012a 24C3     		.short	-15580
+ 1629 012c BFF1     		.short	-3649
+ 1630 012e 36E0     		.short	-8138
+ 1631 0130 C118     		.short	6337
+ 1632 0132 4809     		.short	2376
+ 1633 0134 D33B     		.short	15315
+ 1634 0136 5A2A     		.short	10842
+ 1635 0138 E55E     		.short	24293
+ 1636 013a 6C4F     		.short	20332
+ 1637 013c F77D     		.short	32247
+ 1638 013e 7E6C     		.short	27774
+ 1639 0140 0AA5     		.short	-23286
+ 1640 0142 83B4     		.short	-19325
+ 1641 0144 1886     		.short	-31208
+ 1642 0146 9197     		.short	-26735
+ 1643 0148 2EE3     		.short	-7378
+ 1644 014a A7F2     		.short	-3417
+ 1645 014c 3CC0     		.short	-16324
+ 1646 014e B5D1     		.short	-11851
+ 1647 0150 4229     		.short	10562
+ 1648 0152 CB38     		.short	14539
+ 1649 0154 500A     		.short	2640
+ 1650 0156 D91B     		.short	7129
+ 1651 0158 666F     		.short	28518
+ 1652 015a EF7E     		.short	32495
+ 1653 015c 744C     		.short	19572
+ 1654 015e FD5D     		.short	24061
+ 1655 0160 8BB5     		.short	-19061
+ 1656 0162 02A4     		.short	-23550
+ 1657 0164 9996     		.short	-26983
+ 1658 0166 1087     		.short	-30960
+ 1659 0168 AFF3     		.short	-3153
+ 1660 016a 26E2     		.short	-7642
+ 1661 016c BDD0     		.short	-12099
+ 1662 016e 34C1     		.short	-16076
+ 1663 0170 C339     		.short	14787
+ 1664 0172 4A28     		.short	10314
+ 1665 0174 D11A     		.short	6865
+ 1666 0176 580B     		.short	2904
+ 1667 0178 E77F     		.short	32743
+ 1668 017a 6E6E     		.short	28270
+ 1669 017c F55C     		.short	23797
+ 1670 017e 7C4D     		.short	19836
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 44
+
+
+ 1671 0180 0CC6     		.short	-14836
+ 1672 0182 85D7     		.short	-10363
+ 1673 0184 1EE5     		.short	-6882
+ 1674 0186 97F4     		.short	-2921
+ 1675 0188 2880     		.short	-32728
+ 1676 018a A191     		.short	-28255
+ 1677 018c 3AA3     		.short	-23750
+ 1678 018e B3B2     		.short	-19789
+ 1679 0190 444A     		.short	19012
+ 1680 0192 CD5B     		.short	23501
+ 1681 0194 5669     		.short	26966
+ 1682 0196 DF78     		.short	30943
+ 1683 0198 600C     		.short	3168
+ 1684 019a E91D     		.short	7657
+ 1685 019c 722F     		.short	12146
+ 1686 019e FB3E     		.short	16123
+ 1687 01a0 8DD6     		.short	-10611
+ 1688 01a2 04C7     		.short	-14588
+ 1689 01a4 9FF5     		.short	-2657
+ 1690 01a6 16E4     		.short	-7146
+ 1691 01a8 A990     		.short	-28503
+ 1692 01aa 2081     		.short	-32480
+ 1693 01ac BBB3     		.short	-19525
+ 1694 01ae 32A2     		.short	-24014
+ 1695 01b0 C55A     		.short	23237
+ 1696 01b2 4C4B     		.short	19276
+ 1697 01b4 D779     		.short	31191
+ 1698 01b6 5E68     		.short	26718
+ 1699 01b8 E11C     		.short	7393
+ 1700 01ba 680D     		.short	3432
+ 1701 01bc F33F     		.short	16371
+ 1702 01be 7A2E     		.short	11898
+ 1703 01c0 0EE7     		.short	-6386
+ 1704 01c2 87F6     		.short	-2425
+ 1705 01c4 1CC4     		.short	-15332
+ 1706 01c6 95D5     		.short	-10859
+ 1707 01c8 2AA1     		.short	-24278
+ 1708 01ca A3B0     		.short	-20317
+ 1709 01cc 3882     		.short	-32200
+ 1710 01ce B193     		.short	-27727
+ 1711 01d0 466B     		.short	27462
+ 1712 01d2 CF7A     		.short	31439
+ 1713 01d4 5448     		.short	18516
+ 1714 01d6 DD59     		.short	23005
+ 1715 01d8 622D     		.short	11618
+ 1716 01da EB3C     		.short	15595
+ 1717 01dc 700E     		.short	3696
+ 1718 01de F91F     		.short	8185
+ 1719 01e0 8FF7     		.short	-2161
+ 1720 01e2 06E6     		.short	-6650
+ 1721 01e4 9DD4     		.short	-11107
+ 1722 01e6 14C5     		.short	-15084
+ 1723 01e8 ABB1     		.short	-20053
+ 1724 01ea 22A0     		.short	-24542
+ 1725 01ec B992     		.short	-27975
+ 1726 01ee 3083     		.short	-31952
+ 1727 01f0 C77B     		.short	31687
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 45
+
+
+ 1728 01f2 4E6A     		.short	27214
+ 1729 01f4 D558     		.short	22741
+ 1730 01f6 5C49     		.short	18780
+ 1731 01f8 E33D     		.short	15843
+ 1732 01fa 6A2C     		.short	11370
+ 1733 01fc F11E     		.short	7921
+ 1734 01fe 780F     		.short	3960
+ 1735              		.text
+ 1736              	.Letext0:
+ 1737              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1738              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1739              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 1740              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 1741              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 1742              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ 1743              		.file 8 "Application/judgement_info.h"
+ 1744              		.file 9 "Application/remote_control.h"
+ 1745              		.file 10 "Application/detect_task.h"
+ 1746              		.file 11 "Bsp/bsp_usart_idle.h"
+ 1747              		.file 12 "<built-in>"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 46
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 judgement_info.c
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:20     .text.Judge_Control_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:26     .text.Judge_Control_Init:00000000 Judge_Control_Init
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:54     .text.Judge_Control_Init:00000010 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:60     .text.judgement_data_decode:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:66     .text.judgement_data_decode:00000000 judgement_data_decode
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:100    .text.judgement_data_decode:0000002c $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:112    .text.judgement_data_decode:0000003e $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:122    .text.judgement_data_decode:00000052 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:133    .text.judgement_data_decode:0000006a $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:435    .text.judgement_data_decode:00000284 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:467    .text.judgement_info_updata:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:473    .text.judgement_info_updata:00000000 judgement_info_updata
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:486    .text.Get_CRC8_Check_Sum:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:492    .text.Get_CRC8_Check_Sum:00000000 Get_CRC8_Check_Sum
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:541    .text.Get_CRC8_Check_Sum:0000001c $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:546    .text.Verify_CRC8_Check_Sum:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:552    .text.Verify_CRC8_Check_Sum:00000000 Verify_CRC8_Check_Sum
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:628    .text.Append_CRC8_Check_Sum:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:634    .text.Append_CRC8_Check_Sum:00000000 Append_CRC8_Check_Sum
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:687    .text.Get_CRC16_Check_Sum:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:693    .text.Get_CRC16_Check_Sum:00000000 Get_CRC16_Check_Sum
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:766    .text.Get_CRC16_Check_Sum:00000034 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:771    .text.Verify_CRC16_Check_Sum:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:777    .text.Verify_CRC16_Check_Sum:00000000 Verify_CRC16_Check_Sum
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:873    .text.Verify_CRC16_Check_Sum:00000044 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:878    .text.judgement_info_handle:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:884    .text.judgement_info_handle:00000000 judgement_info_handle
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:952    .text.judgement_info_handle:00000048 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:959    .text.unpack_fifo_handle:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:965    .text.unpack_fifo_handle:00000000 unpack_fifo_handle
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1050   .text.unpack_fifo_handle:00000050 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1057   .text.USER_UART_RxIdleCallback:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1063   .text.USER_UART_RxIdleCallback:00000000 USER_UART_RxIdleCallback
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1121   .text.USER_UART_RxIdleCallback:0000002c $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1129   .text.Append_CRC16_Check_Sum:00000000 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1135   .text.Append_CRC16_Check_Sum:00000000 Append_CRC16_Check_Sum
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1198   .text.Append_CRC16_Check_Sum:00000028 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1478   .rodata.wCRC_Table:00000000 wCRC_Table
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1445   .data.CRC_INIT:00000000 CRC_INIT
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1457   .rodata.CRC8_TAB:00000000 CRC8_TAB
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1450   .rodata.CRC8_INIT:00000000 CRC8_INIT
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1361   .bss.map_interactivity:00000000 map_interactivity
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1410   .bss.robot_interactive_data:00000000 robot_interactive_data
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1431   .bss.student_interactive_header_data:00000000 student_interactive_header_data
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1291   .bss.dart_client_cmd:00000000 dart_client_cmd
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1278   .bss.bullet_remaining:00000000 bullet_remaining
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1389   .bss.rfid_status:00000000 rfid_status
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1424   .bss.shoot_data:00000000 shoot_data
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1403   .bss.robot_hurt:00000000 robot_hurt
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1396   .bss.robot_energy:00000000 robot_energy
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1271   .bss.buff_musk:00000000 buff_musk
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1340   .bss.game_robot_pos:00000000 game_robot_pos
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1375   .bss.power_heat_data_t:00000000 power_heat_data_t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1417   .bss.robot_state:00000000 robot_state
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1298   .bss.dart_remaining_time:00000000 dart_remaining_time
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 47
+
+
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1382   .bss.referee_warning:00000000 referee_warning
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1438   .bss.supply_projectile_action:00000000 supply_projectile_action
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1319   .bss.event_data:00000000 event_data
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1238   .bss.ICRA_buff_debuff_zone_status:00000000 ICRA_buff_debuff_zone_status
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1305   .bss.dart_status:00000000 dart_status
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1333   .bss.game_robot_HP:00000000 game_robot_HP
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1326   .bss.game_result:00000000 game_result
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1347   .bss.game_status:00000000 game_status
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1264   .bss.Shoot_Updata:00000000 Shoot_Updata
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1245   .bss.JudgeRxData:00000000 JudgeRxData
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1251   .bss.JudgeRxValid:00000000 JudgeRxValid
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1258   .bss.JudgeUSART:00000000 JudgeUSART
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1354   .bss.judgement_receive:00000000 judgement_receive
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1234   .bss.ICRA_buff_debuff_zone_status:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1241   .bss.JudgeRxData:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1252   .bss.JudgeRxValid:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1254   .bss.JudgeUSART:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1265   .bss.Shoot_Updata:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1267   .bss.buff_musk:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1274   .bss.bullet_remaining:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1284   .bss.count:00000000 count
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1285   .bss.count:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1287   .bss.dart_client_cmd:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1294   .bss.dart_remaining_time:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1301   .bss.dart_status:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1308   .bss.data_length:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1312   .bss.data_length:00000000 data_length
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1315   .bss.event_data:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1322   .bss.game_result:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1329   .bss.game_robot_HP:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1336   .bss.game_robot_pos:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1343   .bss.game_status:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1350   .bss.judgement_receive:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1357   .bss.map_interactivity:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1364   .bss.p_header:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1368   .bss.p_header:00000000 p_header
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1371   .bss.power_heat_data_t:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1378   .bss.referee_warning:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1385   .bss.rfid_status:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1392   .bss.robot_energy:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1399   .bss.robot_hurt:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1406   .bss.robot_interactive_data:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1413   .bss.robot_state:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1420   .bss.shoot_data:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1427   .bss.student_interactive_header_data:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1434   .bss.supply_projectile_action:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1441   .data.CRC_INIT:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1453   .rodata.CRC8_TAB:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:1474   .rodata.wCRC_Table:00000000 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:105    .text.judgement_data_decode:00000031 $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:105    .text.judgement_data_decode:00000032 $t
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:138    .text.judgement_data_decode:0000006f $d
+C:\Users\86152\AppData\Local\Temp\cc8b62Va.s:138    .text.judgement_data_decode:00000070 $t
+
+UNDEFINED SYMBOLS
+USART_IDLE_Init
+memcpy
+ARM GAS  C:\Users\86152\AppData\Local\Temp\cc8b62Va.s 			page 48
+
+
+Detect_Hook
+Callback_RC_Handle
+remote_control
+sbus_rx_buf

@@ -1,0 +1,16 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "includes.h": "c",
+        "gimbal_task.h": "c",
+        "chassis_task.h": "c",
+        "bsp_can.h": "c",
+        "client_interact.h": "c",
+        "vtm_info.h": "c",
+        "compare": "c",
+        "*.tcc": "c",
+        "type_traits": "c",
+        "typeinfo": "c"
+    }
+}

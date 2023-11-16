@@ -1,0 +1,2013 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"freertos.c"
+  16              		.section	.rodata.str1.4,"aMS",%progbits,1
+  17              		.align	2
+  18              	.LC0:
+  19 0000 47696D62 		.ascii	"GimbalTask\000"
+  19      616C5461 
+  19      736B00
+  20 000b 00       		.align	2
+  21              	.LC2:
+  22 000c 494E5354 		.ascii	"INSTask\000"
+  22      61736B00 
+  23              		.align	2
+  24              	.LC4:
+  25 0014 44657465 		.ascii	"DetectTask\000"
+  25      63745461 
+  25      736B00
+  26 001f 00       		.align	2
+  27              	.LC6:
+  28 0020 506F7765 		.ascii	"PowerMeasureTas\000"
+  28      724D6561 
+  28      73757265 
+  28      54617300 
+  29              		.align	2
+  30              	.LC8:
+  31 0030 55495461 		.ascii	"UITask\000"
+  31      736B00
+  32 0037 00       		.align	2
+  33              	.LC10:
+  34 0038 43686173 		.ascii	"ChassisTask\000"
+  34      73697354 
+  34      61736B00 
+  35              		.text
+  36              	.Ltext0:
+  37              		.cfi_sections	.debug_frame
+  38              		.section	.text.StartGimbalTask,"ax",%progbits
+  39              		.align	1
+  40              		.global	StartGimbalTask
+  41              		.syntax unified
+  42              		.thumb
+  43              		.thumb_func
+  45              	StartGimbalTask:
+  46              	.LVL0:
+  47              	.LFB174:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 2
+
+
+  48              		.file 1 "Src/freertos.c"
+   1:Src/freertos.c **** /* USER CODE BEGIN Header */
+   2:Src/freertos.c **** /**
+   3:Src/freertos.c ****  ******************************************************************************
+   4:Src/freertos.c ****  * File Name          : freertos.c
+   5:Src/freertos.c ****  * Description        : Code for freertos applications
+   6:Src/freertos.c ****  ******************************************************************************
+   7:Src/freertos.c ****  * @attention
+   8:Src/freertos.c ****  *
+   9:Src/freertos.c ****  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  10:Src/freertos.c ****  * All rights reserved.</center></h2>
+  11:Src/freertos.c ****  *
+  12:Src/freertos.c ****  * This software component is licensed by ST under Ultimate Liberty license
+  13:Src/freertos.c ****  * SLA0044, the "License"; You may not use this file except in compliance with
+  14:Src/freertos.c ****  * the License. You may obtain a copy of the License at:
+  15:Src/freertos.c ****  *                             www.st.com/SLA0044
+  16:Src/freertos.c ****  *
+  17:Src/freertos.c ****  ******************************************************************************
+  18:Src/freertos.c ****  */
+  19:Src/freertos.c **** /* USER CODE END Header */
+  20:Src/freertos.c **** 
+  21:Src/freertos.c **** /* Includes ------------------------------------------------------------------*/
+  22:Src/freertos.c **** #include "FreeRTOS.h"
+  23:Src/freertos.c **** #include "task.h"
+  24:Src/freertos.c **** #include "main.h"
+  25:Src/freertos.c **** #include "cmsis_os.h"
+  26:Src/freertos.c **** 
+  27:Src/freertos.c **** /* Private includes ----------------------------------------------------------*/
+  28:Src/freertos.c **** /* USER CODE BEGIN Includes */
+  29:Src/freertos.c **** #include "includes.h"
+  30:Src/freertos.c **** /* USER CODE END Includes */
+  31:Src/freertos.c **** 
+  32:Src/freertos.c **** /* Private typedef -----------------------------------------------------------*/
+  33:Src/freertos.c **** /* USER CODE BEGIN PTD */
+  34:Src/freertos.c **** 
+  35:Src/freertos.c **** /* USER CODE END PTD */
+  36:Src/freertos.c **** 
+  37:Src/freertos.c **** /* Private define ------------------------------------------------------------*/
+  38:Src/freertos.c **** /* USER CODE BEGIN PD */
+  39:Src/freertos.c **** 
+  40:Src/freertos.c **** /* USER CODE END PD */
+  41:Src/freertos.c **** 
+  42:Src/freertos.c **** /* Private macro -------------------------------------------------------------*/
+  43:Src/freertos.c **** /* USER CODE BEGIN PM */
+  44:Src/freertos.c **** 
+  45:Src/freertos.c **** /* USER CODE END PM */
+  46:Src/freertos.c **** 
+  47:Src/freertos.c **** /* Private variables ---------------------------------------------------------*/
+  48:Src/freertos.c **** /* USER CODE BEGIN Variables */
+  49:Src/freertos.c **** uint8_t count_ui = 0;
+  50:Src/freertos.c **** uint8_t count_shoot = 0;
+  51:Src/freertos.c **** uint16_t enemy_outpost_HP = 1500;
+  52:Src/freertos.c **** /* USER CODE END Variables */
+  53:Src/freertos.c **** osThreadId GimbalTaskHandle;
+  54:Src/freertos.c **** osThreadId INSTaskHandle;
+  55:Src/freertos.c **** osThreadId DetectTaskHandle;
+  56:Src/freertos.c **** osThreadId PowerMeasureTasHandle;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 3
+
+
+  57:Src/freertos.c **** osThreadId UITaskHandle;
+  58:Src/freertos.c **** osThreadId ChassisTaskHandle;
+  59:Src/freertos.c **** 
+  60:Src/freertos.c **** /* Private function prototypes -----------------------------------------------*/
+  61:Src/freertos.c **** /* USER CODE BEGIN FunctionPrototypes */
+  62:Src/freertos.c **** 
+  63:Src/freertos.c **** /* USER CODE END FunctionPrototypes */
+  64:Src/freertos.c **** 
+  65:Src/freertos.c **** void StartGimbalTask(void const *argument);       /*��̨����*/
+  66:Src/freertos.c **** void StartINSTask(void const *argument);          /*��̬��������*/
+  67:Src/freertos.c **** void StartDetectTask(void const *argument);       /*�����˳�*/
+  68:Src/freertos.c **** void StartPowerMeasureTask(void const *argument); /*���ʲ���*/
+  69:Src/freertos.c **** void StartUITask(void const *argument);           /*UI����*/
+  70:Src/freertos.c **** void StartChassisTask(void const *argument);      /*��������*/
+  71:Src/freertos.c **** 
+  72:Src/freertos.c **** void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+  73:Src/freertos.c **** 
+  74:Src/freertos.c **** /* GetIdleTaskMemory prototype (linked to static allocation support) */
+  75:Src/freertos.c **** void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskSt
+  76:Src/freertos.c **** 
+  77:Src/freertos.c **** /* GetTimerTaskMemory prototype (linked to static allocation support) */
+  78:Src/freertos.c **** void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTas
+  79:Src/freertos.c **** 
+  80:Src/freertos.c **** /* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
+  81:Src/freertos.c **** static StaticTask_t xIdleTaskTCBBuffer;
+  82:Src/freertos.c **** static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
+  83:Src/freertos.c **** 
+  84:Src/freertos.c **** void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskSt
+  85:Src/freertos.c **** {
+  86:Src/freertos.c ****   *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+  87:Src/freertos.c ****   *ppxIdleTaskStackBuffer = &xIdleStack[0];
+  88:Src/freertos.c ****   *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+  89:Src/freertos.c ****   /* place for user code */
+  90:Src/freertos.c **** }
+  91:Src/freertos.c **** /* USER CODE END GET_IDLE_TASK_MEMORY */
+  92:Src/freertos.c **** 
+  93:Src/freertos.c **** /* USER CODE BEGIN GET_TIMER_TASK_MEMORY */
+  94:Src/freertos.c **** static StaticTask_t xTimerTaskTCBBuffer;
+  95:Src/freertos.c **** static StackType_t xTimerStack[configTIMER_TASK_STACK_DEPTH];
+  96:Src/freertos.c **** 
+  97:Src/freertos.c **** void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTas
+  98:Src/freertos.c **** {
+  99:Src/freertos.c ****   *ppxTimerTaskTCBBuffer = &xTimerTaskTCBBuffer;
+ 100:Src/freertos.c ****   *ppxTimerTaskStackBuffer = &xTimerStack[0];
+ 101:Src/freertos.c ****   *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
+ 102:Src/freertos.c ****   /* place for user code */
+ 103:Src/freertos.c **** }
+ 104:Src/freertos.c **** /* USER CODE END GET_TIMER_TASK_MEMORY */
+ 105:Src/freertos.c **** 
+ 106:Src/freertos.c **** /**
+ 107:Src/freertos.c ****  * @brief  FreeRTOS initialization
+ 108:Src/freertos.c ****  * @param  None
+ 109:Src/freertos.c ****  * @retval None
+ 110:Src/freertos.c ****  */
+ 111:Src/freertos.c **** void MX_FREERTOS_Init(void)
+ 112:Src/freertos.c **** {
+ 113:Src/freertos.c ****   /* USER CODE BEGIN Init */
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 4
+
+
+ 114:Src/freertos.c **** 
+ 115:Src/freertos.c ****   /* USER CODE END Init */
+ 116:Src/freertos.c **** 
+ 117:Src/freertos.c ****   /* USER CODE BEGIN RTOS_MUTEX */
+ 118:Src/freertos.c ****   /* add mutexes, ... */
+ 119:Src/freertos.c ****   /* USER CODE END RTOS_MUTEX */
+ 120:Src/freertos.c **** 
+ 121:Src/freertos.c ****   /* USER CODE BEGIN RTOS_SEMAPHORES */
+ 122:Src/freertos.c ****   /* add semaphores, ... */
+ 123:Src/freertos.c ****   /* USER CODE END RTOS_SEMAPHORES */
+ 124:Src/freertos.c **** 
+ 125:Src/freertos.c ****   /* USER CODE BEGIN RTOS_TIMERS */
+ 126:Src/freertos.c ****   /* start timers, add new ones, ... */
+ 127:Src/freertos.c ****   /* USER CODE END RTOS_TIMERS */
+ 128:Src/freertos.c **** 
+ 129:Src/freertos.c ****   /* USER CODE BEGIN RTOS_QUEUES */
+ 130:Src/freertos.c ****   /* add queues, ... */
+ 131:Src/freertos.c ****   /* USER CODE END RTOS_QUEUES */
+ 132:Src/freertos.c **** 
+ 133:Src/freertos.c ****   /* Create the thread(s) */
+ 134:Src/freertos.c ****   /* definition and creation of GimbalTask */
+ 135:Src/freertos.c ****   osThreadDef(GimbalTask, StartGimbalTask, osPriorityHigh, 0, 512);
+ 136:Src/freertos.c ****   GimbalTaskHandle = osThreadCreate(osThread(GimbalTask), NULL);
+ 137:Src/freertos.c **** 
+ 138:Src/freertos.c ****   /* definition and creation of INSTask */
+ 139:Src/freertos.c ****   osThreadDef(INSTask, StartINSTask, osPriorityAboveNormal, 0, 512);
+ 140:Src/freertos.c ****   INSTaskHandle = osThreadCreate(osThread(INSTask), NULL);
+ 141:Src/freertos.c **** 
+ 142:Src/freertos.c ****   /* definition and creation of DetectTask */
+ 143:Src/freertos.c ****   osThreadDef(DetectTask, StartDetectTask, osPriorityBelowNormal, 0, 512);
+ 144:Src/freertos.c ****   DetectTaskHandle = osThreadCreate(osThread(DetectTask), NULL);
+ 145:Src/freertos.c **** 
+ 146:Src/freertos.c ****   /* definition and creation of PowerMeasureTas */
+ 147:Src/freertos.c ****   osThreadDef(PowerMeasureTas, StartPowerMeasureTask, osPriorityNormal, 0, 512);
+ 148:Src/freertos.c ****   PowerMeasureTasHandle = osThreadCreate(osThread(PowerMeasureTas), NULL);
+ 149:Src/freertos.c **** 
+ 150:Src/freertos.c ****   /* definition and creation of UITask */
+ 151:Src/freertos.c ****   osThreadDef(UITask, StartUITask, osPriorityNormal, 0, 512);
+ 152:Src/freertos.c ****   UITaskHandle = osThreadCreate(osThread(UITask), NULL);
+ 153:Src/freertos.c **** 
+ 154:Src/freertos.c ****   /* definition and creation of ChassisTask */
+ 155:Src/freertos.c ****   osThreadDef(ChassisTask, StartChassisTask, osPriorityAboveNormal, 0, 512);
+ 156:Src/freertos.c ****   ChassisTaskHandle = osThreadCreate(osThread(ChassisTask), NULL);
+ 157:Src/freertos.c **** 
+ 158:Src/freertos.c ****   /* USER CODE BEGIN RTOS_THREADS */
+ 159:Src/freertos.c ****   /* add threads, ... */
+ 160:Src/freertos.c ****   /* USER CODE END RTOS_THREADS */
+ 161:Src/freertos.c **** }
+ 162:Src/freertos.c **** 
+ 163:Src/freertos.c **** /* USER CODE BEGIN Header_StartGimbalTask */
+ 164:Src/freertos.c **** /**
+ 165:Src/freertos.c ****  * @brief  Function implementing the GimbalTask thread.
+ 166:Src/freertos.c ****  * @param  argument: Not used
+ 167:Src/freertos.c ****  * @retval None
+ 168:Src/freertos.c ****  */
+ 169:Src/freertos.c **** /* USER CODE END Header_StartGimbalTask */
+ 170:Src/freertos.c **** void StartGimbalTask(void const *argument)
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 5
+
+
+ 171:Src/freertos.c **** {
+  49              		.loc 1 171 1 view -0
+  50              		.cfi_startproc
+  51              		@ Volatile: function does not return.
+  52              		@ args = 0, pretend = 0, frame = 0
+  53              		@ frame_needed = 0, uses_anonymous_args = 0
+  54              		.loc 1 171 1 is_stmt 0 view .LVU1
+  55 0000 08B5     		push	{r3, lr}
+  56              	.LCFI0:
+  57              		.cfi_def_cfa_offset 8
+  58              		.cfi_offset 3, -8
+  59              		.cfi_offset 14, -4
+ 172:Src/freertos.c ****   /* USER CODE BEGIN StartGimbalTask */
+ 173:Src/freertos.c ****   Gimbal_Init(); // ���̴���������ҪYAW����
+  60              		.loc 1 173 3 is_stmt 1 view .LVU2
+  61 0002 FFF7FEFF 		bl	Gimbal_Init
+  62              	.LVL1:
+ 174:Src/freertos.c ****   osDelay(1000);
+  63              		.loc 1 174 3 view .LVU3
+  64 0006 4FF47A70 		mov	r0, #1000
+  65 000a FFF7FEFF 		bl	osDelay
+  66              	.LVL2:
+  67              	.L2:
+ 175:Src/freertos.c ****   /* Infinite loop */
+ 176:Src/freertos.c ****   for (;;)
+  68              		.loc 1 176 3 discriminator 1 view .LVU4
+ 177:Src/freertos.c ****   {
+ 178:Src/freertos.c ****     osDelay(1000);
+  69              		.loc 1 178 5 discriminator 1 view .LVU5
+  70 000e 4FF47A70 		mov	r0, #1000
+  71 0012 FFF7FEFF 		bl	osDelay
+  72              	.LVL3:
+ 176:Src/freertos.c ****   {
+  73              		.loc 1 176 9 discriminator 1 view .LVU6
+  74 0016 FAE7     		b	.L2
+  75              		.cfi_endproc
+  76              	.LFE174:
+  78              		.section	.text.StartPowerMeasureTask,"ax",%progbits
+  79              		.align	1
+  80              		.global	StartPowerMeasureTask
+  81              		.syntax unified
+  82              		.thumb
+  83              		.thumb_func
+  85              	StartPowerMeasureTask:
+  86              	.LFB177:
+ 179:Src/freertos.c ****   }
+ 180:Src/freertos.c ****   /* USER CODE END StartGimbalTask */
+ 181:Src/freertos.c **** }
+ 182:Src/freertos.c **** 
+ 183:Src/freertos.c **** /* USER CODE BEGIN Header_StartINSTask */
+ 184:Src/freertos.c **** /**
+ 185:Src/freertos.c ****  * @brief Function implementing the INSTask thread.
+ 186:Src/freertos.c ****  * @param argument: Not used
+ 187:Src/freertos.c ****  * @retval None
+ 188:Src/freertos.c ****  */
+ 189:Src/freertos.c **** /* USER CODE END Header_StartINSTask */
+ 190:Src/freertos.c **** void StartINSTask(void const *argument)
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 6
+
+
+ 191:Src/freertos.c **** {
+ 192:Src/freertos.c ****   /* USER CODE BEGIN StartINSTask */
+ 193:Src/freertos.c ****   INS_Init();
+ 194:Src/freertos.c ****   /* Infinite loop */
+ 195:Src/freertos.c ****   for (;;)
+ 196:Src/freertos.c ****   {
+ 197:Src/freertos.c ****     INS_Task(); // ��������
+ 198:Src/freertos.c **** 
+ 199:Src/freertos.c ****     osDelay(INS_TASK_PERIOD);
+ 200:Src/freertos.c ****   }
+ 201:Src/freertos.c ****   /* USER CODE END StartINSTask */
+ 202:Src/freertos.c **** }
+ 203:Src/freertos.c **** 
+ 204:Src/freertos.c **** /* USER CODE BEGIN Header_StartDetectTask */
+ 205:Src/freertos.c **** /**
+ 206:Src/freertos.c ****  * @brief Function implementing the DetectTask thread.
+ 207:Src/freertos.c ****  * @param argument: Not used
+ 208:Src/freertos.c ****  * @retval None
+ 209:Src/freertos.c ****  */
+ 210:Src/freertos.c **** /* USER CODE END Header_StartDetectTask */
+ 211:Src/freertos.c **** void StartDetectTask(void const *argument) // ����Detect ���ٷ���
+ 212:Src/freertos.c **** {
+ 213:Src/freertos.c ****   /* USER CODE BEGIN StartDetectTask */
+ 214:Src/freertos.c ****   Detect_Task_Init();
+ 215:Src/freertos.c ****   /* Infinite loop */
+ 216:Src/freertos.c ****   for (;;)
+ 217:Src/freertos.c ****   {
+ 218:Src/freertos.c ****     HAL_IWDG_Refresh(&hiwdg);
+ 219:Src/freertos.c ****     if ((remote_control.key_code & Key_F) && (remote_control.key_code & Key_E))
+ 220:Src/freertos.c ****     {
+ 221:Src/freertos.c ****       resetCount++;
+ 222:Src/freertos.c ****       if (resetCount * DETECT_TASK_PERIOD > 1500)
+ 223:Src/freertos.c ****       {
+ 224:Src/freertos.c ****         __set_FAULTMASK(1);
+ 225:Src/freertos.c ****         HAL_NVIC_SystemReset();
+ 226:Src/freertos.c ****       }
+ 227:Src/freertos.c ****     }
+ 228:Src/freertos.c ****     else
+ 229:Src/freertos.c ****       resetCount = 0;
+ 230:Src/freertos.c **** 
+ 231:Src/freertos.c ****     Detect_Task();
+ 232:Src/freertos.c ****     osDelay(DETECT_TASK_PERIOD);
+ 233:Src/freertos.c ****   }
+ 234:Src/freertos.c ****   /* USER CODE END StartDetectTask */
+ 235:Src/freertos.c **** }
+ 236:Src/freertos.c **** 
+ 237:Src/freertos.c **** /* USER CODE BEGIN Header_StartPowerMeasureTask */
+ 238:Src/freertos.c **** /**
+ 239:Src/freertos.c ****  * @brief Function implementing the PowerMeasureTas thread.
+ 240:Src/freertos.c ****  * @param argument: Not used
+ 241:Src/freertos.c ****  * @retval None
+ 242:Src/freertos.c ****  */
+ 243:Src/freertos.c **** /* USER CODE END Header_StartPowerMeasureTask */
+ 244:Src/freertos.c **** void StartPowerMeasureTask(void const *argument) // ����
+ 245:Src/freertos.c **** {
+  87              		.loc 1 245 1 view -0
+  88              		.cfi_startproc
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 7
+
+
+  89              		@ Volatile: function does not return.
+  90              		@ args = 0, pretend = 0, frame = 0
+  91              		@ frame_needed = 0, uses_anonymous_args = 0
+  92              	.LVL4:
+  93              		.loc 1 245 1 is_stmt 0 view .LVU8
+  94 0000 08B5     		push	{r3, lr}
+  95              	.LCFI1:
+  96              		.cfi_def_cfa_offset 8
+  97              		.cfi_offset 3, -8
+  98              		.cfi_offset 14, -4
+  99              	.LVL5:
+ 100              	.L5:
+ 246:Src/freertos.c ****   /* USER CODE BEGIN StartPowerMeasureTask */
+ 247:Src/freertos.c ****   //  INA226_Init(INA226_ADDR1);
+ 248:Src/freertos.c ****   /* Infinite loop */
+ 249:Src/freertos.c ****   for (;;)
+ 101              		.loc 1 249 3 is_stmt 1 discriminator 1 view .LVU9
+ 250:Src/freertos.c ****   {
+ 251:Src/freertos.c ****     //    INA226_Read_Registers(INA226_ADDR1);
+ 252:Src/freertos.c ****     osDelay(300000);
+ 102              		.loc 1 252 5 discriminator 1 view .LVU10
+ 103 0002 0248     		ldr	r0, .L7
+ 104 0004 FFF7FEFF 		bl	osDelay
+ 105              	.LVL6:
+ 249:Src/freertos.c ****   {
+ 106              		.loc 1 249 9 discriminator 1 view .LVU11
+ 107 0008 FBE7     		b	.L5
+ 108              	.L8:
+ 109 000a 00BF     		.align	2
+ 110              	.L7:
+ 111 000c E0930400 		.word	300000
+ 112              		.cfi_endproc
+ 113              	.LFE177:
+ 115              		.section	.text.StartUITask,"ax",%progbits
+ 116              		.align	1
+ 117              		.global	StartUITask
+ 118              		.syntax unified
+ 119              		.thumb
+ 120              		.thumb_func
+ 122              	StartUITask:
+ 123              	.LFB178:
+ 253:Src/freertos.c ****   }
+ 254:Src/freertos.c ****   /* USER CODE END StartPowerMeasureTask */
+ 255:Src/freertos.c **** }
+ 256:Src/freertos.c **** 
+ 257:Src/freertos.c **** /* USER CODE BEGIN Header_StartUITask */
+ 258:Src/freertos.c **** /**
+ 259:Src/freertos.c ****  * @brief Function implementing the UITask thread.
+ 260:Src/freertos.c ****  * @param argument: Not used
+ 261:Src/freertos.c ****  * @retval None
+ 262:Src/freertos.c ****  */
+ 263:Src/freertos.c **** /* USER CODE END Header_StartUITask */
+ 264:Src/freertos.c **** void StartUITask(void const *argument) // UI
+ 265:Src/freertos.c **** {
+ 124              		.loc 1 265 1 view -0
+ 125              		.cfi_startproc
+ 126              		@ Volatile: function does not return.
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 8
+
+
+ 127              		@ args = 0, pretend = 0, frame = 0
+ 128              		@ frame_needed = 0, uses_anonymous_args = 0
+ 129              	.LVL7:
+ 130              		.loc 1 265 1 is_stmt 0 view .LVU13
+ 131 0000 08B5     		push	{r3, lr}
+ 132              	.LCFI2:
+ 133              		.cfi_def_cfa_offset 8
+ 134              		.cfi_offset 3, -8
+ 135              		.cfi_offset 14, -4
+ 136              	.LVL8:
+ 137              	.L10:
+ 266:Src/freertos.c ****   /* USER CODE BEGIN StartUITask */
+ 267:Src/freertos.c ****   /* Infinite loop */
+ 268:Src/freertos.c ****   for (;;)
+ 138              		.loc 1 268 3 is_stmt 1 discriminator 1 view .LVU14
+ 269:Src/freertos.c ****   {
+ 270:Src/freertos.c ****     // UI_Task();
+ 271:Src/freertos.c ****     osDelay(UI_TASK_PERIOD);
+ 139              		.loc 1 271 5 discriminator 1 view .LVU15
+ 140 0002 2120     		movs	r0, #33
+ 141 0004 FFF7FEFF 		bl	osDelay
+ 142              	.LVL9:
+ 268:Src/freertos.c ****   {
+ 143              		.loc 1 268 9 discriminator 1 view .LVU16
+ 144 0008 FBE7     		b	.L10
+ 145              		.cfi_endproc
+ 146              	.LFE178:
+ 148              		.section	.text.StartINSTask,"ax",%progbits
+ 149              		.align	1
+ 150              		.global	StartINSTask
+ 151              		.syntax unified
+ 152              		.thumb
+ 153              		.thumb_func
+ 155              	StartINSTask:
+ 156              	.LVL10:
+ 157              	.LFB175:
+ 191:Src/freertos.c ****   /* USER CODE BEGIN StartINSTask */
+ 158              		.loc 1 191 1 view -0
+ 159              		.cfi_startproc
+ 160              		@ Volatile: function does not return.
+ 161              		@ args = 0, pretend = 0, frame = 0
+ 162              		@ frame_needed = 0, uses_anonymous_args = 0
+ 191:Src/freertos.c ****   /* USER CODE BEGIN StartINSTask */
+ 163              		.loc 1 191 1 is_stmt 0 view .LVU18
+ 164 0000 08B5     		push	{r3, lr}
+ 165              	.LCFI3:
+ 166              		.cfi_def_cfa_offset 8
+ 167              		.cfi_offset 3, -8
+ 168              		.cfi_offset 14, -4
+ 193:Src/freertos.c ****   /* Infinite loop */
+ 169              		.loc 1 193 3 is_stmt 1 view .LVU19
+ 170 0002 FFF7FEFF 		bl	INS_Init
+ 171              	.LVL11:
+ 172              	.L13:
+ 195:Src/freertos.c ****   {
+ 173              		.loc 1 195 3 discriminator 1 view .LVU20
+ 197:Src/freertos.c **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 9
+
+
+ 174              		.loc 1 197 5 discriminator 1 view .LVU21
+ 175 0006 FFF7FEFF 		bl	INS_Task
+ 176              	.LVL12:
+ 199:Src/freertos.c ****   }
+ 177              		.loc 1 199 5 discriminator 1 view .LVU22
+ 178 000a 0120     		movs	r0, #1
+ 179 000c FFF7FEFF 		bl	osDelay
+ 180              	.LVL13:
+ 195:Src/freertos.c ****   {
+ 181              		.loc 1 195 9 discriminator 1 view .LVU23
+ 182 0010 F9E7     		b	.L13
+ 183              		.cfi_endproc
+ 184              	.LFE175:
+ 186              		.section	.text.StartDetectTask,"ax",%progbits
+ 187              		.align	1
+ 188              		.global	StartDetectTask
+ 189              		.syntax unified
+ 190              		.thumb
+ 191              		.thumb_func
+ 193              	StartDetectTask:
+ 194              	.LVL14:
+ 195              	.LFB176:
+ 212:Src/freertos.c ****   /* USER CODE BEGIN StartDetectTask */
+ 196              		.loc 1 212 1 view -0
+ 197              		.cfi_startproc
+ 198              		@ Volatile: function does not return.
+ 199              		@ args = 0, pretend = 0, frame = 0
+ 200              		@ frame_needed = 0, uses_anonymous_args = 0
+ 212:Src/freertos.c ****   /* USER CODE BEGIN StartDetectTask */
+ 201              		.loc 1 212 1 is_stmt 0 view .LVU25
+ 202 0000 08B5     		push	{r3, lr}
+ 203              	.LCFI4:
+ 204              		.cfi_def_cfa_offset 8
+ 205              		.cfi_offset 3, -8
+ 206              		.cfi_offset 14, -4
+ 214:Src/freertos.c ****   /* Infinite loop */
+ 207              		.loc 1 214 3 is_stmt 1 view .LVU26
+ 208 0002 FFF7FEFF 		bl	Detect_Task_Init
+ 209              	.LVL15:
+ 214:Src/freertos.c ****   /* Infinite loop */
+ 210              		.loc 1 214 3 is_stmt 0 view .LVU27
+ 211 0006 07E0     		b	.L18
+ 212              	.L16:
+ 229:Src/freertos.c **** 
+ 213              		.loc 1 229 7 is_stmt 1 view .LVU28
+ 229:Src/freertos.c **** 
+ 214              		.loc 1 229 18 is_stmt 0 view .LVU29
+ 215 0008 104B     		ldr	r3, .L20
+ 216 000a 0022     		movs	r2, #0
+ 217 000c 1A60     		str	r2, [r3]
+ 218              	.L17:
+ 231:Src/freertos.c ****     osDelay(DETECT_TASK_PERIOD);
+ 219              		.loc 1 231 5 is_stmt 1 view .LVU30
+ 220 000e FFF7FEFF 		bl	Detect_Task
+ 221              	.LVL16:
+ 232:Src/freertos.c ****   }
+ 222              		.loc 1 232 5 view .LVU31
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 10
+
+
+ 223 0012 0520     		movs	r0, #5
+ 224 0014 FFF7FEFF 		bl	osDelay
+ 225              	.LVL17:
+ 216:Src/freertos.c ****   {
+ 226              		.loc 1 216 9 view .LVU32
+ 227              	.L18:
+ 216:Src/freertos.c ****   {
+ 228              		.loc 1 216 3 view .LVU33
+ 218:Src/freertos.c ****     if ((remote_control.key_code & Key_F) && (remote_control.key_code & Key_E))
+ 229              		.loc 1 218 5 view .LVU34
+ 230 0018 0D48     		ldr	r0, .L20+4
+ 231 001a FFF7FEFF 		bl	HAL_IWDG_Refresh
+ 232              	.LVL18:
+ 219:Src/freertos.c ****     {
+ 233              		.loc 1 219 5 view .LVU35
+ 219:Src/freertos.c ****     {
+ 234              		.loc 1 219 24 is_stmt 0 view .LVU36
+ 235 001e 0D4B     		ldr	r3, .L20+8
+ 236 0020 DB8A     		ldrh	r3, [r3, #22]
+ 219:Src/freertos.c ****     {
+ 237              		.loc 1 219 8 view .LVU37
+ 238 0022 03F42073 		and	r3, r3, #640
+ 239 0026 B3F5207F 		cmp	r3, #640
+ 240 002a EDD1     		bne	.L16
+ 221:Src/freertos.c ****       if (resetCount * DETECT_TASK_PERIOD > 1500)
+ 241              		.loc 1 221 7 is_stmt 1 view .LVU38
+ 221:Src/freertos.c ****       if (resetCount * DETECT_TASK_PERIOD > 1500)
+ 242              		.loc 1 221 17 is_stmt 0 view .LVU39
+ 243 002c 074A     		ldr	r2, .L20
+ 244 002e 1368     		ldr	r3, [r2]
+ 245 0030 0133     		adds	r3, r3, #1
+ 246 0032 1360     		str	r3, [r2]
+ 222:Src/freertos.c ****       {
+ 247              		.loc 1 222 7 is_stmt 1 view .LVU40
+ 222:Src/freertos.c ****       {
+ 248              		.loc 1 222 22 is_stmt 0 view .LVU41
+ 249 0034 03EB8303 		add	r3, r3, r3, lsl #2
+ 222:Src/freertos.c ****       {
+ 250              		.loc 1 222 10 view .LVU42
+ 251 0038 40F2DC52 		movw	r2, #1500
+ 252 003c 9342     		cmp	r3, r2
+ 253 003e E6D9     		bls	.L17
+ 224:Src/freertos.c ****         HAL_NVIC_SystemReset();
+ 254              		.loc 1 224 9 is_stmt 1 view .LVU43
+ 255              	.LVL19:
+ 256              	.LBB4:
+ 257              	.LBI4:
+ 258              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+   1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @version  V5.0.4
+   5:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     09. April 2018
+   6:Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+   8:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+   9:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 11
+
+
+  10:Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  12:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  16:Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  18:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Drivers/CMSIS/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Drivers/CMSIS/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Drivers/CMSIS/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Drivers/CMSIS/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+  24:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  25:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  34:Drivers/CMSIS/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  38:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  39:Drivers/CMSIS/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  43:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  46:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif                                           
+  52:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  55:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  58:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  61:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  64:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 12
+
+
+  67:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  70:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Drivers/CMSIS/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  78:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  94:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 102:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 110:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 113:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 116:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 117:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 118:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 119:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 120:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 121:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 122:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 123:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 13
+
+
+ 124:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 125:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 126:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 127:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 128:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 130:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 132:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 133:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 134:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 135:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 136:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 137:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 138:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 139:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 140:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 141:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 142:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+ 143:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 144:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 145:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 146:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 147:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Control Register
+ 148:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the content of the Control Register.
+ 149:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Control Register value
+ 150:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 151:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_CONTROL(void)
+ 152:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 153:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 154:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 155:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, control" : "=r" (result) );
+ 156:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 157:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 158:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 159:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 160:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 161:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 162:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Control Register (non-secure)
+ 163:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the content of the non-secure Control Register when in secure mode.
+ 164:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               non-secure Control Register value
+ 165:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 166:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_CONTROL_NS(void)
+ 167:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 168:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 169:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 170:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, control_ns" : "=r" (result) );
+ 171:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 172:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 173:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 174:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 175:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 176:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 177:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Control Register
+ 178:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Writes the given value to the Control Register.
+ 179:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    control  Control Register value to set
+ 180:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 14
+
+
+ 181:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_CONTROL(uint32_t control)
+ 182:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 183:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR control, %0" : : "r" (control) : "memory");
+ 184:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 185:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 186:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 187:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 188:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 189:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Control Register (non-secure)
+ 190:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Writes the given value to the non-secure Control Register when in secure state.
+ 191:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    control  Control Register value to set
+ 192:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 193:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_CONTROL_NS(uint32_t control)
+ 194:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 195:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR control_ns, %0" : : "r" (control) : "memory");
+ 196:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 197:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 198:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 199:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 200:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 201:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get IPSR Register
+ 202:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the content of the IPSR Register.
+ 203:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               IPSR Register value
+ 204:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 205:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_IPSR(void)
+ 206:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 207:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 208:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 209:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, ipsr" : "=r" (result) );
+ 210:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 211:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 212:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 213:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 214:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 215:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get APSR Register
+ 216:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the content of the APSR Register.
+ 217:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               APSR Register value
+ 218:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 219:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_APSR(void)
+ 220:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 221:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 222:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 223:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, apsr" : "=r" (result) );
+ 224:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 225:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 226:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 227:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 228:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 229:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get xPSR Register
+ 230:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the content of the xPSR Register.
+ 231:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               xPSR Register value
+ 232:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 233:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_xPSR(void)
+ 234:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 235:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 236:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 237:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, xpsr" : "=r" (result) );
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 15
+
+
+ 238:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 239:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 240:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 241:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 242:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 243:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Process Stack Pointer
+ 244:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the Process Stack Pointer (PSP).
+ 245:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               PSP Register value
+ 246:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 247:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_PSP(void)
+ 248:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 249:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 250:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 251:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, psp"  : "=r" (result) );
+ 252:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 253:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 254:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 255:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 256:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 257:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 258:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Process Stack Pointer (non-secure)
+ 259:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the non-secure Process Stack Pointer (PSP) when in secure s
+ 260:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               PSP Register value
+ 261:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 262:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_PSP_NS(void)
+ 263:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 264:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 265:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 266:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, psp_ns"  : "=r" (result) );
+ 267:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 268:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 269:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 270:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 271:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 272:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 273:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Process Stack Pointer
+ 274:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the Process Stack Pointer (PSP).
+ 275:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    topOfProcStack  Process Stack Pointer value to set
+ 276:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 277:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_PSP(uint32_t topOfProcStack)
+ 278:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 279:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR psp, %0" : : "r" (topOfProcStack) : );
+ 280:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 281:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 282:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 283:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 284:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 285:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Process Stack Pointer (non-secure)
+ 286:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the non-secure Process Stack Pointer (PSP) when in secure sta
+ 287:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    topOfProcStack  Process Stack Pointer value to set
+ 288:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 289:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_PSP_NS(uint32_t topOfProcStack)
+ 290:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 291:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR psp_ns, %0" : : "r" (topOfProcStack) : );
+ 292:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 293:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 294:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 16
+
+
+ 295:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 296:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 297:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Main Stack Pointer
+ 298:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the Main Stack Pointer (MSP).
+ 299:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               MSP Register value
+ 300:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 301:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_MSP(void)
+ 302:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 303:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 304:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 305:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, msp" : "=r" (result) );
+ 306:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 307:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 308:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 309:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 310:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 311:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 312:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Main Stack Pointer (non-secure)
+ 313:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the non-secure Main Stack Pointer (MSP) when in secure stat
+ 314:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               MSP Register value
+ 315:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 316:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_MSP_NS(void)
+ 317:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 318:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 319:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 320:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, msp_ns" : "=r" (result) );
+ 321:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 322:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 323:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 324:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 325:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 326:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 327:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Main Stack Pointer
+ 328:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the Main Stack Pointer (MSP).
+ 329:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    topOfMainStack  Main Stack Pointer value to set
+ 330:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 331:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_MSP(uint32_t topOfMainStack)
+ 332:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 333:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR msp, %0" : : "r" (topOfMainStack) : );
+ 334:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 335:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 336:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 337:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 338:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 339:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Main Stack Pointer (non-secure)
+ 340:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the non-secure Main Stack Pointer (MSP) when in secure state.
+ 341:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    topOfMainStack  Main Stack Pointer value to set
+ 342:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 343:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_MSP_NS(uint32_t topOfMainStack)
+ 344:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 345:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR msp_ns, %0" : : "r" (topOfMainStack) : );
+ 346:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 347:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 348:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 349:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 350:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 351:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 17
+
+
+ 352:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Stack Pointer (non-secure)
+ 353:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the non-secure Stack Pointer (SP) when in secure state.
+ 354:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               SP Register value
+ 355:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 356:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_SP_NS(void)
+ 357:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 358:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 359:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 360:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, sp_ns" : "=r" (result) );
+ 361:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 362:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 363:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 364:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 365:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 366:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Stack Pointer (non-secure)
+ 367:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the non-secure Stack Pointer (SP) when in secure state.
+ 368:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    topOfStack  Stack Pointer value to set
+ 369:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 370:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_SP_NS(uint32_t topOfStack)
+ 371:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 372:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR sp_ns, %0" : : "r" (topOfStack) : );
+ 373:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 374:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 375:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 376:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 377:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 378:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Priority Mask
+ 379:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current state of the priority mask bit from the Priority Mask Register.
+ 380:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Priority Mask value
+ 381:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 382:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_PRIMASK(void)
+ 383:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 384:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 385:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 386:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, primask" : "=r" (result) :: "memory");
+ 387:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 388:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 389:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 390:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 391:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 392:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 393:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Priority Mask (non-secure)
+ 394:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current state of the non-secure priority mask bit from the Priority Mask Reg
+ 395:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Priority Mask value
+ 396:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 397:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_PRIMASK_NS(void)
+ 398:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 399:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 400:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 401:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, primask_ns" : "=r" (result) :: "memory");
+ 402:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 403:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 404:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 405:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 406:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 407:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 408:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Priority Mask
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 18
+
+
+ 409:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the Priority Mask Register.
+ 410:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    priMask  Priority Mask
+ 411:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 412:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_PRIMASK(uint32_t priMask)
+ 413:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 414:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR primask, %0" : : "r" (priMask) : "memory");
+ 415:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 416:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 417:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 418:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 419:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 420:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Priority Mask (non-secure)
+ 421:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the non-secure Priority Mask Register when in secure state.
+ 422:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    priMask  Priority Mask
+ 423:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 424:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_PRIMASK_NS(uint32_t priMask)
+ 425:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 426:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR primask_ns, %0" : : "r" (priMask) : "memory");
+ 427:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 428:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 429:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 430:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 431:Drivers/CMSIS/Include/cmsis_gcc.h **** #if ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
+ 432:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
+ 433:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1))    )
+ 434:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 435:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Enable FIQ
+ 436:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Enables FIQ interrupts by clearing the F-bit in the CPSR.
+ 437:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 438:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 439:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_fault_irq(void)
+ 440:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 441:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie f" : : : "memory");
+ 442:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 443:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 444:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 445:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 446:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Disable FIQ
+ 447:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Disables FIQ interrupts by setting the F-bit in the CPSR.
+ 448:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 449:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 450:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_fault_irq(void)
+ 451:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 452:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid f" : : : "memory");
+ 453:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 454:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 455:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 456:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 457:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Base Priority
+ 458:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the Base Priority register.
+ 459:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Base Priority register value
+ 460:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 461:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_BASEPRI(void)
+ 462:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 463:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 464:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 465:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, basepri" : "=r" (result) );
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 19
+
+
+ 466:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 467:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 468:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 469:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 470:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 471:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 472:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Base Priority (non-secure)
+ 473:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the non-secure Base Priority register when in secure state.
+ 474:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Base Priority register value
+ 475:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 476:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_BASEPRI_NS(void)
+ 477:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 478:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 479:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 480:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, basepri_ns" : "=r" (result) );
+ 481:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 482:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 483:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 484:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 485:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 486:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 487:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Base Priority
+ 488:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the Base Priority register.
+ 489:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    basePri  Base Priority value to set
+ 490:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 491:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_BASEPRI(uint32_t basePri)
+ 492:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 493:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR basepri, %0" : : "r" (basePri) : "memory");
+ 494:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 495:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 496:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 497:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 498:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 499:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Base Priority (non-secure)
+ 500:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the non-secure Base Priority register when in secure state.
+ 501:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    basePri  Base Priority value to set
+ 502:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 503:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_BASEPRI_NS(uint32_t basePri)
+ 504:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 505:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR basepri_ns, %0" : : "r" (basePri) : "memory");
+ 506:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 507:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 508:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 509:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 510:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 511:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Base Priority with condition
+ 512:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the Base Priority register only if BASEPRI masking is disable
+ 513:Drivers/CMSIS/Include/cmsis_gcc.h ****            or the new value increases the BASEPRI priority level.
+ 514:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    basePri  Base Priority value to set
+ 515:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 516:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_BASEPRI_MAX(uint32_t basePri)
+ 517:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 518:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR basepri_max, %0" : : "r" (basePri) : "memory");
+ 519:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 520:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 521:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 522:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 20
+
+
+ 523:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Fault Mask
+ 524:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the Fault Mask register.
+ 525:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Fault Mask register value
+ 526:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 527:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_FAULTMASK(void)
+ 528:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 529:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 530:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 531:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, faultmask" : "=r" (result) );
+ 532:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 533:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 534:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 535:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 536:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
+ 537:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 538:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Fault Mask (non-secure)
+ 539:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the non-secure Fault Mask register when in secure state.
+ 540:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Fault Mask register value
+ 541:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 542:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_FAULTMASK_NS(void)
+ 543:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 544:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
+ 545:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 546:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, faultmask_ns" : "=r" (result) );
+ 547:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
+ 548:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 549:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 550:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 551:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 552:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 553:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Fault Mask
+ 554:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the Fault Mask register.
+ 555:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    faultMask  Fault Mask value to set
+ 556:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 557:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_FAULTMASK(uint32_t faultMask)
+ 259              		.loc 2 557 27 view .LVU44
+ 260              	.LBB5:
+ 558:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 559:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR faultmask, %0" : : "r" (faultMask) : "memory");
+ 261              		.loc 2 559 3 view .LVU45
+ 262 0040 0123     		movs	r3, #1
+ 263              		.syntax unified
+ 264              	@ 559 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 265 0042 83F31388 		MSR faultmask, r3
+ 266              	@ 0 "" 2
+ 267              	.LVL20:
+ 268              		.loc 2 559 3 is_stmt 0 view .LVU46
+ 269              		.thumb
+ 270              		.syntax unified
+ 271              	.LBE5:
+ 272              	.LBE4:
+ 225:Src/freertos.c ****       }
+ 273              		.loc 1 225 9 is_stmt 1 view .LVU47
+ 274 0046 FFF7FEFF 		bl	HAL_NVIC_SystemReset
+ 275              	.LVL21:
+ 276 004a E0E7     		b	.L17
+ 277              	.L21:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 21
+
+
+ 278              		.align	2
+ 279              	.L20:
+ 280 004c 00000000 		.word	resetCount
+ 281 0050 00000000 		.word	hiwdg
+ 282 0054 00000000 		.word	remote_control
+ 283              		.cfi_endproc
+ 284              	.LFE176:
+ 286              		.section	.text.StartChassisTask,"ax",%progbits
+ 287              		.align	1
+ 288              		.global	StartChassisTask
+ 289              		.syntax unified
+ 290              		.thumb
+ 291              		.thumb_func
+ 293              	StartChassisTask:
+ 294              	.LVL22:
+ 295              	.LFB179:
+ 272:Src/freertos.c ****   }
+ 273:Src/freertos.c ****   /* USER CODE END StartUITask */
+ 274:Src/freertos.c **** }
+ 275:Src/freertos.c **** 
+ 276:Src/freertos.c **** /* USER CODE BEGIN Header_StartChassisTask */
+ 277:Src/freertos.c **** /**
+ 278:Src/freertos.c ****  * @brief Function implementing the ChassisTask thread.
+ 279:Src/freertos.c ****  * @param argument: Not used
+ 280:Src/freertos.c ****  * @retval None
+ 281:Src/freertos.c ****  */
+ 282:Src/freertos.c **** /* USER CODE END Header_StartChassisTask */
+ 283:Src/freertos.c **** void StartChassisTask(void const *argument)
+ 284:Src/freertos.c **** {
+ 296              		.loc 1 284 1 view -0
+ 297              		.cfi_startproc
+ 298              		@ Volatile: function does not return.
+ 299              		@ args = 0, pretend = 0, frame = 0
+ 300              		@ frame_needed = 0, uses_anonymous_args = 0
+ 301              		.loc 1 284 1 is_stmt 0 view .LVU49
+ 302 0000 00B5     		push	{lr}
+ 303              	.LCFI5:
+ 304              		.cfi_def_cfa_offset 4
+ 305              		.cfi_offset 14, -4
+ 306 0002 89B0     		sub	sp, sp, #36
+ 307              	.LCFI6:
+ 308              		.cfi_def_cfa_offset 40
+ 285:Src/freertos.c ****   /* USER CODE BEGIN StartChassisTask */
+ 286:Src/freertos.c ****   osDelay(1000);
+ 309              		.loc 1 286 3 is_stmt 1 view .LVU50
+ 310 0004 4FF47A70 		mov	r0, #1000
+ 311              	.LVL23:
+ 312              		.loc 1 286 3 is_stmt 0 view .LVU51
+ 313 0008 FFF7FEFF 		bl	osDelay
+ 314              	.LVL24:
+ 287:Src/freertos.c ****   Chassis_Init();
+ 315              		.loc 1 287 3 is_stmt 1 view .LVU52
+ 316 000c FFF7FEFF 		bl	Chassis_Init
+ 317              	.LVL25:
+ 318 0010 42E0     		b	.L29
+ 319              	.L24:
+ 288:Src/freertos.c ****   /* Infinite loop */
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 22
+
+
+ 289:Src/freertos.c ****   for (;;)
+ 290:Src/freertos.c ****   {
+ 291:Src/freertos.c **** 
+ 292:Src/freertos.c ****     Chassis_Control();
+ 293:Src/freertos.c **** 
+ 294:Src/freertos.c ****     if (RC_Update)
+ 295:Src/freertos.c ****     {
+ 296:Src/freertos.c ****       if (resetCount < 2000 && !((remote_control.key_code & Key_R) && (remote_control.key_code & Ke
+ 297:Src/freertos.c ****       {
+ 298:Src/freertos.c ****         Send_RC_Data(&hcan1, RC_Data_Buffer);
+ 299:Src/freertos.c ****         Send_RC_Data(&hcan2, RC_Data_Buffer);
+ 300:Src/freertos.c ****       }
+ 301:Src/freertos.c ****       RC_Update = 0;
+ 320              		.loc 1 301 7 view .LVU53
+ 321              		.loc 1 301 17 is_stmt 0 view .LVU54
+ 322 0012 324B     		ldr	r3, .L31
+ 323 0014 0022     		movs	r2, #0
+ 324 0016 1A70     		strb	r2, [r3]
+ 325              	.L23:
+ 302:Src/freertos.c ****     }
+ 303:Src/freertos.c **** 
+ 304:Src/freertos.c ****     if (Shoot_Updata == 1 || count_shoot > 5)
+ 326              		.loc 1 304 5 is_stmt 1 view .LVU55
+ 327              		.loc 1 304 22 is_stmt 0 view .LVU56
+ 328 0018 314B     		ldr	r3, .L31+4
+ 329 001a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 330              		.loc 1 304 8 view .LVU57
+ 331 001c 012B     		cmp	r3, #1
+ 332 001e 03D0     		beq	.L25
+ 333              		.loc 1 304 42 discriminator 1 view .LVU58
+ 334 0020 304B     		ldr	r3, .L31+8
+ 335 0022 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 336              		.loc 1 304 27 discriminator 1 view .LVU59
+ 337 0024 052B     		cmp	r3, #5
+ 338 0026 30D9     		bls	.L26
+ 339              	.L25:
+ 305:Src/freertos.c ****     {
+ 306:Src/freertos.c ****       if (robot_state.robot_id <= 7) // red
+ 340              		.loc 1 306 7 is_stmt 1 view .LVU60
+ 341              		.loc 1 306 22 is_stmt 0 view .LVU61
+ 342 0028 2F4B     		ldr	r3, .L31+12
+ 343 002a 1978     		ldrb	r1, [r3]	@ zero_extendqisi2
+ 344              		.loc 1 306 10 view .LVU62
+ 345 002c 0729     		cmp	r1, #7
+ 346 002e 4FD8     		bhi	.L27
+ 307:Src/freertos.c ****         enemy_outpost_HP = game_robot_HP.blue_outpost_HP;
+ 347              		.loc 1 307 9 is_stmt 1 view .LVU63
+ 348              		.loc 1 307 41 is_stmt 0 view .LVU64
+ 349 0030 2E4B     		ldr	r3, .L31+16
+ 350 0032 9A8B     		ldrh	r2, [r3, #28]
+ 351              		.loc 1 307 26 view .LVU65
+ 352 0034 2E4B     		ldr	r3, .L31+20
+ 353 0036 1A80     		strh	r2, [r3]	@ movhi
+ 354              	.L28:
+ 308:Src/freertos.c ****       else
+ 309:Src/freertos.c ****         enemy_outpost_HP = game_robot_HP.red_outpost_HP;
+ 310:Src/freertos.c **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 23
+
+
+ 311:Src/freertos.c ****       Send_Robot_Info(&hcan2, robot_state.robot_id,
+ 355              		.loc 1 311 7 is_stmt 1 view .LVU66
+ 312:Src/freertos.c ****                       robot_state.shooter_id1_17mm_cooling_limit,
+ 313:Src/freertos.c ****                       power_heat_data_t.shooter_id1_17mm_cooling_heat,
+ 314:Src/freertos.c ****                       (uint16_t)(shoot_data.bullet_speed * 10),
+ 356              		.loc 1 314 44 is_stmt 0 view .LVU67
+ 357 0038 2E4B     		ldr	r3, .L31+24
+ 358 003a D3ED017A 		vldr.32	s15, [r3, #4]
+ 359              		.loc 1 314 58 view .LVU68
+ 360 003e B2EE047A 		vmov.f32	s14, #1.0e+1
+ 361 0042 67EE877A 		vmul.f32	s15, s15, s14
+ 315:Src/freertos.c ****                       robot_state.shooter_id1_17mm_speed_limit,
+ 316:Src/freertos.c ****                       robot_state.shooter_id2_17mm_cooling_limit,
+ 317:Src/freertos.c ****                       power_heat_data_t.shooter_id2_17mm_cooling_heat,
+ 318:Src/freertos.c ****                       robot_state.shooter_id2_17mm_speed_limit,
+ 319:Src/freertos.c ****                       (uint8_t)game_status.game_progress,
+ 362              		.loc 1 319 43 view .LVU69
+ 363 0046 2C4B     		ldr	r3, .L31+28
+ 364 0048 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 365 004a 1B09     		lsrs	r3, r3, #4
+ 311:Src/freertos.c ****                       robot_state.shooter_id1_17mm_cooling_limit,
+ 366              		.loc 1 311 7 view .LVU70
+ 367 004c 2B48     		ldr	r0, .L31+32
+ 368 004e 264A     		ldr	r2, .L31+12
+ 369 0050 274C     		ldr	r4, .L31+20
+ 370 0052 2488     		ldrh	r4, [r4]
+ 371 0054 0694     		str	r4, [sp, #24]
+ 372 0056 0593     		str	r3, [sp, #20]
+ 373 0058 138A     		ldrh	r3, [r2, #16]
+ 374 005a 0493     		str	r3, [sp, #16]
+ 375 005c 8389     		ldrh	r3, [r0, #12]
+ 376 005e 0393     		str	r3, [sp, #12]
+ 377 0060 D389     		ldrh	r3, [r2, #14]
+ 378 0062 0293     		str	r3, [sp, #8]
+ 379 0064 5389     		ldrh	r3, [r2, #10]
+ 380 0066 0193     		str	r3, [sp, #4]
+ 381 0068 FCEEE77A 		vcvt.u32.f32	s15, s15
+ 382 006c 17EE903A 		vmov	r3, s15	@ int
+ 383 0070 9BB2     		uxth	r3, r3
+ 384 0072 0093     		str	r3, [sp]
+ 385 0074 4389     		ldrh	r3, [r0, #10]
+ 386 0076 1289     		ldrh	r2, [r2, #8]
+ 387 0078 49B2     		sxtb	r1, r1
+ 388 007a 2148     		ldr	r0, .L31+36
+ 389 007c FFF7FEFF 		bl	Send_Robot_Info
+ 390              	.LVL26:
+ 320:Src/freertos.c ****                       enemy_outpost_HP);
+ 321:Src/freertos.c **** 
+ 322:Src/freertos.c ****       Shoot_Updata = 0;
+ 391              		.loc 1 322 7 is_stmt 1 view .LVU71
+ 392              		.loc 1 322 20 is_stmt 0 view .LVU72
+ 393 0080 0023     		movs	r3, #0
+ 394 0082 174A     		ldr	r2, .L31+4
+ 395 0084 1370     		strb	r3, [r2]
+ 323:Src/freertos.c ****       count_shoot = 0;
+ 396              		.loc 1 323 7 is_stmt 1 view .LVU73
+ 397              		.loc 1 323 19 is_stmt 0 view .LVU74
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 24
+
+
+ 398 0086 174A     		ldr	r2, .L31+8
+ 399 0088 1370     		strb	r3, [r2]
+ 400              	.L26:
+ 324:Src/freertos.c ****     }
+ 325:Src/freertos.c ****     count_shoot++;
+ 401              		.loc 1 325 5 is_stmt 1 view .LVU75
+ 402              		.loc 1 325 16 is_stmt 0 view .LVU76
+ 403 008a 164A     		ldr	r2, .L31+8
+ 404 008c 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 405 008e 0133     		adds	r3, r3, #1
+ 406 0090 1370     		strb	r3, [r2]
+ 326:Src/freertos.c ****     osDelay(CHASSIS_TASK_PERIOD);
+ 407              		.loc 1 326 5 is_stmt 1 view .LVU77
+ 408 0092 0220     		movs	r0, #2
+ 409 0094 FFF7FEFF 		bl	osDelay
+ 410              	.LVL27:
+ 289:Src/freertos.c ****   {
+ 411              		.loc 1 289 9 view .LVU78
+ 412              	.L29:
+ 289:Src/freertos.c ****   {
+ 413              		.loc 1 289 3 view .LVU79
+ 292:Src/freertos.c **** 
+ 414              		.loc 1 292 5 view .LVU80
+ 415 0098 FFF7FEFF 		bl	Chassis_Control
+ 416              	.LVL28:
+ 294:Src/freertos.c ****     {
+ 417              		.loc 1 294 5 view .LVU81
+ 294:Src/freertos.c ****     {
+ 418              		.loc 1 294 9 is_stmt 0 view .LVU82
+ 419 009c 0F4B     		ldr	r3, .L31
+ 420 009e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 294:Src/freertos.c ****     {
+ 421              		.loc 1 294 8 view .LVU83
+ 422 00a0 002B     		cmp	r3, #0
+ 423 00a2 B9D0     		beq	.L23
+ 296:Src/freertos.c ****       {
+ 424              		.loc 1 296 7 is_stmt 1 view .LVU84
+ 296:Src/freertos.c ****       {
+ 425              		.loc 1 296 22 is_stmt 0 view .LVU85
+ 426 00a4 174B     		ldr	r3, .L31+40
+ 427 00a6 1B68     		ldr	r3, [r3]
+ 296:Src/freertos.c ****       {
+ 428              		.loc 1 296 10 view .LVU86
+ 429 00a8 B3F5FA6F 		cmp	r3, #2000
+ 430 00ac B1D2     		bcs	.L24
+ 296:Src/freertos.c ****       {
+ 431              		.loc 1 296 49 discriminator 1 view .LVU87
+ 432 00ae 164B     		ldr	r3, .L31+44
+ 433 00b0 DB8A     		ldrh	r3, [r3, #22]
+ 296:Src/freertos.c ****       {
+ 434              		.loc 1 296 29 discriminator 1 view .LVU88
+ 435 00b2 03F4C073 		and	r3, r3, #384
+ 436 00b6 B3F5C07F 		cmp	r3, #384
+ 437 00ba AAD0     		beq	.L24
+ 298:Src/freertos.c ****         Send_RC_Data(&hcan2, RC_Data_Buffer);
+ 438              		.loc 1 298 9 is_stmt 1 view .LVU89
+ 439 00bc 134C     		ldr	r4, .L31+48
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 25
+
+
+ 440 00be 2146     		mov	r1, r4
+ 441 00c0 1348     		ldr	r0, .L31+52
+ 442 00c2 FFF7FEFF 		bl	Send_RC_Data
+ 443              	.LVL29:
+ 299:Src/freertos.c ****       }
+ 444              		.loc 1 299 9 view .LVU90
+ 445 00c6 2146     		mov	r1, r4
+ 446 00c8 0D48     		ldr	r0, .L31+36
+ 447 00ca FFF7FEFF 		bl	Send_RC_Data
+ 448              	.LVL30:
+ 449 00ce A0E7     		b	.L24
+ 450              	.L27:
+ 309:Src/freertos.c **** 
+ 451              		.loc 1 309 9 view .LVU91
+ 309:Src/freertos.c **** 
+ 452              		.loc 1 309 41 is_stmt 0 view .LVU92
+ 453 00d0 064B     		ldr	r3, .L31+16
+ 454 00d2 9A89     		ldrh	r2, [r3, #12]
+ 309:Src/freertos.c **** 
+ 455              		.loc 1 309 26 view .LVU93
+ 456 00d4 064B     		ldr	r3, .L31+20
+ 457 00d6 1A80     		strh	r2, [r3]	@ movhi
+ 458 00d8 AEE7     		b	.L28
+ 459              	.L32:
+ 460 00da 00BF     		.align	2
+ 461              	.L31:
+ 462 00dc 00000000 		.word	RC_Update
+ 463 00e0 00000000 		.word	Shoot_Updata
+ 464 00e4 00000000 		.word	.LANCHOR0
+ 465 00e8 00000000 		.word	robot_state
+ 466 00ec 00000000 		.word	game_robot_HP
+ 467 00f0 00000000 		.word	.LANCHOR1
+ 468 00f4 00000000 		.word	shoot_data
+ 469 00f8 00000000 		.word	game_status
+ 470 00fc 00000000 		.word	power_heat_data_t
+ 471 0100 00000000 		.word	hcan2
+ 472 0104 00000000 		.word	resetCount
+ 473 0108 00000000 		.word	remote_control
+ 474 010c 00000000 		.word	RC_Data_Buffer
+ 475 0110 00000000 		.word	hcan1
+ 476              		.cfi_endproc
+ 477              	.LFE179:
+ 479              		.section	.text.vApplicationGetIdleTaskMemory,"ax",%progbits
+ 480              		.align	1
+ 481              		.global	vApplicationGetIdleTaskMemory
+ 482              		.syntax unified
+ 483              		.thumb
+ 484              		.thumb_func
+ 486              	vApplicationGetIdleTaskMemory:
+ 487              	.LVL31:
+ 488              	.LFB171:
+  85:Src/freertos.c ****   *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+ 489              		.loc 1 85 1 is_stmt 1 view -0
+ 490              		.cfi_startproc
+ 491              		@ args = 0, pretend = 0, frame = 0
+ 492              		@ frame_needed = 0, uses_anonymous_args = 0
+ 493              		@ link register save eliminated.
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 26
+
+
+  86:Src/freertos.c ****   *ppxIdleTaskStackBuffer = &xIdleStack[0];
+ 494              		.loc 1 86 3 view .LVU95
+  86:Src/freertos.c ****   *ppxIdleTaskStackBuffer = &xIdleStack[0];
+ 495              		.loc 1 86 25 is_stmt 0 view .LVU96
+ 496 0000 034B     		ldr	r3, .L34
+ 497 0002 0360     		str	r3, [r0]
+  87:Src/freertos.c ****   *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+ 498              		.loc 1 87 3 is_stmt 1 view .LVU97
+  87:Src/freertos.c ****   *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+ 499              		.loc 1 87 27 is_stmt 0 view .LVU98
+ 500 0004 034B     		ldr	r3, .L34+4
+ 501 0006 0B60     		str	r3, [r1]
+  88:Src/freertos.c ****   /* place for user code */
+ 502              		.loc 1 88 3 is_stmt 1 view .LVU99
+  88:Src/freertos.c ****   /* place for user code */
+ 503              		.loc 1 88 25 is_stmt 0 view .LVU100
+ 504 0008 8023     		movs	r3, #128
+ 505 000a 1360     		str	r3, [r2]
+  90:Src/freertos.c **** /* USER CODE END GET_IDLE_TASK_MEMORY */
+ 506              		.loc 1 90 1 view .LVU101
+ 507 000c 7047     		bx	lr
+ 508              	.L35:
+ 509 000e 00BF     		.align	2
+ 510              	.L34:
+ 511 0010 00000000 		.word	.LANCHOR2
+ 512 0014 00000000 		.word	.LANCHOR3
+ 513              		.cfi_endproc
+ 514              	.LFE171:
+ 516              		.section	.text.vApplicationGetTimerTaskMemory,"ax",%progbits
+ 517              		.align	1
+ 518              		.global	vApplicationGetTimerTaskMemory
+ 519              		.syntax unified
+ 520              		.thumb
+ 521              		.thumb_func
+ 523              	vApplicationGetTimerTaskMemory:
+ 524              	.LVL32:
+ 525              	.LFB172:
+  98:Src/freertos.c ****   *ppxTimerTaskTCBBuffer = &xTimerTaskTCBBuffer;
+ 526              		.loc 1 98 1 is_stmt 1 view -0
+ 527              		.cfi_startproc
+ 528              		@ args = 0, pretend = 0, frame = 0
+ 529              		@ frame_needed = 0, uses_anonymous_args = 0
+ 530              		@ link register save eliminated.
+  99:Src/freertos.c ****   *ppxTimerTaskStackBuffer = &xTimerStack[0];
+ 531              		.loc 1 99 3 view .LVU103
+  99:Src/freertos.c ****   *ppxTimerTaskStackBuffer = &xTimerStack[0];
+ 532              		.loc 1 99 26 is_stmt 0 view .LVU104
+ 533 0000 034B     		ldr	r3, .L37
+ 534 0002 0360     		str	r3, [r0]
+ 100:Src/freertos.c ****   *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
+ 535              		.loc 1 100 3 is_stmt 1 view .LVU105
+ 100:Src/freertos.c ****   *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
+ 536              		.loc 1 100 28 is_stmt 0 view .LVU106
+ 537 0004 034B     		ldr	r3, .L37+4
+ 538 0006 0B60     		str	r3, [r1]
+ 101:Src/freertos.c ****   /* place for user code */
+ 539              		.loc 1 101 3 is_stmt 1 view .LVU107
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 27
+
+
+ 101:Src/freertos.c ****   /* place for user code */
+ 540              		.loc 1 101 26 is_stmt 0 view .LVU108
+ 541 0008 4FF48073 		mov	r3, #256
+ 542 000c 1360     		str	r3, [r2]
+ 103:Src/freertos.c **** /* USER CODE END GET_TIMER_TASK_MEMORY */
+ 543              		.loc 1 103 1 view .LVU109
+ 544 000e 7047     		bx	lr
+ 545              	.L38:
+ 546              		.align	2
+ 547              	.L37:
+ 548 0010 00000000 		.word	.LANCHOR4
+ 549 0014 00000000 		.word	.LANCHOR5
+ 550              		.cfi_endproc
+ 551              	.LFE172:
+ 553              		.section	.text.MX_FREERTOS_Init,"ax",%progbits
+ 554              		.align	1
+ 555              		.global	MX_FREERTOS_Init
+ 556              		.syntax unified
+ 557              		.thumb
+ 558              		.thumb_func
+ 560              	MX_FREERTOS_Init:
+ 561              	.LFB173:
+ 112:Src/freertos.c ****   /* USER CODE BEGIN Init */
+ 562              		.loc 1 112 1 is_stmt 1 view -0
+ 563              		.cfi_startproc
+ 564              		@ args = 0, pretend = 0, frame = 168
+ 565              		@ frame_needed = 0, uses_anonymous_args = 0
+ 566 0000 10B5     		push	{r4, lr}
+ 567              	.LCFI7:
+ 568              		.cfi_def_cfa_offset 8
+ 569              		.cfi_offset 4, -8
+ 570              		.cfi_offset 14, -4
+ 571 0002 AAB0     		sub	sp, sp, #168
+ 572              	.LCFI8:
+ 573              		.cfi_def_cfa_offset 176
+ 135:Src/freertos.c ****   GimbalTaskHandle = osThreadCreate(osThread(GimbalTask), NULL);
+ 574              		.loc 1 135 3 view .LVU111
+ 575 0004 364C     		ldr	r4, .L41
+ 576 0006 0DF18C0C 		add	ip, sp, #140
+ 577 000a A646     		mov	lr, r4
+ 578 000c BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 579 0010 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 580 0014 9EE80700 		ldm	lr, {r0, r1, r2}
+ 581 0018 8CE80700 		stm	ip, {r0, r1, r2}
+ 136:Src/freertos.c **** 
+ 582              		.loc 1 136 3 view .LVU112
+ 136:Src/freertos.c **** 
+ 583              		.loc 1 136 22 is_stmt 0 view .LVU113
+ 584 001c 0021     		movs	r1, #0
+ 585 001e 23A8     		add	r0, sp, #140
+ 586 0020 FFF7FEFF 		bl	osThreadCreate
+ 587              	.LVL33:
+ 136:Src/freertos.c **** 
+ 588              		.loc 1 136 20 view .LVU114
+ 589 0024 2F4B     		ldr	r3, .L41+4
+ 590 0026 1860     		str	r0, [r3]
+ 139:Src/freertos.c ****   INSTaskHandle = osThreadCreate(osThread(INSTask), NULL);
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 28
+
+
+ 591              		.loc 1 139 3 is_stmt 1 view .LVU115
+ 592 0028 0DF1700C 		add	ip, sp, #112
+ 593 002c 04F11C0E 		add	lr, r4, #28
+ 594 0030 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 595 0034 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 596 0038 9EE80700 		ldm	lr, {r0, r1, r2}
+ 597 003c 8CE80700 		stm	ip, {r0, r1, r2}
+ 140:Src/freertos.c **** 
+ 598              		.loc 1 140 3 view .LVU116
+ 140:Src/freertos.c **** 
+ 599              		.loc 1 140 19 is_stmt 0 view .LVU117
+ 600 0040 0021     		movs	r1, #0
+ 601 0042 1CA8     		add	r0, sp, #112
+ 602 0044 FFF7FEFF 		bl	osThreadCreate
+ 603              	.LVL34:
+ 140:Src/freertos.c **** 
+ 604              		.loc 1 140 17 view .LVU118
+ 605 0048 274B     		ldr	r3, .L41+8
+ 606 004a 1860     		str	r0, [r3]
+ 143:Src/freertos.c ****   DetectTaskHandle = osThreadCreate(osThread(DetectTask), NULL);
+ 607              		.loc 1 143 3 is_stmt 1 view .LVU119
+ 608 004c 0DF1540C 		add	ip, sp, #84
+ 609 0050 04F1380E 		add	lr, r4, #56
+ 610 0054 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 611 0058 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 612 005c 9EE80700 		ldm	lr, {r0, r1, r2}
+ 613 0060 8CE80700 		stm	ip, {r0, r1, r2}
+ 144:Src/freertos.c **** 
+ 614              		.loc 1 144 3 view .LVU120
+ 144:Src/freertos.c **** 
+ 615              		.loc 1 144 22 is_stmt 0 view .LVU121
+ 616 0064 0021     		movs	r1, #0
+ 617 0066 15A8     		add	r0, sp, #84
+ 618 0068 FFF7FEFF 		bl	osThreadCreate
+ 619              	.LVL35:
+ 144:Src/freertos.c **** 
+ 620              		.loc 1 144 20 view .LVU122
+ 621 006c 1F4B     		ldr	r3, .L41+12
+ 622 006e 1860     		str	r0, [r3]
+ 147:Src/freertos.c ****   PowerMeasureTasHandle = osThreadCreate(osThread(PowerMeasureTas), NULL);
+ 623              		.loc 1 147 3 is_stmt 1 view .LVU123
+ 624 0070 0DF1380C 		add	ip, sp, #56
+ 625 0074 04F1540E 		add	lr, r4, #84
+ 626 0078 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 627 007c ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 628 0080 9EE80700 		ldm	lr, {r0, r1, r2}
+ 629 0084 8CE80700 		stm	ip, {r0, r1, r2}
+ 148:Src/freertos.c **** 
+ 630              		.loc 1 148 3 view .LVU124
+ 148:Src/freertos.c **** 
+ 631              		.loc 1 148 27 is_stmt 0 view .LVU125
+ 632 0088 0021     		movs	r1, #0
+ 633 008a 0EA8     		add	r0, sp, #56
+ 634 008c FFF7FEFF 		bl	osThreadCreate
+ 635              	.LVL36:
+ 148:Src/freertos.c **** 
+ 636              		.loc 1 148 25 view .LVU126
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 29
+
+
+ 637 0090 174B     		ldr	r3, .L41+16
+ 638 0092 1860     		str	r0, [r3]
+ 151:Src/freertos.c ****   UITaskHandle = osThreadCreate(osThread(UITask), NULL);
+ 639              		.loc 1 151 3 is_stmt 1 view .LVU127
+ 640 0094 0DF11C0C 		add	ip, sp, #28
+ 641 0098 04F1700E 		add	lr, r4, #112
+ 642 009c BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 643 00a0 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 644 00a4 9EE80700 		ldm	lr, {r0, r1, r2}
+ 645 00a8 8CE80700 		stm	ip, {r0, r1, r2}
+ 152:Src/freertos.c **** 
+ 646              		.loc 1 152 3 view .LVU128
+ 152:Src/freertos.c **** 
+ 647              		.loc 1 152 18 is_stmt 0 view .LVU129
+ 648 00ac 0021     		movs	r1, #0
+ 649 00ae 07A8     		add	r0, sp, #28
+ 650 00b0 FFF7FEFF 		bl	osThreadCreate
+ 651              	.LVL37:
+ 152:Src/freertos.c **** 
+ 652              		.loc 1 152 16 view .LVU130
+ 653 00b4 0F4B     		ldr	r3, .L41+20
+ 654 00b6 1860     		str	r0, [r3]
+ 155:Src/freertos.c ****   ChassisTaskHandle = osThreadCreate(osThread(ChassisTask), NULL);
+ 655              		.loc 1 155 3 is_stmt 1 view .LVU131
+ 656 00b8 EE46     		mov	lr, sp
+ 657 00ba 04F18C0C 		add	ip, r4, #140
+ 658 00be BCE80F00 		ldmia	ip!, {r0, r1, r2, r3}
+ 659 00c2 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 660 00c6 9CE80700 		ldm	ip, {r0, r1, r2}
+ 661 00ca 8EE80700 		stm	lr, {r0, r1, r2}
+ 156:Src/freertos.c **** 
+ 662              		.loc 1 156 3 view .LVU132
+ 156:Src/freertos.c **** 
+ 663              		.loc 1 156 23 is_stmt 0 view .LVU133
+ 664 00ce 0021     		movs	r1, #0
+ 665 00d0 6846     		mov	r0, sp
+ 666 00d2 FFF7FEFF 		bl	osThreadCreate
+ 667              	.LVL38:
+ 156:Src/freertos.c **** 
+ 668              		.loc 1 156 21 view .LVU134
+ 669 00d6 084B     		ldr	r3, .L41+24
+ 670 00d8 1860     		str	r0, [r3]
+ 161:Src/freertos.c **** 
+ 671              		.loc 1 161 1 view .LVU135
+ 672 00da 2AB0     		add	sp, sp, #168
+ 673              	.LCFI9:
+ 674              		.cfi_def_cfa_offset 8
+ 675              		@ sp needed
+ 676 00dc 10BD     		pop	{r4, pc}
+ 677              	.L42:
+ 678 00de 00BF     		.align	2
+ 679              	.L41:
+ 680 00e0 00000000 		.word	.LANCHOR6
+ 681 00e4 00000000 		.word	.LANCHOR7
+ 682 00e8 00000000 		.word	.LANCHOR8
+ 683 00ec 00000000 		.word	.LANCHOR9
+ 684 00f0 00000000 		.word	.LANCHOR10
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 30
+
+
+ 685 00f4 00000000 		.word	.LANCHOR11
+ 686 00f8 00000000 		.word	.LANCHOR12
+ 687              		.cfi_endproc
+ 688              	.LFE173:
+ 690              		.global	ChassisTaskHandle
+ 691              		.global	UITaskHandle
+ 692              		.global	PowerMeasureTasHandle
+ 693              		.global	DetectTaskHandle
+ 694              		.global	INSTaskHandle
+ 695              		.global	GimbalTaskHandle
+ 696              		.global	enemy_outpost_HP
+ 697              		.global	count_shoot
+ 698              		.global	count_ui
+ 699              		.section	.rodata
+ 700              		.align	2
+ 701              		.set	.LANCHOR6,. + 0
+ 702              	.LC12:
+ 703 0000 00000000 		.word	.LC0
+ 704 0004 00000000 		.word	StartGimbalTask
+ 705 0008 0200     		.short	2
+ 706 000a 0000     		.space	2
+ 707 000c 00000000 		.word	0
+ 708 0010 00020000 		.word	512
+ 709 0014 00000000 		.word	0
+ 710 0018 00000000 		.word	0
+ 711              	.LC13:
+ 712 001c 0C000000 		.word	.LC2
+ 713 0020 00000000 		.word	StartINSTask
+ 714 0024 0100     		.short	1
+ 715 0026 0000     		.space	2
+ 716 0028 00000000 		.word	0
+ 717 002c 00020000 		.word	512
+ 718 0030 00000000 		.word	0
+ 719 0034 00000000 		.word	0
+ 720              	.LC14:
+ 721 0038 14000000 		.word	.LC4
+ 722 003c 00000000 		.word	StartDetectTask
+ 723 0040 FFFF     		.short	-1
+ 724 0042 0000     		.space	2
+ 725 0044 00000000 		.word	0
+ 726 0048 00020000 		.word	512
+ 727 004c 00000000 		.word	0
+ 728 0050 00000000 		.word	0
+ 729              	.LC15:
+ 730 0054 20000000 		.word	.LC6
+ 731 0058 00000000 		.word	StartPowerMeasureTask
+ 732 005c 0000     		.short	0
+ 733 005e 0000     		.space	2
+ 734 0060 00000000 		.word	0
+ 735 0064 00020000 		.word	512
+ 736 0068 00000000 		.word	0
+ 737 006c 00000000 		.word	0
+ 738              	.LC16:
+ 739 0070 30000000 		.word	.LC8
+ 740 0074 00000000 		.word	StartUITask
+ 741 0078 0000     		.short	0
+ 742 007a 0000     		.space	2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 31
+
+
+ 743 007c 00000000 		.word	0
+ 744 0080 00020000 		.word	512
+ 745 0084 00000000 		.word	0
+ 746 0088 00000000 		.word	0
+ 747              	.LC17:
+ 748 008c 38000000 		.word	.LC10
+ 749 0090 00000000 		.word	StartChassisTask
+ 750 0094 0100     		.short	1
+ 751 0096 0000     		.space	2
+ 752 0098 00000000 		.word	0
+ 753 009c 00020000 		.word	512
+ 754 00a0 00000000 		.word	0
+ 755 00a4 00000000 		.word	0
+ 756              		.section	.bss.ChassisTaskHandle,"aw",%nobits
+ 757              		.align	2
+ 758              		.set	.LANCHOR12,. + 0
+ 761              	ChassisTaskHandle:
+ 762 0000 00000000 		.space	4
+ 763              		.section	.bss.DetectTaskHandle,"aw",%nobits
+ 764              		.align	2
+ 765              		.set	.LANCHOR9,. + 0
+ 768              	DetectTaskHandle:
+ 769 0000 00000000 		.space	4
+ 770              		.section	.bss.GimbalTaskHandle,"aw",%nobits
+ 771              		.align	2
+ 772              		.set	.LANCHOR7,. + 0
+ 775              	GimbalTaskHandle:
+ 776 0000 00000000 		.space	4
+ 777              		.section	.bss.INSTaskHandle,"aw",%nobits
+ 778              		.align	2
+ 779              		.set	.LANCHOR8,. + 0
+ 782              	INSTaskHandle:
+ 783 0000 00000000 		.space	4
+ 784              		.section	.bss.PowerMeasureTasHandle,"aw",%nobits
+ 785              		.align	2
+ 786              		.set	.LANCHOR10,. + 0
+ 789              	PowerMeasureTasHandle:
+ 790 0000 00000000 		.space	4
+ 791              		.section	.bss.UITaskHandle,"aw",%nobits
+ 792              		.align	2
+ 793              		.set	.LANCHOR11,. + 0
+ 796              	UITaskHandle:
+ 797 0000 00000000 		.space	4
+ 798              		.section	.bss.count_shoot,"aw",%nobits
+ 799              		.set	.LANCHOR0,. + 0
+ 802              	count_shoot:
+ 803 0000 00       		.space	1
+ 804              		.section	.bss.count_ui,"aw",%nobits
+ 807              	count_ui:
+ 808 0000 00       		.space	1
+ 809              		.section	.bss.xIdleStack,"aw",%nobits
+ 810              		.align	2
+ 811              		.set	.LANCHOR3,. + 0
+ 814              	xIdleStack:
+ 815 0000 00000000 		.space	512
+ 815      00000000 
+ 815      00000000 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 32
+
+
+ 815      00000000 
+ 815      00000000 
+ 816              		.section	.bss.xIdleTaskTCBBuffer,"aw",%nobits
+ 817              		.align	2
+ 818              		.set	.LANCHOR2,. + 0
+ 821              	xIdleTaskTCBBuffer:
+ 822 0000 00000000 		.space	84
+ 822      00000000 
+ 822      00000000 
+ 822      00000000 
+ 822      00000000 
+ 823              		.section	.bss.xTimerStack,"aw",%nobits
+ 824              		.align	2
+ 825              		.set	.LANCHOR5,. + 0
+ 828              	xTimerStack:
+ 829 0000 00000000 		.space	1024
+ 829      00000000 
+ 829      00000000 
+ 829      00000000 
+ 829      00000000 
+ 830              		.section	.bss.xTimerTaskTCBBuffer,"aw",%nobits
+ 831              		.align	2
+ 832              		.set	.LANCHOR4,. + 0
+ 835              	xTimerTaskTCBBuffer:
+ 836 0000 00000000 		.space	84
+ 836      00000000 
+ 836      00000000 
+ 836      00000000 
+ 836      00000000 
+ 837              		.section	.data.enemy_outpost_HP,"aw"
+ 838              		.align	1
+ 839              		.set	.LANCHOR1,. + 0
+ 842              	enemy_outpost_HP:
+ 843 0000 DC05     		.short	1500
+ 844              		.text
+ 845              	.Letext0:
+ 846              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 847              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 848              		.file 5 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+ 849              		.file 6 "Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h"
+ 850              		.file 7 "Middlewares/Third_Party/FreeRTOS/Source/include/task.h"
+ 851              		.file 8 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 852              		.file 9 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 853              		.file 10 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 854              		.file 11 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 855              		.file 12 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_can.h"
+ 856              		.file 13 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_iwdg.h"
+ 857              		.file 14 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ 858              		.file 15 "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h"
+ 859              		.file 16 "Inc/can.h"
+ 860              		.file 17 "Inc/iwdg.h"
+ 861              		.file 18 "Application/detect_task.h"
+ 862              		.file 19 "Application/judgement_info.h"
+ 863              		.file 20 "Application/remote_control.h"
+ 864              		.file 21 "Application/chassis_task.h"
+ 865              		.file 22 "Bsp/bsp_CAN.h"
+ 866              		.file 23 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 33
+
+
+ 867              		.file 24 "Application/ins_task.h"
+ 868              		.file 25 "Application/gimbal_task.h"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 34
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 freertos.c
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:17     .rodata.str1.4:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:39     .text.StartGimbalTask:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:45     .text.StartGimbalTask:00000000 StartGimbalTask
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:79     .text.StartPowerMeasureTask:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:85     .text.StartPowerMeasureTask:00000000 StartPowerMeasureTask
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:111    .text.StartPowerMeasureTask:0000000c $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:116    .text.StartUITask:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:122    .text.StartUITask:00000000 StartUITask
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:149    .text.StartINSTask:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:155    .text.StartINSTask:00000000 StartINSTask
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:187    .text.StartDetectTask:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:193    .text.StartDetectTask:00000000 StartDetectTask
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:280    .text.StartDetectTask:0000004c $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:287    .text.StartChassisTask:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:293    .text.StartChassisTask:00000000 StartChassisTask
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:462    .text.StartChassisTask:000000dc $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:480    .text.vApplicationGetIdleTaskMemory:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:486    .text.vApplicationGetIdleTaskMemory:00000000 vApplicationGetIdleTaskMemory
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:511    .text.vApplicationGetIdleTaskMemory:00000010 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:517    .text.vApplicationGetTimerTaskMemory:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:523    .text.vApplicationGetTimerTaskMemory:00000000 vApplicationGetTimerTaskMemory
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:548    .text.vApplicationGetTimerTaskMemory:00000010 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:554    .text.MX_FREERTOS_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:560    .text.MX_FREERTOS_Init:00000000 MX_FREERTOS_Init
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:680    .text.MX_FREERTOS_Init:000000e0 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:761    .bss.ChassisTaskHandle:00000000 ChassisTaskHandle
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:796    .bss.UITaskHandle:00000000 UITaskHandle
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:789    .bss.PowerMeasureTasHandle:00000000 PowerMeasureTasHandle
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:768    .bss.DetectTaskHandle:00000000 DetectTaskHandle
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:782    .bss.INSTaskHandle:00000000 INSTaskHandle
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:775    .bss.GimbalTaskHandle:00000000 GimbalTaskHandle
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:842    .data.enemy_outpost_HP:00000000 enemy_outpost_HP
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:802    .bss.count_shoot:00000000 count_shoot
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:807    .bss.count_ui:00000000 count_ui
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:700    .rodata:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:757    .bss.ChassisTaskHandle:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:764    .bss.DetectTaskHandle:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:771    .bss.GimbalTaskHandle:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:778    .bss.INSTaskHandle:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:785    .bss.PowerMeasureTasHandle:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:792    .bss.UITaskHandle:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:803    .bss.count_shoot:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:808    .bss.count_ui:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:810    .bss.xIdleStack:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:814    .bss.xIdleStack:00000000 xIdleStack
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:817    .bss.xIdleTaskTCBBuffer:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:821    .bss.xIdleTaskTCBBuffer:00000000 xIdleTaskTCBBuffer
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:824    .bss.xTimerStack:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:828    .bss.xTimerStack:00000000 xTimerStack
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:831    .bss.xTimerTaskTCBBuffer:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:835    .bss.xTimerTaskTCBBuffer:00000000 xTimerTaskTCBBuffer
+C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s:838    .data.enemy_outpost_HP:00000000 $d
+
+UNDEFINED SYMBOLS
+Gimbal_Init
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccbgUyaY.s 			page 35
+
+
+osDelay
+INS_Init
+INS_Task
+Detect_Task_Init
+Detect_Task
+HAL_IWDG_Refresh
+HAL_NVIC_SystemReset
+resetCount
+hiwdg
+remote_control
+Chassis_Init
+Send_Robot_Info
+Chassis_Control
+Send_RC_Data
+RC_Update
+Shoot_Updata
+robot_state
+game_robot_HP
+shoot_data
+game_status
+power_heat_data_t
+hcan2
+RC_Data_Buffer
+hcan1
+osThreadCreate

@@ -1,0 +1,1064 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"bsp_i2c.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.IIC_Init,"ax",%progbits
+  20              		.align	1
+  21              		.global	IIC_Init
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	IIC_Init:
+  27              	.LVL0:
+  28              	.LFB130:
+  29              		.file 1 "Bsp/bsp_i2c.c"
+   1:Bsp/bsp_i2c.c **** /*
+   2:Bsp/bsp_i2c.c ****  ******************************************************************************
+   3:Bsp/bsp_i2c.c ****  * @file    bsp i2c.c
+   4:Bsp/bsp_i2c.c ****  * @author  Liu Zhijie
+   5:Bsp/bsp_i2c.c ****  * @version V1.0.0
+   6:Bsp/bsp_i2c.c ****  * @date    2021.4.27
+   7:Bsp/bsp_i2c.c ****  * @brief
+   8:Bsp/bsp_i2c.c ****  ******************************************************************************
+   9:Bsp/bsp_i2c.c ****  * @attention
+  10:Bsp/bsp_i2c.c ****  *
+  11:Bsp/bsp_i2c.c ****  ******************************************************************************
+  12:Bsp/bsp_i2c.c ****  */
+  13:Bsp/bsp_i2c.c **** 
+  14:Bsp/bsp_i2c.c **** #include "bsp_i2c.h"
+  15:Bsp/bsp_i2c.c **** #include "bsp_dwt.h"
+  16:Bsp/bsp_i2c.c **** 
+  17:Bsp/bsp_i2c.c **** // IIC初始化
+  18:Bsp/bsp_i2c.c **** void IIC_Init(i2c_t *iic)
+  19:Bsp/bsp_i2c.c **** {
+  30              		.loc 1 19 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 24
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		.loc 1 19 1 is_stmt 0 view .LVU1
+  35 0000 10B5     		push	{r4, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 8
+  38              		.cfi_offset 4, -8
+  39              		.cfi_offset 14, -4
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 2
+
+
+  40 0002 86B0     		sub	sp, sp, #24
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 32
+  43 0004 0446     		mov	r4, r0
+  20:Bsp/bsp_i2c.c **** 	GPIO_InitTypeDef GPIO_InitStruct;
+  44              		.loc 1 20 2 is_stmt 1 view .LVU2
+  21:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Pin = iic->SCL_PIN | iic->SDA_PIN;
+  45              		.loc 1 21 2 view .LVU3
+  46              		.loc 1 21 27 is_stmt 0 view .LVU4
+  47 0006 C368     		ldr	r3, [r0, #12]
+  48              		.loc 1 21 42 view .LVU5
+  49 0008 4268     		ldr	r2, [r0, #4]
+  50              		.loc 1 21 37 view .LVU6
+  51 000a 1343     		orrs	r3, r3, r2
+  52              		.loc 1 21 22 view .LVU7
+  53 000c 0193     		str	r3, [sp, #4]
+  22:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  54              		.loc 1 22 2 is_stmt 1 view .LVU8
+  55              		.loc 1 22 23 is_stmt 0 view .LVU9
+  56 000e 0123     		movs	r3, #1
+  57 0010 0293     		str	r3, [sp, #8]
+  23:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Pull = GPIO_PULLUP;
+  58              		.loc 1 23 2 is_stmt 1 view .LVU10
+  59              		.loc 1 23 23 is_stmt 0 view .LVU11
+  60 0012 0393     		str	r3, [sp, #12]
+  24:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  61              		.loc 1 24 2 is_stmt 1 view .LVU12
+  62              		.loc 1 24 24 is_stmt 0 view .LVU13
+  63 0014 0323     		movs	r3, #3
+  64 0016 0493     		str	r3, [sp, #16]
+  25:Bsp/bsp_i2c.c **** 	HAL_GPIO_Init(iic->SCL_GPIO, &GPIO_InitStruct);
+  65              		.loc 1 25 2 is_stmt 1 view .LVU14
+  66 0018 01A9     		add	r1, sp, #4
+  67 001a 8068     		ldr	r0, [r0, #8]
+  68              	.LVL1:
+  69              		.loc 1 25 2 is_stmt 0 view .LVU15
+  70 001c FFF7FEFF 		bl	HAL_GPIO_Init
+  71              	.LVL2:
+  26:Bsp/bsp_i2c.c **** 	HAL_GPIO_Init(iic->SDA_GPIO, &GPIO_InitStruct);
+  72              		.loc 1 26 2 is_stmt 1 view .LVU16
+  73 0020 01A9     		add	r1, sp, #4
+  74 0022 2068     		ldr	r0, [r4]
+  75 0024 FFF7FEFF 		bl	HAL_GPIO_Init
+  76              	.LVL3:
+  27:Bsp/bsp_i2c.c **** }
+  77              		.loc 1 27 1 is_stmt 0 view .LVU17
+  78 0028 06B0     		add	sp, sp, #24
+  79              	.LCFI2:
+  80              		.cfi_def_cfa_offset 8
+  81              		@ sp needed
+  82 002a 10BD     		pop	{r4, pc}
+  83              		.loc 1 27 1 view .LVU18
+  84              		.cfi_endproc
+  85              	.LFE130:
+  87              		.section	.text.SDA_Out,"ax",%progbits
+  88              		.align	1
+  89              		.global	SDA_Out
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 3
+
+
+  90              		.syntax unified
+  91              		.thumb
+  92              		.thumb_func
+  94              	SDA_Out:
+  95              	.LVL4:
+  96              	.LFB131:
+  28:Bsp/bsp_i2c.c **** // SDA 输出模式
+  29:Bsp/bsp_i2c.c **** void SDA_Out(i2c_t *iic)
+  30:Bsp/bsp_i2c.c **** {
+  97              		.loc 1 30 1 is_stmt 1 view -0
+  98              		.cfi_startproc
+  99              		@ args = 0, pretend = 0, frame = 24
+ 100              		@ frame_needed = 0, uses_anonymous_args = 0
+ 101              		.loc 1 30 1 is_stmt 0 view .LVU20
+ 102 0000 00B5     		push	{lr}
+ 103              	.LCFI3:
+ 104              		.cfi_def_cfa_offset 4
+ 105              		.cfi_offset 14, -4
+ 106 0002 87B0     		sub	sp, sp, #28
+ 107              	.LCFI4:
+ 108              		.cfi_def_cfa_offset 32
+  31:Bsp/bsp_i2c.c **** 	GPIO_InitTypeDef GPIO_InitStruct;
+ 109              		.loc 1 31 2 is_stmt 1 view .LVU21
+  32:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Pin = iic->SDA_PIN;
+ 110              		.loc 1 32 2 view .LVU22
+ 111              		.loc 1 32 27 is_stmt 0 view .LVU23
+ 112 0004 4368     		ldr	r3, [r0, #4]
+ 113              		.loc 1 32 22 view .LVU24
+ 114 0006 0193     		str	r3, [sp, #4]
+  33:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+ 115              		.loc 1 33 2 is_stmt 1 view .LVU25
+ 116              		.loc 1 33 23 is_stmt 0 view .LVU26
+ 117 0008 0123     		movs	r3, #1
+ 118 000a 0293     		str	r3, [sp, #8]
+  34:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Pull = GPIO_PULLUP;
+ 119              		.loc 1 34 2 is_stmt 1 view .LVU27
+ 120              		.loc 1 34 23 is_stmt 0 view .LVU28
+ 121 000c 0393     		str	r3, [sp, #12]
+  35:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+ 122              		.loc 1 35 2 is_stmt 1 view .LVU29
+ 123              		.loc 1 35 24 is_stmt 0 view .LVU30
+ 124 000e 0323     		movs	r3, #3
+ 125 0010 0493     		str	r3, [sp, #16]
+  36:Bsp/bsp_i2c.c **** 	HAL_GPIO_Init(iic->SDA_GPIO, &GPIO_InitStruct);
+ 126              		.loc 1 36 2 is_stmt 1 view .LVU31
+ 127 0012 01A9     		add	r1, sp, #4
+ 128 0014 0068     		ldr	r0, [r0]
+ 129              	.LVL5:
+ 130              		.loc 1 36 2 is_stmt 0 view .LVU32
+ 131 0016 FFF7FEFF 		bl	HAL_GPIO_Init
+ 132              	.LVL6:
+  37:Bsp/bsp_i2c.c **** }
+ 133              		.loc 1 37 1 view .LVU33
+ 134 001a 07B0     		add	sp, sp, #28
+ 135              	.LCFI5:
+ 136              		.cfi_def_cfa_offset 4
+ 137              		@ sp needed
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 4
+
+
+ 138 001c 5DF804FB 		ldr	pc, [sp], #4
+ 139              		.cfi_endproc
+ 140              	.LFE131:
+ 142              		.section	.text.SDA_In,"ax",%progbits
+ 143              		.align	1
+ 144              		.global	SDA_In
+ 145              		.syntax unified
+ 146              		.thumb
+ 147              		.thumb_func
+ 149              	SDA_In:
+ 150              	.LVL7:
+ 151              	.LFB132:
+  38:Bsp/bsp_i2c.c **** 
+  39:Bsp/bsp_i2c.c **** // SDA 输出模式
+  40:Bsp/bsp_i2c.c **** void SDA_In(i2c_t *iic)
+  41:Bsp/bsp_i2c.c **** {
+ 152              		.loc 1 41 1 is_stmt 1 view -0
+ 153              		.cfi_startproc
+ 154              		@ args = 0, pretend = 0, frame = 24
+ 155              		@ frame_needed = 0, uses_anonymous_args = 0
+ 156              		.loc 1 41 1 is_stmt 0 view .LVU35
+ 157 0000 00B5     		push	{lr}
+ 158              	.LCFI6:
+ 159              		.cfi_def_cfa_offset 4
+ 160              		.cfi_offset 14, -4
+ 161 0002 87B0     		sub	sp, sp, #28
+ 162              	.LCFI7:
+ 163              		.cfi_def_cfa_offset 32
+  42:Bsp/bsp_i2c.c **** 	GPIO_InitTypeDef GPIO_InitStruct;
+ 164              		.loc 1 42 2 is_stmt 1 view .LVU36
+  43:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Pin = iic->SDA_PIN;
+ 165              		.loc 1 43 2 view .LVU37
+ 166              		.loc 1 43 27 is_stmt 0 view .LVU38
+ 167 0004 4368     		ldr	r3, [r0, #4]
+ 168              		.loc 1 43 22 view .LVU39
+ 169 0006 0193     		str	r3, [sp, #4]
+  44:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+ 170              		.loc 1 44 2 is_stmt 1 view .LVU40
+ 171              		.loc 1 44 23 is_stmt 0 view .LVU41
+ 172 0008 0023     		movs	r3, #0
+ 173 000a 0293     		str	r3, [sp, #8]
+  45:Bsp/bsp_i2c.c **** 	GPIO_InitStruct.Pull = GPIO_PULLUP;
+ 174              		.loc 1 45 2 is_stmt 1 view .LVU42
+ 175              		.loc 1 45 23 is_stmt 0 view .LVU43
+ 176 000c 0123     		movs	r3, #1
+ 177 000e 0393     		str	r3, [sp, #12]
+  46:Bsp/bsp_i2c.c **** 	HAL_GPIO_Init(iic->SDA_GPIO, &GPIO_InitStruct);
+ 178              		.loc 1 46 2 is_stmt 1 view .LVU44
+ 179 0010 01A9     		add	r1, sp, #4
+ 180 0012 0068     		ldr	r0, [r0]
+ 181              	.LVL8:
+ 182              		.loc 1 46 2 is_stmt 0 view .LVU45
+ 183 0014 FFF7FEFF 		bl	HAL_GPIO_Init
+ 184              	.LVL9:
+  47:Bsp/bsp_i2c.c **** }
+ 185              		.loc 1 47 1 view .LVU46
+ 186 0018 07B0     		add	sp, sp, #28
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 5
+
+
+ 187              	.LCFI8:
+ 188              		.cfi_def_cfa_offset 4
+ 189              		@ sp needed
+ 190 001a 5DF804FB 		ldr	pc, [sp], #4
+ 191              		.cfi_endproc
+ 192              	.LFE132:
+ 194              		.section	.text.DELAY_us,"ax",%progbits
+ 195              		.align	1
+ 196              		.global	DELAY_us
+ 197              		.syntax unified
+ 198              		.thumb
+ 199              		.thumb_func
+ 201              	DELAY_us:
+ 202              	.LVL10:
+ 203              	.LFB139:
+  48:Bsp/bsp_i2c.c **** // IIC开始信号
+  49:Bsp/bsp_i2c.c **** void IIC_Start(i2c_t *iic)
+  50:Bsp/bsp_i2c.c **** {
+  51:Bsp/bsp_i2c.c **** 	SDA_Out(iic);
+  52:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+  53:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_SET);
+  54:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+  55:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_RESET);
+  56:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+  57:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+  58:Bsp/bsp_i2c.c **** }
+  59:Bsp/bsp_i2c.c **** // IIC结束信号
+  60:Bsp/bsp_i2c.c **** void IIC_Stop(i2c_t *iic)
+  61:Bsp/bsp_i2c.c **** {
+  62:Bsp/bsp_i2c.c **** 	SDA_Out(iic);
+  63:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+  64:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+  65:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_RESET);
+  66:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+  67:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+  68:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+  69:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_SET);
+  70:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+  71:Bsp/bsp_i2c.c **** }
+  72:Bsp/bsp_i2c.c **** // IIC写入一字节
+  73:Bsp/bsp_i2c.c **** void IIC_writeByte(i2c_t *iic, uint8_t data)
+  74:Bsp/bsp_i2c.c **** {
+  75:Bsp/bsp_i2c.c **** 	uint8_t i;
+  76:Bsp/bsp_i2c.c **** 	SDA_Out(iic); // SDA输出模式
+  77:Bsp/bsp_i2c.c **** 
+  78:Bsp/bsp_i2c.c **** 	for (i = 0; i < 8; i++)
+  79:Bsp/bsp_i2c.c **** 	{
+  80:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+  81:Bsp/bsp_i2c.c **** 		// MSB_first（LSB_first0x80改为0x01,data<<=1改为data>>=1）
+  82:Bsp/bsp_i2c.c **** 		(data & 0x80) ? HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_SET) : HAL_GPIO_WritePin(
+  83:Bsp/bsp_i2c.c **** 		data <<= 1;
+  84:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+  85:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+  86:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+  87:Bsp/bsp_i2c.c **** 	}
+  88:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+  89:Bsp/bsp_i2c.c **** }
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 6
+
+
+  90:Bsp/bsp_i2c.c **** // IIC读取一字节
+  91:Bsp/bsp_i2c.c **** uint8_t IIC_readByte(i2c_t *iic)
+  92:Bsp/bsp_i2c.c **** {
+  93:Bsp/bsp_i2c.c **** 	uint8_t i = 0, data = 0;
+  94:Bsp/bsp_i2c.c **** 
+  95:Bsp/bsp_i2c.c **** 	SDA_In(iic); // SDA输入模式
+  96:Bsp/bsp_i2c.c **** 	data = 0;
+  97:Bsp/bsp_i2c.c **** 	for (i = 0; i < 8; i++)
+  98:Bsp/bsp_i2c.c **** 	{
+  99:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 100:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 101:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+ 102:Bsp/bsp_i2c.c **** 		// MSB_first(LSB_first,data<<=1改为data>>=1)
+ 103:Bsp/bsp_i2c.c **** 		data <<= 1;
+ 104:Bsp/bsp_i2c.c **** 		data |= HAL_GPIO_ReadPin(iic->SDA_GPIO, iic->SDA_PIN); // MSB_first(LSB_first,改为data |= (HAL_
+ 105:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 106:Bsp/bsp_i2c.c **** 	}
+ 107:Bsp/bsp_i2c.c **** 	return data;
+ 108:Bsp/bsp_i2c.c **** }
+ 109:Bsp/bsp_i2c.c **** uint8_t IIC_waitAck(i2c_t *iic) // 0有应答
+ 110:Bsp/bsp_i2c.c **** {
+ 111:Bsp/bsp_i2c.c **** 	uint8_t ack = 1;
+ 112:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 113:Bsp/bsp_i2c.c **** 	SDA_In(iic);
+ 114:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 115:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+ 116:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 117:Bsp/bsp_i2c.c **** 	ack = HAL_GPIO_ReadPin(iic->SDA_GPIO, iic->SDA_PIN);
+ 118:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 119:Bsp/bsp_i2c.c **** 	return ack;
+ 120:Bsp/bsp_i2c.c **** }
+ 121:Bsp/bsp_i2c.c **** void IIC_ack(i2c_t *iic, uint8_t ack) // 0应答
+ 122:Bsp/bsp_i2c.c **** {
+ 123:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 124:Bsp/bsp_i2c.c **** 
+ 125:Bsp/bsp_i2c.c **** 	SDA_Out(iic);
+ 126:Bsp/bsp_i2c.c **** 	if (ack == 0)
+ 127:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_RESET);
+ 128:Bsp/bsp_i2c.c **** 	else
+ 129:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_SET);
+ 130:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 131:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+ 132:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 133:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 134:Bsp/bsp_i2c.c **** }
+ 135:Bsp/bsp_i2c.c **** 
+ 136:Bsp/bsp_i2c.c **** //延时
+ 137:Bsp/bsp_i2c.c **** void DELAY_us(uint16_t us)
+ 138:Bsp/bsp_i2c.c **** {
+ 204              		.loc 1 138 1 is_stmt 1 view -0
+ 205              		.cfi_startproc
+ 206              		@ args = 0, pretend = 0, frame = 0
+ 207              		@ frame_needed = 0, uses_anonymous_args = 0
+ 208              		.loc 1 138 1 is_stmt 0 view .LVU48
+ 209 0000 08B5     		push	{r3, lr}
+ 210              	.LCFI9:
+ 211              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 7
+
+
+ 212              		.cfi_offset 3, -8
+ 213              		.cfi_offset 14, -4
+ 214 0002 00EE100A 		vmov	s0, r0	@ int
+ 139:Bsp/bsp_i2c.c **** 	//循环延时
+ 140:Bsp/bsp_i2c.c **** 	// while (us * 10 > 0)
+ 141:Bsp/bsp_i2c.c **** 	// {
+ 142:Bsp/bsp_i2c.c **** 	// 	us--;
+ 143:Bsp/bsp_i2c.c **** 	// }
+ 144:Bsp/bsp_i2c.c **** 
+ 145:Bsp/bsp_i2c.c **** 	// DWT延时
+ 146:Bsp/bsp_i2c.c **** 	static float DelayTime = 0.0f;
+ 215              		.loc 1 146 2 is_stmt 1 view .LVU49
+ 147:Bsp/bsp_i2c.c **** 	DelayTime = (float)us * 0.000001f;
+ 216              		.loc 1 147 2 view .LVU50
+ 217              		.loc 1 147 14 is_stmt 0 view .LVU51
+ 218 0006 B8EE400A 		vcvt.f32.u32	s0, s0
+ 219              		.loc 1 147 24 view .LVU52
+ 220 000a DFED057A 		vldr.32	s15, .L9
+ 221 000e 20EE270A 		vmul.f32	s0, s0, s15
+ 222              		.loc 1 147 12 view .LVU53
+ 223 0012 044B     		ldr	r3, .L9+4
+ 224 0014 83ED000A 		vstr.32	s0, [r3]
+ 148:Bsp/bsp_i2c.c **** 	DWT_Delay(DelayTime);
+ 225              		.loc 1 148 2 is_stmt 1 view .LVU54
+ 226 0018 FFF7FEFF 		bl	DWT_Delay
+ 227              	.LVL11:
+ 149:Bsp/bsp_i2c.c **** }
+ 228              		.loc 1 149 1 is_stmt 0 view .LVU55
+ 229 001c 08BD     		pop	{r3, pc}
+ 230              	.L10:
+ 231 001e 00BF     		.align	2
+ 232              	.L9:
+ 233 0020 BD378635 		.word	897988541
+ 234 0024 00000000 		.word	.LANCHOR0
+ 235              		.cfi_endproc
+ 236              	.LFE139:
+ 238              		.section	.text.IIC_Start,"ax",%progbits
+ 239              		.align	1
+ 240              		.global	IIC_Start
+ 241              		.syntax unified
+ 242              		.thumb
+ 243              		.thumb_func
+ 245              	IIC_Start:
+ 246              	.LVL12:
+ 247              	.LFB133:
+  50:Bsp/bsp_i2c.c **** 	SDA_Out(iic);
+ 248              		.loc 1 50 1 is_stmt 1 view -0
+ 249              		.cfi_startproc
+ 250              		@ args = 0, pretend = 0, frame = 0
+ 251              		@ frame_needed = 0, uses_anonymous_args = 0
+  50:Bsp/bsp_i2c.c **** 	SDA_Out(iic);
+ 252              		.loc 1 50 1 is_stmt 0 view .LVU57
+ 253 0000 10B5     		push	{r4, lr}
+ 254              	.LCFI10:
+ 255              		.cfi_def_cfa_offset 8
+ 256              		.cfi_offset 4, -8
+ 257              		.cfi_offset 14, -4
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 8
+
+
+ 258 0002 0446     		mov	r4, r0
+  51:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+ 259              		.loc 1 51 2 is_stmt 1 view .LVU58
+ 260 0004 FFF7FEFF 		bl	SDA_Out
+ 261              	.LVL13:
+  52:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_SET);
+ 262              		.loc 1 52 2 view .LVU59
+ 263 0008 0122     		movs	r2, #1
+ 264 000a A189     		ldrh	r1, [r4, #12]
+ 265 000c A068     		ldr	r0, [r4, #8]
+ 266 000e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 267              	.LVL14:
+  53:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 268              		.loc 1 53 2 view .LVU60
+ 269 0012 0122     		movs	r2, #1
+ 270 0014 A188     		ldrh	r1, [r4, #4]
+ 271 0016 2068     		ldr	r0, [r4]
+ 272 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 273              	.LVL15:
+  54:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_RESET);
+ 274              		.loc 1 54 2 view .LVU61
+ 275 001c 0420     		movs	r0, #4
+ 276 001e FFF7FEFF 		bl	DELAY_us
+ 277              	.LVL16:
+  55:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 278              		.loc 1 55 2 view .LVU62
+ 279 0022 0022     		movs	r2, #0
+ 280 0024 A188     		ldrh	r1, [r4, #4]
+ 281 0026 2068     		ldr	r0, [r4]
+ 282 0028 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 283              	.LVL17:
+  56:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 284              		.loc 1 56 2 view .LVU63
+ 285 002c 0420     		movs	r0, #4
+ 286 002e FFF7FEFF 		bl	DELAY_us
+ 287              	.LVL18:
+  57:Bsp/bsp_i2c.c **** }
+ 288              		.loc 1 57 2 view .LVU64
+ 289 0032 0022     		movs	r2, #0
+ 290 0034 A189     		ldrh	r1, [r4, #12]
+ 291 0036 A068     		ldr	r0, [r4, #8]
+ 292 0038 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 293              	.LVL19:
+  58:Bsp/bsp_i2c.c **** // IIC结束信号
+ 294              		.loc 1 58 1 is_stmt 0 view .LVU65
+ 295 003c 10BD     		pop	{r4, pc}
+  58:Bsp/bsp_i2c.c **** // IIC结束信号
+ 296              		.loc 1 58 1 view .LVU66
+ 297              		.cfi_endproc
+ 298              	.LFE133:
+ 300              		.section	.text.IIC_Stop,"ax",%progbits
+ 301              		.align	1
+ 302              		.global	IIC_Stop
+ 303              		.syntax unified
+ 304              		.thumb
+ 305              		.thumb_func
+ 307              	IIC_Stop:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 9
+
+
+ 308              	.LVL20:
+ 309              	.LFB134:
+  61:Bsp/bsp_i2c.c **** 	SDA_Out(iic);
+ 310              		.loc 1 61 1 is_stmt 1 view -0
+ 311              		.cfi_startproc
+ 312              		@ args = 0, pretend = 0, frame = 0
+ 313              		@ frame_needed = 0, uses_anonymous_args = 0
+  61:Bsp/bsp_i2c.c **** 	SDA_Out(iic);
+ 314              		.loc 1 61 1 is_stmt 0 view .LVU68
+ 315 0000 10B5     		push	{r4, lr}
+ 316              	.LCFI11:
+ 317              		.cfi_def_cfa_offset 8
+ 318              		.cfi_offset 4, -8
+ 319              		.cfi_offset 14, -4
+ 320 0002 0446     		mov	r4, r0
+  62:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 321              		.loc 1 62 2 is_stmt 1 view .LVU69
+ 322 0004 FFF7FEFF 		bl	SDA_Out
+ 323              	.LVL21:
+  63:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 324              		.loc 1 63 2 view .LVU70
+ 325 0008 0022     		movs	r2, #0
+ 326 000a A189     		ldrh	r1, [r4, #12]
+ 327 000c A068     		ldr	r0, [r4, #8]
+ 328 000e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 329              	.LVL22:
+  64:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_RESET);
+ 330              		.loc 1 64 2 view .LVU71
+ 331 0012 0420     		movs	r0, #4
+ 332 0014 FFF7FEFF 		bl	DELAY_us
+ 333              	.LVL23:
+  65:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 334              		.loc 1 65 2 view .LVU72
+ 335 0018 0022     		movs	r2, #0
+ 336 001a A188     		ldrh	r1, [r4, #4]
+ 337 001c 2068     		ldr	r0, [r4]
+ 338 001e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 339              	.LVL24:
+  66:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+ 340              		.loc 1 66 2 view .LVU73
+ 341 0022 0420     		movs	r0, #4
+ 342 0024 FFF7FEFF 		bl	DELAY_us
+ 343              	.LVL25:
+  67:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 344              		.loc 1 67 2 view .LVU74
+ 345 0028 0122     		movs	r2, #1
+ 346 002a A189     		ldrh	r1, [r4, #12]
+ 347 002c A068     		ldr	r0, [r4, #8]
+ 348 002e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 349              	.LVL26:
+  68:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_SET);
+ 350              		.loc 1 68 2 view .LVU75
+ 351 0032 0420     		movs	r0, #4
+ 352 0034 FFF7FEFF 		bl	DELAY_us
+ 353              	.LVL27:
+  69:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 354              		.loc 1 69 2 view .LVU76
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 10
+
+
+ 355 0038 0122     		movs	r2, #1
+ 356 003a A188     		ldrh	r1, [r4, #4]
+ 357 003c 2068     		ldr	r0, [r4]
+ 358 003e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 359              	.LVL28:
+  70:Bsp/bsp_i2c.c **** }
+ 360              		.loc 1 70 2 view .LVU77
+ 361 0042 0420     		movs	r0, #4
+ 362 0044 FFF7FEFF 		bl	DELAY_us
+ 363              	.LVL29:
+  71:Bsp/bsp_i2c.c **** // IIC写入一字节
+ 364              		.loc 1 71 1 is_stmt 0 view .LVU78
+ 365 0048 10BD     		pop	{r4, pc}
+  71:Bsp/bsp_i2c.c **** // IIC写入一字节
+ 366              		.loc 1 71 1 view .LVU79
+ 367              		.cfi_endproc
+ 368              	.LFE134:
+ 370              		.section	.text.IIC_writeByte,"ax",%progbits
+ 371              		.align	1
+ 372              		.global	IIC_writeByte
+ 373              		.syntax unified
+ 374              		.thumb
+ 375              		.thumb_func
+ 377              	IIC_writeByte:
+ 378              	.LVL30:
+ 379              	.LFB135:
+  74:Bsp/bsp_i2c.c **** 	uint8_t i;
+ 380              		.loc 1 74 1 is_stmt 1 view -0
+ 381              		.cfi_startproc
+ 382              		@ args = 0, pretend = 0, frame = 0
+ 383              		@ frame_needed = 0, uses_anonymous_args = 0
+  74:Bsp/bsp_i2c.c **** 	uint8_t i;
+ 384              		.loc 1 74 1 is_stmt 0 view .LVU81
+ 385 0000 70B5     		push	{r4, r5, r6, lr}
+ 386              	.LCFI12:
+ 387              		.cfi_def_cfa_offset 16
+ 388              		.cfi_offset 4, -16
+ 389              		.cfi_offset 5, -12
+ 390              		.cfi_offset 6, -8
+ 391              		.cfi_offset 14, -4
+ 392 0002 0446     		mov	r4, r0
+ 393 0004 0D46     		mov	r5, r1
+  75:Bsp/bsp_i2c.c **** 	SDA_Out(iic); // SDA输出模式
+ 394              		.loc 1 75 2 is_stmt 1 view .LVU82
+  76:Bsp/bsp_i2c.c **** 
+ 395              		.loc 1 76 2 view .LVU83
+ 396 0006 FFF7FEFF 		bl	SDA_Out
+ 397              	.LVL31:
+  78:Bsp/bsp_i2c.c **** 	{
+ 398              		.loc 1 78 2 view .LVU84
+  78:Bsp/bsp_i2c.c **** 	{
+ 399              		.loc 1 78 9 is_stmt 0 view .LVU85
+ 400 000a 0026     		movs	r6, #0
+  78:Bsp/bsp_i2c.c **** 	{
+ 401              		.loc 1 78 2 view .LVU86
+ 402 000c 13E0     		b	.L16
+ 403              	.LVL32:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 11
+
+
+ 404              	.L17:
+  82:Bsp/bsp_i2c.c **** 		data <<= 1;
+ 405              		.loc 1 82 82 discriminator 2 view .LVU87
+ 406 000e 0022     		movs	r2, #0
+ 407 0010 A188     		ldrh	r1, [r4, #4]
+ 408 0012 2068     		ldr	r0, [r4]
+ 409 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 410              	.LVL33:
+ 411              	.L18:
+  83:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 412              		.loc 1 83 3 is_stmt 1 discriminator 2 view .LVU88
+  83:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 413              		.loc 1 83 8 is_stmt 0 discriminator 2 view .LVU89
+ 414 0018 6D00     		lsls	r5, r5, #1
+ 415              	.LVL34:
+  83:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 416              		.loc 1 83 8 discriminator 2 view .LVU90
+ 417 001a EDB2     		uxtb	r5, r5
+ 418              	.LVL35:
+  84:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+ 419              		.loc 1 84 3 is_stmt 1 discriminator 2 view .LVU91
+ 420 001c 0420     		movs	r0, #4
+ 421 001e FFF7FEFF 		bl	DELAY_us
+ 422              	.LVL36:
+  85:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 423              		.loc 1 85 3 discriminator 2 view .LVU92
+ 424 0022 0122     		movs	r2, #1
+ 425 0024 A189     		ldrh	r1, [r4, #12]
+ 426 0026 A068     		ldr	r0, [r4, #8]
+ 427 0028 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 428              	.LVL37:
+  86:Bsp/bsp_i2c.c **** 	}
+ 429              		.loc 1 86 3 discriminator 2 view .LVU93
+ 430 002c 0420     		movs	r0, #4
+ 431 002e FFF7FEFF 		bl	DELAY_us
+ 432              	.LVL38:
+  78:Bsp/bsp_i2c.c **** 	{
+ 433              		.loc 1 78 21 discriminator 2 view .LVU94
+  78:Bsp/bsp_i2c.c **** 	{
+ 434              		.loc 1 78 22 is_stmt 0 discriminator 2 view .LVU95
+ 435 0032 0136     		adds	r6, r6, #1
+ 436              	.LVL39:
+  78:Bsp/bsp_i2c.c **** 	{
+ 437              		.loc 1 78 22 discriminator 2 view .LVU96
+ 438 0034 F6B2     		uxtb	r6, r6
+ 439              	.LVL40:
+ 440              	.L16:
+  78:Bsp/bsp_i2c.c **** 	{
+ 441              		.loc 1 78 14 is_stmt 1 discriminator 1 view .LVU97
+  78:Bsp/bsp_i2c.c **** 	{
+ 442              		.loc 1 78 2 is_stmt 0 discriminator 1 view .LVU98
+ 443 0036 072E     		cmp	r6, #7
+ 444 0038 0DD8     		bhi	.L21
+  80:Bsp/bsp_i2c.c **** 		// MSB_first（LSB_first0x80改为0x01,data<<=1改为data>>=1）
+ 445              		.loc 1 80 3 is_stmt 1 view .LVU99
+ 446 003a 0022     		movs	r2, #0
+ 447 003c A189     		ldrh	r1, [r4, #12]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 12
+
+
+ 448 003e A068     		ldr	r0, [r4, #8]
+ 449 0040 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 450              	.LVL41:
+  82:Bsp/bsp_i2c.c **** 		data <<= 1;
+ 451              		.loc 1 82 3 view .LVU100
+  82:Bsp/bsp_i2c.c **** 		data <<= 1;
+ 452              		.loc 1 82 80 is_stmt 0 view .LVU101
+ 453 0044 15F0800F 		tst	r5, #128
+ 454 0048 E1D0     		beq	.L17
+  82:Bsp/bsp_i2c.c **** 		data <<= 1;
+ 455              		.loc 1 82 19 discriminator 1 view .LVU102
+ 456 004a 0122     		movs	r2, #1
+ 457 004c A188     		ldrh	r1, [r4, #4]
+ 458 004e 2068     		ldr	r0, [r4]
+ 459 0050 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 460              	.LVL42:
+ 461 0054 E0E7     		b	.L18
+ 462              	.L21:
+  88:Bsp/bsp_i2c.c **** }
+ 463              		.loc 1 88 2 is_stmt 1 view .LVU103
+ 464 0056 0022     		movs	r2, #0
+ 465 0058 A189     		ldrh	r1, [r4, #12]
+ 466 005a A068     		ldr	r0, [r4, #8]
+ 467 005c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 468              	.LVL43:
+  89:Bsp/bsp_i2c.c **** // IIC读取一字节
+ 469              		.loc 1 89 1 is_stmt 0 view .LVU104
+ 470 0060 70BD     		pop	{r4, r5, r6, pc}
+  89:Bsp/bsp_i2c.c **** // IIC读取一字节
+ 471              		.loc 1 89 1 view .LVU105
+ 472              		.cfi_endproc
+ 473              	.LFE135:
+ 475              		.section	.text.IIC_readByte,"ax",%progbits
+ 476              		.align	1
+ 477              		.global	IIC_readByte
+ 478              		.syntax unified
+ 479              		.thumb
+ 480              		.thumb_func
+ 482              	IIC_readByte:
+ 483              	.LVL44:
+ 484              	.LFB136:
+  92:Bsp/bsp_i2c.c **** 	uint8_t i = 0, data = 0;
+ 485              		.loc 1 92 1 is_stmt 1 view -0
+ 486              		.cfi_startproc
+ 487              		@ args = 0, pretend = 0, frame = 0
+ 488              		@ frame_needed = 0, uses_anonymous_args = 0
+  92:Bsp/bsp_i2c.c **** 	uint8_t i = 0, data = 0;
+ 489              		.loc 1 92 1 is_stmt 0 view .LVU107
+ 490 0000 70B5     		push	{r4, r5, r6, lr}
+ 491              	.LCFI13:
+ 492              		.cfi_def_cfa_offset 16
+ 493              		.cfi_offset 4, -16
+ 494              		.cfi_offset 5, -12
+ 495              		.cfi_offset 6, -8
+ 496              		.cfi_offset 14, -4
+ 497 0002 0546     		mov	r5, r0
+  93:Bsp/bsp_i2c.c **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 13
+
+
+ 498              		.loc 1 93 2 is_stmt 1 view .LVU108
+ 499              	.LVL45:
+  95:Bsp/bsp_i2c.c **** 	data = 0;
+ 500              		.loc 1 95 2 view .LVU109
+ 501 0004 FFF7FEFF 		bl	SDA_In
+ 502              	.LVL46:
+  96:Bsp/bsp_i2c.c **** 	for (i = 0; i < 8; i++)
+ 503              		.loc 1 96 2 view .LVU110
+  97:Bsp/bsp_i2c.c **** 	{
+ 504              		.loc 1 97 2 view .LVU111
+  96:Bsp/bsp_i2c.c **** 	for (i = 0; i < 8; i++)
+ 505              		.loc 1 96 7 is_stmt 0 view .LVU112
+ 506 0008 0024     		movs	r4, #0
+  97:Bsp/bsp_i2c.c **** 	{
+ 507              		.loc 1 97 9 view .LVU113
+ 508 000a 2646     		mov	r6, r4
+  97:Bsp/bsp_i2c.c **** 	{
+ 509              		.loc 1 97 2 view .LVU114
+ 510 000c 19E0     		b	.L23
+ 511              	.LVL47:
+ 512              	.L24:
+  99:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 513              		.loc 1 99 3 is_stmt 1 discriminator 3 view .LVU115
+ 514 000e 0022     		movs	r2, #0
+ 515 0010 A989     		ldrh	r1, [r5, #12]
+ 516 0012 A868     		ldr	r0, [r5, #8]
+ 517 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 518              	.LVL48:
+ 100:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+ 519              		.loc 1 100 3 discriminator 3 view .LVU116
+ 520 0018 0420     		movs	r0, #4
+ 521 001a FFF7FEFF 		bl	DELAY_us
+ 522              	.LVL49:
+ 101:Bsp/bsp_i2c.c **** 		// MSB_first(LSB_first,data<<=1改为data>>=1)
+ 523              		.loc 1 101 3 discriminator 3 view .LVU117
+ 524 001e 0122     		movs	r2, #1
+ 525 0020 A989     		ldrh	r1, [r5, #12]
+ 526 0022 A868     		ldr	r0, [r5, #8]
+ 527 0024 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 528              	.LVL50:
+ 103:Bsp/bsp_i2c.c **** 		data |= HAL_GPIO_ReadPin(iic->SDA_GPIO, iic->SDA_PIN); // MSB_first(LSB_first,改为data |= (HAL_
+ 529              		.loc 1 103 3 discriminator 3 view .LVU118
+ 103:Bsp/bsp_i2c.c **** 		data |= HAL_GPIO_ReadPin(iic->SDA_GPIO, iic->SDA_PIN); // MSB_first(LSB_first,改为data |= (HAL_
+ 530              		.loc 1 103 8 is_stmt 0 discriminator 3 view .LVU119
+ 531 0028 6400     		lsls	r4, r4, #1
+ 532              	.LVL51:
+ 103:Bsp/bsp_i2c.c **** 		data |= HAL_GPIO_ReadPin(iic->SDA_GPIO, iic->SDA_PIN); // MSB_first(LSB_first,改为data |= (HAL_
+ 533              		.loc 1 103 8 discriminator 3 view .LVU120
+ 534 002a E4B2     		uxtb	r4, r4
+ 535              	.LVL52:
+ 104:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 536              		.loc 1 104 3 is_stmt 1 discriminator 3 view .LVU121
+ 104:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 537              		.loc 1 104 11 is_stmt 0 discriminator 3 view .LVU122
+ 538 002c A988     		ldrh	r1, [r5, #4]
+ 539 002e 2868     		ldr	r0, [r5]
+ 540 0030 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 14
+
+
+ 541              	.LVL53:
+ 104:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 542              		.loc 1 104 8 discriminator 3 view .LVU123
+ 543 0034 0443     		orrs	r4, r4, r0
+ 544              	.LVL54:
+ 104:Bsp/bsp_i2c.c **** 		DELAY_us(4);
+ 545              		.loc 1 104 8 discriminator 3 view .LVU124
+ 546 0036 E4B2     		uxtb	r4, r4
+ 547              	.LVL55:
+ 105:Bsp/bsp_i2c.c **** 	}
+ 548              		.loc 1 105 3 is_stmt 1 discriminator 3 view .LVU125
+ 549 0038 0420     		movs	r0, #4
+ 550 003a FFF7FEFF 		bl	DELAY_us
+ 551              	.LVL56:
+  97:Bsp/bsp_i2c.c **** 	{
+ 552              		.loc 1 97 21 discriminator 3 view .LVU126
+  97:Bsp/bsp_i2c.c **** 	{
+ 553              		.loc 1 97 22 is_stmt 0 discriminator 3 view .LVU127
+ 554 003e 0136     		adds	r6, r6, #1
+ 555              	.LVL57:
+  97:Bsp/bsp_i2c.c **** 	{
+ 556              		.loc 1 97 22 discriminator 3 view .LVU128
+ 557 0040 F6B2     		uxtb	r6, r6
+ 558              	.LVL58:
+ 559              	.L23:
+  97:Bsp/bsp_i2c.c **** 	{
+ 560              		.loc 1 97 14 is_stmt 1 discriminator 1 view .LVU129
+  97:Bsp/bsp_i2c.c **** 	{
+ 561              		.loc 1 97 2 is_stmt 0 discriminator 1 view .LVU130
+ 562 0042 072E     		cmp	r6, #7
+ 563 0044 E3D9     		bls	.L24
+ 107:Bsp/bsp_i2c.c **** }
+ 564              		.loc 1 107 2 is_stmt 1 view .LVU131
+ 108:Bsp/bsp_i2c.c **** uint8_t IIC_waitAck(i2c_t *iic) // 0有应答
+ 565              		.loc 1 108 1 is_stmt 0 view .LVU132
+ 566 0046 2046     		mov	r0, r4
+ 567 0048 70BD     		pop	{r4, r5, r6, pc}
+ 108:Bsp/bsp_i2c.c **** uint8_t IIC_waitAck(i2c_t *iic) // 0有应答
+ 568              		.loc 1 108 1 view .LVU133
+ 569              		.cfi_endproc
+ 570              	.LFE136:
+ 572              		.section	.text.IIC_waitAck,"ax",%progbits
+ 573              		.align	1
+ 574              		.global	IIC_waitAck
+ 575              		.syntax unified
+ 576              		.thumb
+ 577              		.thumb_func
+ 579              	IIC_waitAck:
+ 580              	.LVL59:
+ 581              	.LFB137:
+ 110:Bsp/bsp_i2c.c **** 	uint8_t ack = 1;
+ 582              		.loc 1 110 1 is_stmt 1 view -0
+ 583              		.cfi_startproc
+ 584              		@ args = 0, pretend = 0, frame = 0
+ 585              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110:Bsp/bsp_i2c.c **** 	uint8_t ack = 1;
+ 586              		.loc 1 110 1 is_stmt 0 view .LVU135
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 15
+
+
+ 587 0000 38B5     		push	{r3, r4, r5, lr}
+ 588              	.LCFI14:
+ 589              		.cfi_def_cfa_offset 16
+ 590              		.cfi_offset 3, -16
+ 591              		.cfi_offset 4, -12
+ 592              		.cfi_offset 5, -8
+ 593              		.cfi_offset 14, -4
+ 594 0002 0446     		mov	r4, r0
+ 111:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 595              		.loc 1 111 2 is_stmt 1 view .LVU136
+ 596              	.LVL60:
+ 112:Bsp/bsp_i2c.c **** 	SDA_In(iic);
+ 597              		.loc 1 112 2 view .LVU137
+ 598 0004 0022     		movs	r2, #0
+ 599 0006 8189     		ldrh	r1, [r0, #12]
+ 600 0008 8068     		ldr	r0, [r0, #8]
+ 601              	.LVL61:
+ 112:Bsp/bsp_i2c.c **** 	SDA_In(iic);
+ 602              		.loc 1 112 2 is_stmt 0 view .LVU138
+ 603 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 604              	.LVL62:
+ 113:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 605              		.loc 1 113 2 is_stmt 1 view .LVU139
+ 606 000e 2046     		mov	r0, r4
+ 607 0010 FFF7FEFF 		bl	SDA_In
+ 608              	.LVL63:
+ 114:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+ 609              		.loc 1 114 2 view .LVU140
+ 610 0014 0420     		movs	r0, #4
+ 611 0016 FFF7FEFF 		bl	DELAY_us
+ 612              	.LVL64:
+ 115:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 613              		.loc 1 115 2 view .LVU141
+ 614 001a 0122     		movs	r2, #1
+ 615 001c A189     		ldrh	r1, [r4, #12]
+ 616 001e A068     		ldr	r0, [r4, #8]
+ 617 0020 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 618              	.LVL65:
+ 116:Bsp/bsp_i2c.c **** 	ack = HAL_GPIO_ReadPin(iic->SDA_GPIO, iic->SDA_PIN);
+ 619              		.loc 1 116 2 view .LVU142
+ 620 0024 0420     		movs	r0, #4
+ 621 0026 FFF7FEFF 		bl	DELAY_us
+ 622              	.LVL66:
+ 117:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 623              		.loc 1 117 2 view .LVU143
+ 117:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 624              		.loc 1 117 8 is_stmt 0 view .LVU144
+ 625 002a A188     		ldrh	r1, [r4, #4]
+ 626 002c 2068     		ldr	r0, [r4]
+ 627 002e FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 628              	.LVL67:
+ 629 0032 0546     		mov	r5, r0
+ 630              	.LVL68:
+ 118:Bsp/bsp_i2c.c **** 	return ack;
+ 631              		.loc 1 118 2 is_stmt 1 view .LVU145
+ 632 0034 0022     		movs	r2, #0
+ 633 0036 A189     		ldrh	r1, [r4, #12]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 16
+
+
+ 634 0038 A068     		ldr	r0, [r4, #8]
+ 635 003a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 636              	.LVL69:
+ 119:Bsp/bsp_i2c.c **** }
+ 637              		.loc 1 119 2 view .LVU146
+ 120:Bsp/bsp_i2c.c **** void IIC_ack(i2c_t *iic, uint8_t ack) // 0应答
+ 638              		.loc 1 120 1 is_stmt 0 view .LVU147
+ 639 003e 2846     		mov	r0, r5
+ 640 0040 38BD     		pop	{r3, r4, r5, pc}
+ 120:Bsp/bsp_i2c.c **** void IIC_ack(i2c_t *iic, uint8_t ack) // 0应答
+ 641              		.loc 1 120 1 view .LVU148
+ 642              		.cfi_endproc
+ 643              	.LFE137:
+ 645              		.section	.text.IIC_ack,"ax",%progbits
+ 646              		.align	1
+ 647              		.global	IIC_ack
+ 648              		.syntax unified
+ 649              		.thumb
+ 650              		.thumb_func
+ 652              	IIC_ack:
+ 653              	.LVL70:
+ 654              	.LFB138:
+ 122:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 655              		.loc 1 122 1 is_stmt 1 view -0
+ 656              		.cfi_startproc
+ 657              		@ args = 0, pretend = 0, frame = 0
+ 658              		@ frame_needed = 0, uses_anonymous_args = 0
+ 122:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 659              		.loc 1 122 1 is_stmt 0 view .LVU150
+ 660 0000 38B5     		push	{r3, r4, r5, lr}
+ 661              	.LCFI15:
+ 662              		.cfi_def_cfa_offset 16
+ 663              		.cfi_offset 3, -16
+ 664              		.cfi_offset 4, -12
+ 665              		.cfi_offset 5, -8
+ 666              		.cfi_offset 14, -4
+ 667 0002 0446     		mov	r4, r0
+ 668 0004 0D46     		mov	r5, r1
+ 123:Bsp/bsp_i2c.c **** 
+ 669              		.loc 1 123 2 is_stmt 1 view .LVU151
+ 670 0006 0022     		movs	r2, #0
+ 671 0008 8189     		ldrh	r1, [r0, #12]
+ 672              	.LVL71:
+ 123:Bsp/bsp_i2c.c **** 
+ 673              		.loc 1 123 2 is_stmt 0 view .LVU152
+ 674 000a 8068     		ldr	r0, [r0, #8]
+ 675              	.LVL72:
+ 123:Bsp/bsp_i2c.c **** 
+ 676              		.loc 1 123 2 view .LVU153
+ 677 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 678              	.LVL73:
+ 125:Bsp/bsp_i2c.c **** 	if (ack == 0)
+ 679              		.loc 1 125 2 is_stmt 1 view .LVU154
+ 680 0010 2046     		mov	r0, r4
+ 681 0012 FFF7FEFF 		bl	SDA_Out
+ 682              	.LVL74:
+ 126:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_RESET);
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 17
+
+
+ 683              		.loc 1 126 2 view .LVU155
+ 126:Bsp/bsp_i2c.c **** 		HAL_GPIO_WritePin(iic->SDA_GPIO, iic->SDA_PIN, GPIO_PIN_RESET);
+ 684              		.loc 1 126 5 is_stmt 0 view .LVU156
+ 685 0016 ADB9     		cbnz	r5, .L29
+ 127:Bsp/bsp_i2c.c **** 	else
+ 686              		.loc 1 127 3 is_stmt 1 view .LVU157
+ 687 0018 0022     		movs	r2, #0
+ 688 001a A188     		ldrh	r1, [r4, #4]
+ 689 001c 2068     		ldr	r0, [r4]
+ 690 001e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 691              	.LVL75:
+ 692              	.L30:
+ 130:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_SET);
+ 693              		.loc 1 130 2 view .LVU158
+ 694 0022 0420     		movs	r0, #4
+ 695 0024 FFF7FEFF 		bl	DELAY_us
+ 696              	.LVL76:
+ 131:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 697              		.loc 1 131 2 view .LVU159
+ 698 0028 0122     		movs	r2, #1
+ 699 002a A189     		ldrh	r1, [r4, #12]
+ 700 002c A068     		ldr	r0, [r4, #8]
+ 701 002e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 702              	.LVL77:
+ 132:Bsp/bsp_i2c.c **** 	HAL_GPIO_WritePin(iic->SCL_GPIO, iic->SCL_PIN, GPIO_PIN_RESET);
+ 703              		.loc 1 132 2 view .LVU160
+ 704 0032 0420     		movs	r0, #4
+ 705 0034 FFF7FEFF 		bl	DELAY_us
+ 706              	.LVL78:
+ 133:Bsp/bsp_i2c.c **** }
+ 707              		.loc 1 133 2 view .LVU161
+ 708 0038 0022     		movs	r2, #0
+ 709 003a A189     		ldrh	r1, [r4, #12]
+ 710 003c A068     		ldr	r0, [r4, #8]
+ 711 003e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 712              	.LVL79:
+ 134:Bsp/bsp_i2c.c **** 
+ 713              		.loc 1 134 1 is_stmt 0 view .LVU162
+ 714 0042 38BD     		pop	{r3, r4, r5, pc}
+ 715              	.LVL80:
+ 716              	.L29:
+ 129:Bsp/bsp_i2c.c **** 	DELAY_us(4);
+ 717              		.loc 1 129 3 is_stmt 1 view .LVU163
+ 718 0044 0122     		movs	r2, #1
+ 719 0046 A188     		ldrh	r1, [r4, #4]
+ 720 0048 2068     		ldr	r0, [r4]
+ 721 004a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 722              	.LVL81:
+ 723 004e E8E7     		b	.L30
+ 724              		.cfi_endproc
+ 725              	.LFE138:
+ 727              		.section	.bss.DelayTime.0,"aw",%nobits
+ 728              		.align	2
+ 729              		.set	.LANCHOR0,. + 0
+ 732              	DelayTime.0:
+ 733 0000 00000000 		.space	4
+ 734              		.text
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 18
+
+
+ 735              	.Letext0:
+ 736              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 737              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 738              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 739              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h"
+ 740              		.file 6 "Bsp/bsp_i2c.h"
+ 741              		.file 7 "Bsp/bsp_dwt.h"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s 			page 19
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 bsp_i2c.c
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:20     .text.IIC_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:26     .text.IIC_Init:00000000 IIC_Init
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:88     .text.SDA_Out:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:94     .text.SDA_Out:00000000 SDA_Out
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:143    .text.SDA_In:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:149    .text.SDA_In:00000000 SDA_In
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:195    .text.DELAY_us:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:201    .text.DELAY_us:00000000 DELAY_us
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:233    .text.DELAY_us:00000020 $d
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:239    .text.IIC_Start:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:245    .text.IIC_Start:00000000 IIC_Start
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:301    .text.IIC_Stop:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:307    .text.IIC_Stop:00000000 IIC_Stop
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:371    .text.IIC_writeByte:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:377    .text.IIC_writeByte:00000000 IIC_writeByte
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:476    .text.IIC_readByte:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:482    .text.IIC_readByte:00000000 IIC_readByte
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:573    .text.IIC_waitAck:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:579    .text.IIC_waitAck:00000000 IIC_waitAck
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:646    .text.IIC_ack:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:652    .text.IIC_ack:00000000 IIC_ack
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:728    .bss.DelayTime.0:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccXGrHfd.s:732    .bss.DelayTime.0:00000000 DelayTime.0
+
+UNDEFINED SYMBOLS
+HAL_GPIO_Init
+DWT_Delay
+HAL_GPIO_WritePin
+HAL_GPIO_ReadPin

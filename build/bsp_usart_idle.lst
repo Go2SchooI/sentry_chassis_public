@@ -1,0 +1,457 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccojJy02.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"bsp_usart_idle.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.USART_IDLE_Init,"ax",%progbits
+  20              		.align	1
+  21              		.global	USART_IDLE_Init
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	USART_IDLE_Init:
+  27              	.LVL0:
+  28              	.LFB130:
+  29              		.file 1 "Bsp/bsp_usart_idle.c"
+   1:Bsp/bsp_usart_idle.c **** /**
+   2:Bsp/bsp_usart_idle.c ****   ******************************************************************************
+   3:Bsp/bsp_usart_idle.c ****   * @file    bsp_usart_idle.c
+   4:Bsp/bsp_usart_idle.c ****   * @author  Wang Hongxi 
+   5:Bsp/bsp_usart_idle.c ****   * @version V1.0.0
+   6:Bsp/bsp_usart_idle.c ****   * @date    2021/1/5
+   7:Bsp/bsp_usart_idle.c ****   * @brief   
+   8:Bsp/bsp_usart_idle.c ****   ******************************************************************************
+   9:Bsp/bsp_usart_idle.c ****   * @attention
+  10:Bsp/bsp_usart_idle.c ****   * Usart DMA mode must be "DMA_CIRCULAR" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  11:Bsp/bsp_usart_idle.c ****   ******************************************************************************
+  12:Bsp/bsp_usart_idle.c ****   */
+  13:Bsp/bsp_usart_idle.c **** #include "bsp_usart_idle.h"
+  14:Bsp/bsp_usart_idle.c **** 
+  15:Bsp/bsp_usart_idle.c **** void USART_IDLE_Init(UART_HandleTypeDef *huart, uint8_t *rx_buf, uint16_t dma_buf_num)
+  16:Bsp/bsp_usart_idle.c **** {
+  30              		.loc 1 16 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		@ link register save eliminated.
+  35              		.loc 1 16 1 is_stmt 0 view .LVU1
+  36 0000 10B4     		push	{r4}
+  37              	.LCFI0:
+  38              		.cfi_def_cfa_offset 4
+  39              		.cfi_offset 4, -4
+  17:Bsp/bsp_usart_idle.c ****     //enable the DMA transfer for the receiver request
+  18:Bsp/bsp_usart_idle.c ****     //使能DMA串口接收
+  19:Bsp/bsp_usart_idle.c ****     SET_BIT(huart->Instance->CR3, USART_CR3_DMAR);
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccojJy02.s 			page 2
+
+
+  40              		.loc 1 19 5 is_stmt 1 view .LVU2
+  41 0002 0468     		ldr	r4, [r0]
+  42 0004 6369     		ldr	r3, [r4, #20]
+  43 0006 43F04003 		orr	r3, r3, #64
+  44 000a 6361     		str	r3, [r4, #20]
+  20:Bsp/bsp_usart_idle.c **** 
+  21:Bsp/bsp_usart_idle.c ****     //enalbe idle interrupt
+  22:Bsp/bsp_usart_idle.c ****     //使能空闲中断
+  23:Bsp/bsp_usart_idle.c ****     __HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
+  45              		.loc 1 23 5 view .LVU3
+  46 000c 0468     		ldr	r4, [r0]
+  47 000e E368     		ldr	r3, [r4, #12]
+  48 0010 43F01003 		orr	r3, r3, #16
+  49 0014 E360     		str	r3, [r4, #12]
+  24:Bsp/bsp_usart_idle.c **** 
+  25:Bsp/bsp_usart_idle.c ****     //disable DMA
+  26:Bsp/bsp_usart_idle.c ****     //失效DMA
+  27:Bsp/bsp_usart_idle.c ****     __HAL_DMA_DISABLE(huart->hdmarx);
+  50              		.loc 1 27 5 view .LVU4
+  51 0016 436B     		ldr	r3, [r0, #52]
+  52 0018 1C68     		ldr	r4, [r3]
+  53 001a 2368     		ldr	r3, [r4]
+  54 001c 23F00103 		bic	r3, r3, #1
+  55 0020 2360     		str	r3, [r4]
+  28:Bsp/bsp_usart_idle.c ****     while (huart->hdmarx->Instance->CR & DMA_SxCR_EN)
+  56              		.loc 1 28 5 view .LVU5
+  57              		.loc 1 28 11 is_stmt 0 view .LVU6
+  58 0022 03E0     		b	.L2
+  59              	.L3:
+  29:Bsp/bsp_usart_idle.c ****     {
+  30:Bsp/bsp_usart_idle.c ****         __HAL_DMA_DISABLE(huart->hdmarx);
+  60              		.loc 1 30 9 is_stmt 1 view .LVU7
+  61 0024 1C68     		ldr	r4, [r3]
+  62 0026 24F00104 		bic	r4, r4, #1
+  63 002a 1C60     		str	r4, [r3]
+  64              	.L2:
+  28:Bsp/bsp_usart_idle.c ****     while (huart->hdmarx->Instance->CR & DMA_SxCR_EN)
+  65              		.loc 1 28 11 view .LVU8
+  28:Bsp/bsp_usart_idle.c ****     while (huart->hdmarx->Instance->CR & DMA_SxCR_EN)
+  66              		.loc 1 28 17 is_stmt 0 view .LVU9
+  67 002c 436B     		ldr	r3, [r0, #52]
+  28:Bsp/bsp_usart_idle.c ****     while (huart->hdmarx->Instance->CR & DMA_SxCR_EN)
+  68              		.loc 1 28 25 view .LVU10
+  69 002e 1B68     		ldr	r3, [r3]
+  28:Bsp/bsp_usart_idle.c ****     while (huart->hdmarx->Instance->CR & DMA_SxCR_EN)
+  70              		.loc 1 28 35 view .LVU11
+  71 0030 1C68     		ldr	r4, [r3]
+  28:Bsp/bsp_usart_idle.c ****     while (huart->hdmarx->Instance->CR & DMA_SxCR_EN)
+  72              		.loc 1 28 11 view .LVU12
+  73 0032 14F0010F 		tst	r4, #1
+  74 0036 F5D1     		bne	.L3
+  31:Bsp/bsp_usart_idle.c ****     }
+  32:Bsp/bsp_usart_idle.c **** 
+  33:Bsp/bsp_usart_idle.c ****     huart->hdmarx->Instance->PAR = (uint32_t) & (huart->Instance->DR);
+  75              		.loc 1 33 5 is_stmt 1 view .LVU13
+  76              		.loc 1 33 55 is_stmt 0 view .LVU14
+  77 0038 0468     		ldr	r4, [r0]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccojJy02.s 			page 3
+
+
+  78              		.loc 1 33 47 view .LVU15
+  79 003a 0434     		adds	r4, r4, #4
+  80              		.loc 1 33 34 view .LVU16
+  81 003c 9C60     		str	r4, [r3, #8]
+  34:Bsp/bsp_usart_idle.c ****     //memory buffer 1
+  35:Bsp/bsp_usart_idle.c ****     //内存缓冲区1
+  36:Bsp/bsp_usart_idle.c ****     huart->hdmarx->Instance->M0AR = (uint32_t)(rx_buf);
+  82              		.loc 1 36 5 is_stmt 1 view .LVU17
+  83              		.loc 1 36 10 is_stmt 0 view .LVU18
+  84 003e 436B     		ldr	r3, [r0, #52]
+  85              		.loc 1 36 18 view .LVU19
+  86 0040 1B68     		ldr	r3, [r3]
+  87              		.loc 1 36 35 view .LVU20
+  88 0042 D960     		str	r1, [r3, #12]
+  37:Bsp/bsp_usart_idle.c ****     //data length
+  38:Bsp/bsp_usart_idle.c ****     //数据长度
+  39:Bsp/bsp_usart_idle.c ****     huart->hdmarx->Instance->NDTR = dma_buf_num;
+  89              		.loc 1 39 5 is_stmt 1 view .LVU21
+  90              		.loc 1 39 10 is_stmt 0 view .LVU22
+  91 0044 436B     		ldr	r3, [r0, #52]
+  92              		.loc 1 39 18 view .LVU23
+  93 0046 1B68     		ldr	r3, [r3]
+  94              		.loc 1 39 35 view .LVU24
+  95 0048 5A60     		str	r2, [r3, #4]
+  40:Bsp/bsp_usart_idle.c **** 
+  41:Bsp/bsp_usart_idle.c ****     //enable DMA
+  42:Bsp/bsp_usart_idle.c ****     //使能DMA
+  43:Bsp/bsp_usart_idle.c ****     __HAL_DMA_ENABLE(huart->hdmarx);
+  96              		.loc 1 43 5 is_stmt 1 view .LVU25
+  97 004a 436B     		ldr	r3, [r0, #52]
+  98 004c 1A68     		ldr	r2, [r3]
+  99              	.LVL1:
+ 100              		.loc 1 43 5 is_stmt 0 view .LVU26
+ 101 004e 1368     		ldr	r3, [r2]
+ 102 0050 43F00103 		orr	r3, r3, #1
+ 103 0054 1360     		str	r3, [r2]
+  44:Bsp/bsp_usart_idle.c **** }
+ 104              		.loc 1 44 1 view .LVU27
+ 105 0056 5DF8044B 		ldr	r4, [sp], #4
+ 106              	.LCFI1:
+ 107              		.cfi_restore 4
+ 108              		.cfi_def_cfa_offset 0
+ 109 005a 7047     		bx	lr
+ 110              		.cfi_endproc
+ 111              	.LFE130:
+ 113              		.section	.text.USER_UART_RxIdleCallback,"ax",%progbits
+ 114              		.align	1
+ 115              		.weak	USER_UART_RxIdleCallback
+ 116              		.syntax unified
+ 117              		.thumb
+ 118              		.thumb_func
+ 120              	USER_UART_RxIdleCallback:
+ 121              	.LVL2:
+ 122              	.LFB132:
+  45:Bsp/bsp_usart_idle.c **** 
+  46:Bsp/bsp_usart_idle.c **** void USART_IDLE_IRQHandler(UART_HandleTypeDef *huart)
+  47:Bsp/bsp_usart_idle.c **** {
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccojJy02.s 			page 4
+
+
+  48:Bsp/bsp_usart_idle.c ****     // 不用深究
+  49:Bsp/bsp_usart_idle.c ****     uint32_t isrflags = READ_REG(huart->Instance->SR);
+  50:Bsp/bsp_usart_idle.c ****     uint32_t cr1its = READ_REG(huart->Instance->CR1);
+  51:Bsp/bsp_usart_idle.c ****     uint32_t cr3its = READ_REG(huart->Instance->CR3);
+  52:Bsp/bsp_usart_idle.c **** 
+  53:Bsp/bsp_usart_idle.c ****     if (huart->Instance->SR & UART_FLAG_RXNE) //接收到数据
+  54:Bsp/bsp_usart_idle.c ****     {
+  55:Bsp/bsp_usart_idle.c ****         __HAL_UART_CLEAR_PEFLAG(huart);
+  56:Bsp/bsp_usart_idle.c ****     }
+  57:Bsp/bsp_usart_idle.c ****     else if (huart->Instance->SR & UART_FLAG_IDLE)
+  58:Bsp/bsp_usart_idle.c ****     {
+  59:Bsp/bsp_usart_idle.c ****         __HAL_UART_CLEAR_PEFLAG(huart);
+  60:Bsp/bsp_usart_idle.c **** 
+  61:Bsp/bsp_usart_idle.c ****         __HAL_DMA_DISABLE(huart->hdmarx);
+  62:Bsp/bsp_usart_idle.c **** 
+  63:Bsp/bsp_usart_idle.c ****         __HAL_DMA_ENABLE(huart->hdmarx);
+  64:Bsp/bsp_usart_idle.c **** 
+  65:Bsp/bsp_usart_idle.c ****         USER_UART_RxIdleCallback(huart);
+  66:Bsp/bsp_usart_idle.c ****     }
+  67:Bsp/bsp_usart_idle.c **** 
+  68:Bsp/bsp_usart_idle.c ****     //该段代码与接收数据无关，用于保证DMA发送正常进行
+  69:Bsp/bsp_usart_idle.c ****     if (((isrflags & USART_SR_TC) != RESET) && ((cr1its & USART_CR1_TCIE) != RESET))
+  70:Bsp/bsp_usart_idle.c ****     {
+  71:Bsp/bsp_usart_idle.c ****         /* Disable the UART Transmit Complete Interrupt */
+  72:Bsp/bsp_usart_idle.c ****         __HAL_UART_DISABLE_IT(huart, UART_IT_TC);
+  73:Bsp/bsp_usart_idle.c **** 
+  74:Bsp/bsp_usart_idle.c ****         /* Tx process is ended, restore huart->gState to Ready */
+  75:Bsp/bsp_usart_idle.c ****         huart->gState = HAL_UART_STATE_READY;
+  76:Bsp/bsp_usart_idle.c **** 
+  77:Bsp/bsp_usart_idle.c **** #if (USE_HAL_UART_REGISTER_CALLBACKS == 1)
+  78:Bsp/bsp_usart_idle.c ****         /*Call registered Tx complete callback*/
+  79:Bsp/bsp_usart_idle.c ****         huart->TxCpltCallback(huart);
+  80:Bsp/bsp_usart_idle.c **** #else
+  81:Bsp/bsp_usart_idle.c ****         /*Call legacy weak Tx complete callback*/
+  82:Bsp/bsp_usart_idle.c ****         HAL_UART_TxCpltCallback(huart);
+  83:Bsp/bsp_usart_idle.c **** #endif /* USE_HAL_UART_REGISTER_CALLBACKS */
+  84:Bsp/bsp_usart_idle.c ****     }
+  85:Bsp/bsp_usart_idle.c **** }
+  86:Bsp/bsp_usart_idle.c **** 
+  87:Bsp/bsp_usart_idle.c **** /**
+  88:Bsp/bsp_usart_idle.c ****   * @brief  Rx Transfer idle callbacks.
+  89:Bsp/bsp_usart_idle.c ****   * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
+  90:Bsp/bsp_usart_idle.c ****   *                the configuration information for the specified UART module.
+  91:Bsp/bsp_usart_idle.c ****   * @retval None
+  92:Bsp/bsp_usart_idle.c ****   */
+  93:Bsp/bsp_usart_idle.c **** __weak void USER_UART_RxIdleCallback(UART_HandleTypeDef *huart)
+  94:Bsp/bsp_usart_idle.c **** {
+ 123              		.loc 1 94 1 is_stmt 1 view -0
+ 124              		.cfi_startproc
+ 125              		@ args = 0, pretend = 0, frame = 0
+ 126              		@ frame_needed = 0, uses_anonymous_args = 0
+ 127              		@ link register save eliminated.
+  95:Bsp/bsp_usart_idle.c ****     /* Prevent unused argument(s) compilation warning */
+  96:Bsp/bsp_usart_idle.c ****     UNUSED(huart);
+ 128              		.loc 1 96 5 view .LVU29
+  97:Bsp/bsp_usart_idle.c ****     /* NOTE: This function should not be modified, when the callback is needed,
+  98:Bsp/bsp_usart_idle.c ****            the HAL_UART_RxCpltCallback could be implemented in the user file
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccojJy02.s 			page 5
+
+
+  99:Bsp/bsp_usart_idle.c ****    */
+ 100:Bsp/bsp_usart_idle.c **** }
+ 129              		.loc 1 100 1 is_stmt 0 view .LVU30
+ 130 0000 7047     		bx	lr
+ 131              		.cfi_endproc
+ 132              	.LFE132:
+ 134              		.section	.text.USART_IDLE_IRQHandler,"ax",%progbits
+ 135              		.align	1
+ 136              		.global	USART_IDLE_IRQHandler
+ 137              		.syntax unified
+ 138              		.thumb
+ 139              		.thumb_func
+ 141              	USART_IDLE_IRQHandler:
+ 142              	.LVL3:
+ 143              	.LFB131:
+  47:Bsp/bsp_usart_idle.c ****     // 不用深究
+ 144              		.loc 1 47 1 is_stmt 1 view -0
+ 145              		.cfi_startproc
+ 146              		@ args = 0, pretend = 0, frame = 8
+ 147              		@ frame_needed = 0, uses_anonymous_args = 0
+  47:Bsp/bsp_usart_idle.c ****     // 不用深究
+ 148              		.loc 1 47 1 is_stmt 0 view .LVU32
+ 149 0000 70B5     		push	{r4, r5, r6, lr}
+ 150              	.LCFI2:
+ 151              		.cfi_def_cfa_offset 16
+ 152              		.cfi_offset 4, -16
+ 153              		.cfi_offset 5, -12
+ 154              		.cfi_offset 6, -8
+ 155              		.cfi_offset 14, -4
+ 156 0002 82B0     		sub	sp, sp, #8
+ 157              	.LCFI3:
+ 158              		.cfi_def_cfa_offset 24
+ 159 0004 0446     		mov	r4, r0
+  49:Bsp/bsp_usart_idle.c ****     uint32_t cr1its = READ_REG(huart->Instance->CR1);
+ 160              		.loc 1 49 5 is_stmt 1 view .LVU33
+  49:Bsp/bsp_usart_idle.c ****     uint32_t cr1its = READ_REG(huart->Instance->CR1);
+ 161              		.loc 1 49 25 is_stmt 0 view .LVU34
+ 162 0006 0368     		ldr	r3, [r0]
+  49:Bsp/bsp_usart_idle.c ****     uint32_t cr1its = READ_REG(huart->Instance->CR1);
+ 163              		.loc 1 49 14 view .LVU35
+ 164 0008 1D68     		ldr	r5, [r3]
+ 165              	.LVL4:
+  50:Bsp/bsp_usart_idle.c ****     uint32_t cr3its = READ_REG(huart->Instance->CR3);
+ 166              		.loc 1 50 5 is_stmt 1 view .LVU36
+  50:Bsp/bsp_usart_idle.c ****     uint32_t cr3its = READ_REG(huart->Instance->CR3);
+ 167              		.loc 1 50 14 is_stmt 0 view .LVU37
+ 168 000a DE68     		ldr	r6, [r3, #12]
+ 169              	.LVL5:
+  51:Bsp/bsp_usart_idle.c **** 
+ 170              		.loc 1 51 5 is_stmt 1 view .LVU38
+  51:Bsp/bsp_usart_idle.c **** 
+ 171              		.loc 1 51 14 is_stmt 0 view .LVU39
+ 172 000c 5A69     		ldr	r2, [r3, #20]
+  53:Bsp/bsp_usart_idle.c ****     {
+ 173              		.loc 1 53 5 is_stmt 1 view .LVU40
+  53:Bsp/bsp_usart_idle.c ****     {
+ 174              		.loc 1 53 24 is_stmt 0 view .LVU41
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccojJy02.s 			page 6
+
+
+ 175 000e 1A68     		ldr	r2, [r3]
+  53:Bsp/bsp_usart_idle.c ****     {
+ 176              		.loc 1 53 8 view .LVU42
+ 177 0010 12F0200F 		tst	r2, #32
+ 178 0014 0ED0     		beq	.L7
+  55:Bsp/bsp_usart_idle.c ****     }
+ 179              		.loc 1 55 9 is_stmt 1 view .LVU43
+ 180              	.LBB2:
+  55:Bsp/bsp_usart_idle.c ****     }
+ 181              		.loc 1 55 9 view .LVU44
+ 182 0016 0022     		movs	r2, #0
+ 183 0018 0092     		str	r2, [sp]
+  55:Bsp/bsp_usart_idle.c ****     }
+ 184              		.loc 1 55 9 view .LVU45
+ 185 001a 1A68     		ldr	r2, [r3]
+ 186 001c 0092     		str	r2, [sp]
+  55:Bsp/bsp_usart_idle.c ****     }
+ 187              		.loc 1 55 9 view .LVU46
+ 188 001e 5B68     		ldr	r3, [r3, #4]
+ 189 0020 0093     		str	r3, [sp]
+  55:Bsp/bsp_usart_idle.c ****     }
+ 190              		.loc 1 55 9 view .LVU47
+ 191 0022 009B     		ldr	r3, [sp]
+ 192              	.LBE2:
+  55:Bsp/bsp_usart_idle.c ****     }
+ 193              		.loc 1 55 9 view .LVU48
+ 194              	.LVL6:
+ 195              	.L8:
+  69:Bsp/bsp_usart_idle.c ****     {
+ 196              		.loc 1 69 5 view .LVU49
+  69:Bsp/bsp_usart_idle.c ****     {
+ 197              		.loc 1 69 8 is_stmt 0 view .LVU50
+ 198 0024 15F0400F 		tst	r5, #64
+ 199 0028 02D0     		beq	.L6
+  69:Bsp/bsp_usart_idle.c ****     {
+ 200              		.loc 1 69 45 discriminator 1 view .LVU51
+ 201 002a 16F0400F 		tst	r6, #64
+ 202 002e 1BD1     		bne	.L11
+ 203              	.L6:
+  85:Bsp/bsp_usart_idle.c **** 
+ 204              		.loc 1 85 1 view .LVU52
+ 205 0030 02B0     		add	sp, sp, #8
+ 206              	.LCFI4:
+ 207              		.cfi_remember_state
+ 208              		.cfi_def_cfa_offset 16
+ 209              		@ sp needed
+ 210 0032 70BD     		pop	{r4, r5, r6, pc}
+ 211              	.LVL7:
+ 212              	.L7:
+ 213              	.LCFI5:
+ 214              		.cfi_restore_state
+  57:Bsp/bsp_usart_idle.c ****     {
+ 215              		.loc 1 57 10 is_stmt 1 view .LVU53
+  57:Bsp/bsp_usart_idle.c ****     {
+ 216              		.loc 1 57 29 is_stmt 0 view .LVU54
+ 217 0034 1A68     		ldr	r2, [r3]
+  57:Bsp/bsp_usart_idle.c ****     {
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccojJy02.s 			page 7
+
+
+ 218              		.loc 1 57 13 view .LVU55
+ 219 0036 12F0100F 		tst	r2, #16
+ 220 003a F3D0     		beq	.L8
+  59:Bsp/bsp_usart_idle.c **** 
+ 221              		.loc 1 59 9 is_stmt 1 view .LVU56
+ 222              	.LBB3:
+  59:Bsp/bsp_usart_idle.c **** 
+ 223              		.loc 1 59 9 view .LVU57
+ 224 003c 0022     		movs	r2, #0
+ 225 003e 0192     		str	r2, [sp, #4]
+  59:Bsp/bsp_usart_idle.c **** 
+ 226              		.loc 1 59 9 view .LVU58
+ 227 0040 1A68     		ldr	r2, [r3]
+ 228 0042 0192     		str	r2, [sp, #4]
+  59:Bsp/bsp_usart_idle.c **** 
+ 229              		.loc 1 59 9 view .LVU59
+ 230 0044 5B68     		ldr	r3, [r3, #4]
+ 231 0046 0193     		str	r3, [sp, #4]
+  59:Bsp/bsp_usart_idle.c **** 
+ 232              		.loc 1 59 9 view .LVU60
+ 233 0048 019B     		ldr	r3, [sp, #4]
+ 234              	.LBE3:
+  59:Bsp/bsp_usart_idle.c **** 
+ 235              		.loc 1 59 9 view .LVU61
+  61:Bsp/bsp_usart_idle.c **** 
+ 236              		.loc 1 61 9 view .LVU62
+ 237 004a 436B     		ldr	r3, [r0, #52]
+ 238 004c 1A68     		ldr	r2, [r3]
+ 239 004e 1368     		ldr	r3, [r2]
+ 240 0050 23F00103 		bic	r3, r3, #1
+ 241 0054 1360     		str	r3, [r2]
+  63:Bsp/bsp_usart_idle.c **** 
+ 242              		.loc 1 63 9 view .LVU63
+ 243 0056 436B     		ldr	r3, [r0, #52]
+ 244 0058 1A68     		ldr	r2, [r3]
+ 245 005a 1368     		ldr	r3, [r2]
+ 246 005c 43F00103 		orr	r3, r3, #1
+ 247 0060 1360     		str	r3, [r2]
+  65:Bsp/bsp_usart_idle.c ****     }
+ 248              		.loc 1 65 9 view .LVU64
+ 249 0062 FFF7FEFF 		bl	USER_UART_RxIdleCallback
+ 250              	.LVL8:
+  65:Bsp/bsp_usart_idle.c ****     }
+ 251              		.loc 1 65 9 is_stmt 0 view .LVU65
+ 252 0066 DDE7     		b	.L8
+ 253              	.L11:
+  72:Bsp/bsp_usart_idle.c **** 
+ 254              		.loc 1 72 9 is_stmt 1 view .LVU66
+ 255 0068 2268     		ldr	r2, [r4]
+ 256 006a D368     		ldr	r3, [r2, #12]
+ 257 006c 23F04003 		bic	r3, r3, #64
+ 258 0070 D360     		str	r3, [r2, #12]
+  75:Bsp/bsp_usart_idle.c **** 
+ 259              		.loc 1 75 9 view .LVU67
+  75:Bsp/bsp_usart_idle.c **** 
+ 260              		.loc 1 75 23 is_stmt 0 view .LVU68
+ 261 0072 2023     		movs	r3, #32
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccojJy02.s 			page 8
+
+
+ 262 0074 84F83930 		strb	r3, [r4, #57]
+  82:Bsp/bsp_usart_idle.c **** #endif /* USE_HAL_UART_REGISTER_CALLBACKS */
+ 263              		.loc 1 82 9 is_stmt 1 view .LVU69
+ 264 0078 2046     		mov	r0, r4
+ 265 007a FFF7FEFF 		bl	HAL_UART_TxCpltCallback
+ 266              	.LVL9:
+  85:Bsp/bsp_usart_idle.c **** 
+ 267              		.loc 1 85 1 is_stmt 0 view .LVU70
+ 268 007e D7E7     		b	.L6
+ 269              		.cfi_endproc
+ 270              	.LFE131:
+ 272              		.text
+ 273              	.Letext0:
+ 274              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 275              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 276              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 277              		.file 5 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 278              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 279              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 280              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccojJy02.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 bsp_usart_idle.c
+C:\Users\86152\AppData\Local\Temp\ccojJy02.s:20     .text.USART_IDLE_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccojJy02.s:26     .text.USART_IDLE_Init:00000000 USART_IDLE_Init
+C:\Users\86152\AppData\Local\Temp\ccojJy02.s:114    .text.USER_UART_RxIdleCallback:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccojJy02.s:120    .text.USER_UART_RxIdleCallback:00000000 USER_UART_RxIdleCallback
+C:\Users\86152\AppData\Local\Temp\ccojJy02.s:135    .text.USART_IDLE_IRQHandler:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccojJy02.s:141    .text.USART_IDLE_IRQHandler:00000000 USART_IDLE_IRQHandler
+
+UNDEFINED SYMBOLS
+HAL_UART_TxCpltCallback

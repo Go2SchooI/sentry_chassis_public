@@ -1,0 +1,1725 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"client_interact.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.client_draw_char,"ax",%progbits
+  20              		.align	1
+  21              		.global	client_draw_char
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	client_draw_char:
+  27              	.LVL0:
+  28              	.LFB130:
+  29              		.file 1 "Application/client_interact.c"
+   1:Application/client_interact.c **** #include "client_interact.h"
+   2:Application/client_interact.c **** #include "judgement_info.h"
+   3:Application/client_interact.c **** #include "string.h"
+   4:Application/client_interact.c **** #include "stm32f4xx_hal.h"
+   5:Application/client_interact.c **** #include "usart.h"
+   6:Application/client_interact.c **** 
+   7:Application/client_interact.c **** extern const uint8_t CRC8_INIT;
+   8:Application/client_interact.c **** extern uint16_t CRC_INIT;
+   9:Application/client_interact.c **** 
+  10:Application/client_interact.c **** 
+  11:Application/client_interact.c **** 
+  12:Application/client_interact.c **** uint8_t UI_SendBuf[120] = {0}; //·¢ËÍÊý×é
+  13:Application/client_interact.c **** 
+  14:Application/client_interact.c **** //»­×Ö·û´®
+  15:Application/client_interact.c **** void client_draw_char(
+  16:Application/client_interact.c ****     UART_HandleTypeDef *huart, client_char_t *client_char,
+  17:Application/client_interact.c ****     uint8_t layer, uint8_t operate,
+  18:Application/client_interact.c ****     uint16_t start_x, uint16_t start_y, uint8_t size,
+  19:Application/client_interact.c ****     uint16_t sender, uint16_t receiver, uint8_t *buff, uint8_t buff_len, uint8_t color)
+  20:Application/client_interact.c **** {
+  30              		.loc 1 20 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 32, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		.loc 1 20 1 is_stmt 0 view .LVU1
+  35 0000 2DE9F84F 		push	{r3, r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 40
+  38              		.cfi_offset 3, -40
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 2
+
+
+  39              		.cfi_offset 4, -36
+  40              		.cfi_offset 5, -32
+  41              		.cfi_offset 6, -28
+  42              		.cfi_offset 7, -24
+  43              		.cfi_offset 8, -20
+  44              		.cfi_offset 9, -16
+  45              		.cfi_offset 10, -12
+  46              		.cfi_offset 11, -8
+  47              		.cfi_offset 14, -4
+  48 0004 BDF828A0 		ldrh	r10, [sp, #40]
+  49 0008 BDF82C90 		ldrh	r9, [sp, #44]
+  50 000c 9DF84080 		ldrb	r8, [sp, #64]	@ zero_extendqisi2
+  21:Application/client_interact.c ****     static uint16_t crc_16;
+  51              		.loc 1 21 5 is_stmt 1 view .LVU2
+  22:Application/client_interact.c ****     if (buff_len > 30)
+  52              		.loc 1 22 5 view .LVU3
+  53              		.loc 1 22 8 is_stmt 0 view .LVU4
+  54 0010 B8F11E0F 		cmp	r8, #30
+  55 0014 01D9     		bls	.L6
+  56              	.LVL1:
+  57              	.L1:
+  23:Application/client_interact.c ****         return;
+  24:Application/client_interact.c ****     client_char->frame_header.Sof = 0xa5;
+  25:Application/client_interact.c ****     client_char->frame_header.data_length = 51;
+  26:Application/client_interact.c ****     client_char->frame_header.seq = 2;
+  27:Application/client_interact.c ****     memcpy(UI_SendBuf, client_char, 4);
+  28:Application/client_interact.c ****     client_char->frame_header.CRC8 = Get_CRC8_Check_Sum((unsigned char *)UI_SendBuf, 4, CRC8_INIT);
+  29:Application/client_interact.c ****     client_char->frame_header.cmd_id = ROBOT_COMMUICATE;     // 0x301?????
+  30:Application/client_interact.c ****     client_char->frame_header.content_id = ROBOT_DRAW_CHARA; //?????,ROBOT_DRAW_CHART_2???,??????,?
+  31:Application/client_interact.c ****     client_char->frame_header.sender_id = sender;            //??RED_INFANTRY_ID3
+  32:Application/client_interact.c ****     client_char->frame_header.receiver_id = receiver;        //??SERVER_RED_INFANTRY_ID3;
+  33:Application/client_interact.c **** 
+  34:Application/client_interact.c ****     client_char->graphic.operate_tpye = operate;     // 1??,??????
+  35:Application/client_interact.c ****     client_char->graphic.graphic_tpye = CLIENT_CHAR; //??
+  36:Application/client_interact.c ****     client_char->graphic.layer = layer;              //??
+  37:Application/client_interact.c ****     client_char->graphic.color = color;              //??
+  38:Application/client_interact.c ****     client_char->graphic.graphic_name[0] = '0';      //??
+  39:Application/client_interact.c ****     client_char->graphic.graphic_name[1] = '0' + 6;
+  40:Application/client_interact.c ****     client_char->graphic.graphic_name[2] = '0'+ layer;
+  41:Application/client_interact.c ****     client_char->graphic.width = 3;         //??
+  42:Application/client_interact.c ****     client_char->graphic.start_x = start_x; //??
+  43:Application/client_interact.c ****     client_char->graphic.start_y = start_y;
+  44:Application/client_interact.c ****     client_char->graphic.end_x = 0;
+  45:Application/client_interact.c ****     client_char->graphic.end_y = 0;
+  46:Application/client_interact.c ****     client_char->graphic.start_angle = size;
+  47:Application/client_interact.c ****     client_char->graphic.end_angle = buff_len;
+  48:Application/client_interact.c ****     memcpy(UI_SendBuf, client_char, sizeof(client_char_t));
+  49:Application/client_interact.c ****     memcpy(client_char->data, buff, buff_len);
+  50:Application/client_interact.c ****     crc_16 = Get_CRC16_Check_Sum(UI_SendBuf, 58, CRC_INIT);
+  51:Application/client_interact.c ****     client_char->frame_tail = crc_16;
+  52:Application/client_interact.c ****     memcpy(UI_SendBuf, client_char, sizeof(client_char_t));
+  53:Application/client_interact.c ****     if (HAL_UART_GetState(huart) != HAL_UART_STATE_BUSY_TX && (__HAL_UART_GET_FLAG(huart, UART_FLAG
+  54:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, UI_SendBuf, sizeof(client_char_t));
+  55:Application/client_interact.c **** }
+  58              		.loc 1 55 1 view .LVU5
+  59 0016 BDE8F88F 		pop	{r3, r4, r5, r6, r7, r8, r9, r10, fp, pc}
+  60              	.LVL2:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 3
+
+
+  61              	.L6:
+  62              		.loc 1 55 1 view .LVU6
+  63 001a 0646     		mov	r6, r0
+  64 001c 0C46     		mov	r4, r1
+  65 001e 1746     		mov	r7, r2
+  66 0020 9B46     		mov	fp, r3
+  24:Application/client_interact.c ****     client_char->frame_header.data_length = 51;
+  67              		.loc 1 24 5 is_stmt 1 view .LVU7
+  24:Application/client_interact.c ****     client_char->frame_header.data_length = 51;
+  68              		.loc 1 24 35 is_stmt 0 view .LVU8
+  69 0022 A523     		movs	r3, #165
+  70              	.LVL3:
+  24:Application/client_interact.c ****     client_char->frame_header.data_length = 51;
+  71              		.loc 1 24 35 view .LVU9
+  72 0024 0B70     		strb	r3, [r1]
+  25:Application/client_interact.c ****     client_char->frame_header.seq = 2;
+  73              		.loc 1 25 5 is_stmt 1 view .LVU10
+  25:Application/client_interact.c ****     client_char->frame_header.seq = 2;
+  74              		.loc 1 25 43 is_stmt 0 view .LVU11
+  75 0026 3323     		movs	r3, #51
+  76 0028 4B80     		strh	r3, [r1, #2]	@ movhi
+  26:Application/client_interact.c ****     memcpy(UI_SendBuf, client_char, 4);
+  77              		.loc 1 26 5 is_stmt 1 view .LVU12
+  26:Application/client_interact.c ****     memcpy(UI_SendBuf, client_char, 4);
+  78              		.loc 1 26 35 is_stmt 0 view .LVU13
+  79 002a 0223     		movs	r3, #2
+  80 002c 0B71     		strb	r3, [r1, #4]
+  27:Application/client_interact.c ****     client_char->frame_header.CRC8 = Get_CRC8_Check_Sum((unsigned char *)UI_SendBuf, 4, CRC8_INIT);
+  81              		.loc 1 27 5 is_stmt 1 view .LVU14
+  82 002e 0B68     		ldr	r3, [r1]	@ unaligned
+  83 0030 5B4D     		ldr	r5, .L7
+  84 0032 2B60     		str	r3, [r5]
+  28:Application/client_interact.c ****     client_char->frame_header.cmd_id = ROBOT_COMMUICATE;     // 0x301?????
+  85              		.loc 1 28 5 view .LVU15
+  28:Application/client_interact.c ****     client_char->frame_header.cmd_id = ROBOT_COMMUICATE;     // 0x301?????
+  86              		.loc 1 28 38 is_stmt 0 view .LVU16
+  87 0034 5B4B     		ldr	r3, .L7+4
+  88 0036 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+  89              	.LVL4:
+  28:Application/client_interact.c ****     client_char->frame_header.cmd_id = ROBOT_COMMUICATE;     // 0x301?????
+  90              		.loc 1 28 38 view .LVU17
+  91 0038 0421     		movs	r1, #4
+  92              	.LVL5:
+  28:Application/client_interact.c ****     client_char->frame_header.cmd_id = ROBOT_COMMUICATE;     // 0x301?????
+  93              		.loc 1 28 38 view .LVU18
+  94 003a 2846     		mov	r0, r5
+  95              	.LVL6:
+  28:Application/client_interact.c ****     client_char->frame_header.cmd_id = ROBOT_COMMUICATE;     // 0x301?????
+  96              		.loc 1 28 38 view .LVU19
+  97 003c FFF7FEFF 		bl	Get_CRC8_Check_Sum
+  98              	.LVL7:
+  28:Application/client_interact.c ****     client_char->frame_header.cmd_id = ROBOT_COMMUICATE;     // 0x301?????
+  99              		.loc 1 28 36 view .LVU20
+ 100 0040 6071     		strb	r0, [r4, #5]
+  29:Application/client_interact.c ****     client_char->frame_header.content_id = ROBOT_DRAW_CHARA; //?????,ROBOT_DRAW_CHART_2???,??????,?
+ 101              		.loc 1 29 5 is_stmt 1 view .LVU21
+  29:Application/client_interact.c ****     client_char->frame_header.content_id = ROBOT_DRAW_CHARA; //?????,ROBOT_DRAW_CHART_2???,??????,?
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 4
+
+
+ 102              		.loc 1 29 38 is_stmt 0 view .LVU22
+ 103 0042 40F20133 		movw	r3, #769
+ 104 0046 E380     		strh	r3, [r4, #6]	@ movhi
+  30:Application/client_interact.c ****     client_char->frame_header.sender_id = sender;            //??RED_INFANTRY_ID3
+ 105              		.loc 1 30 5 is_stmt 1 view .LVU23
+  30:Application/client_interact.c ****     client_char->frame_header.sender_id = sender;            //??RED_INFANTRY_ID3
+ 106              		.loc 1 30 42 is_stmt 0 view .LVU24
+ 107 0048 4FF48873 		mov	r3, #272
+ 108 004c 2381     		strh	r3, [r4, #8]	@ movhi
+  31:Application/client_interact.c ****     client_char->frame_header.receiver_id = receiver;        //??SERVER_RED_INFANTRY_ID3;
+ 109              		.loc 1 31 5 is_stmt 1 view .LVU25
+  31:Application/client_interact.c ****     client_char->frame_header.receiver_id = receiver;        //??SERVER_RED_INFANTRY_ID3;
+ 110              		.loc 1 31 41 is_stmt 0 view .LVU26
+ 111 004e BDF83430 		ldrh	r3, [sp, #52]
+ 112 0052 6381     		strh	r3, [r4, #10]	@ movhi
+  32:Application/client_interact.c **** 
+ 113              		.loc 1 32 5 is_stmt 1 view .LVU27
+  32:Application/client_interact.c **** 
+ 114              		.loc 1 32 43 is_stmt 0 view .LVU28
+ 115 0054 BDF83830 		ldrh	r3, [sp, #56]
+ 116 0058 A381     		strh	r3, [r4, #12]	@ movhi
+  34:Application/client_interact.c ****     client_char->graphic.graphic_tpye = CLIENT_CHAR; //??
+ 117              		.loc 1 34 5 is_stmt 1 view .LVU29
+  34:Application/client_interact.c ****     client_char->graphic.graphic_tpye = CLIENT_CHAR; //??
+ 118              		.loc 1 34 39 is_stmt 0 view .LVU30
+ 119 005a E37C     		ldrb	r3, [r4, #19]	@ zero_extendqisi2
+ 120 005c 6BF30203 		bfi	r3, fp, #0, #3
+ 121 0060 E374     		strb	r3, [r4, #19]
+  35:Application/client_interact.c ****     client_char->graphic.layer = layer;              //??
+ 122              		.loc 1 35 5 is_stmt 1 view .LVU31
+  35:Application/client_interact.c ****     client_char->graphic.layer = layer;              //??
+ 123              		.loc 1 35 39 is_stmt 0 view .LVU32
+ 124 0062 DBB2     		uxtb	r3, r3
+ 125 0064 43F03803 		orr	r3, r3, #56
+ 126 0068 E374     		strb	r3, [r4, #19]
+  36:Application/client_interact.c ****     client_char->graphic.color = color;              //??
+ 127              		.loc 1 36 5 is_stmt 1 view .LVU33
+  36:Application/client_interact.c ****     client_char->graphic.color = color;              //??
+ 128              		.loc 1 36 32 is_stmt 0 view .LVU34
+ 129 006a 237D     		ldrb	r3, [r4, #20]	@ zero_extendqisi2
+ 130 006c 67F30303 		bfi	r3, r7, #0, #4
+ 131              	.LVL8:
+  36:Application/client_interact.c ****     client_char->graphic.color = color;              //??
+ 132              		.loc 1 36 32 view .LVU35
+ 133 0070 2375     		strb	r3, [r4, #20]
+ 134              	.LVL9:
+  37:Application/client_interact.c ****     client_char->graphic.graphic_name[0] = '0';      //??
+ 135              		.loc 1 37 5 is_stmt 1 view .LVU36
+  37:Application/client_interact.c ****     client_char->graphic.graphic_name[0] = '0';      //??
+ 136              		.loc 1 37 32 is_stmt 0 view .LVU37
+ 137 0072 DBB2     		uxtb	r3, r3
+ 138 0074 9DF84420 		ldrb	r2, [sp, #68]	@ zero_extendqisi2
+ 139 0078 62F30713 		bfi	r3, r2, #4, #4
+ 140 007c 2375     		strb	r3, [r4, #20]
+  38:Application/client_interact.c ****     client_char->graphic.graphic_name[1] = '0' + 6;
+ 141              		.loc 1 38 5 is_stmt 1 view .LVU38
+  38:Application/client_interact.c ****     client_char->graphic.graphic_name[1] = '0' + 6;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 5
+
+
+ 142              		.loc 1 38 42 is_stmt 0 view .LVU39
+ 143 007e 3023     		movs	r3, #48
+ 144 0080 2374     		strb	r3, [r4, #16]
+  39:Application/client_interact.c ****     client_char->graphic.graphic_name[2] = '0'+ layer;
+ 145              		.loc 1 39 5 is_stmt 1 view .LVU40
+  39:Application/client_interact.c ****     client_char->graphic.graphic_name[2] = '0'+ layer;
+ 146              		.loc 1 39 42 is_stmt 0 view .LVU41
+ 147 0082 3623     		movs	r3, #54
+ 148 0084 6374     		strb	r3, [r4, #17]
+  40:Application/client_interact.c ****     client_char->graphic.width = 3;         //??
+ 149              		.loc 1 40 5 is_stmt 1 view .LVU42
+  40:Application/client_interact.c ****     client_char->graphic.width = 3;         //??
+ 150              		.loc 1 40 47 is_stmt 0 view .LVU43
+ 151 0086 3037     		adds	r7, r7, #48
+  40:Application/client_interact.c ****     client_char->graphic.width = 3;         //??
+ 152              		.loc 1 40 42 view .LVU44
+ 153 0088 A774     		strb	r7, [r4, #18]
+  41:Application/client_interact.c ****     client_char->graphic.start_x = start_x; //??
+ 154              		.loc 1 41 5 is_stmt 1 view .LVU45
+  41:Application/client_interact.c ****     client_char->graphic.start_x = start_x; //??
+ 155              		.loc 1 41 32 is_stmt 0 view .LVU46
+ 156 008a 0323     		movs	r3, #3
+ 157 008c 2376     		strb	r3, [r4, #24]
+ 158 008e 637E     		ldrb	r3, [r4, #25]	@ zero_extendqisi2
+ 159 0090 23F00303 		bic	r3, r3, #3
+ 160 0094 6376     		strb	r3, [r4, #25]
+  42:Application/client_interact.c ****     client_char->graphic.start_y = start_y;
+ 161              		.loc 1 42 5 is_stmt 1 view .LVU47
+  42:Application/client_interact.c ****     client_char->graphic.start_y = start_y;
+ 162              		.loc 1 42 34 is_stmt 0 view .LVU48
+ 163 0096 0AF03F02 		and	r2, r10, #63
+ 164 009a DBB2     		uxtb	r3, r3
+ 165 009c 03F00303 		and	r3, r3, #3
+ 166 00a0 43EA8203 		orr	r3, r3, r2, lsl #2
+ 167 00a4 6376     		strb	r3, [r4, #25]
+ 168 00a6 CAF38413 		ubfx	r3, r10, #6, #5
+ 169 00aa A27E     		ldrb	r2, [r4, #26]	@ zero_extendqisi2
+ 170 00ac 22F01F02 		bic	r2, r2, #31
+ 171 00b0 1343     		orrs	r3, r3, r2
+ 172 00b2 A376     		strb	r3, [r4, #26]
+  43:Application/client_interact.c ****     client_char->graphic.end_x = 0;
+ 173              		.loc 1 43 5 is_stmt 1 view .LVU49
+  43:Application/client_interact.c ****     client_char->graphic.end_x = 0;
+ 174              		.loc 1 43 34 is_stmt 0 view .LVU50
+ 175 00b4 09F00702 		and	r2, r9, #7
+ 176 00b8 DBB2     		uxtb	r3, r3
+ 177 00ba 03F01F03 		and	r3, r3, #31
+ 178 00be 43EA4213 		orr	r3, r3, r2, lsl #5
+ 179 00c2 A376     		strb	r3, [r4, #26]
+ 180 00c4 C9F3C703 		ubfx	r3, r9, #3, #8
+ 181 00c8 E376     		strb	r3, [r4, #27]
+  44:Application/client_interact.c ****     client_char->graphic.end_y = 0;
+ 182              		.loc 1 44 5 is_stmt 1 view .LVU51
+  44:Application/client_interact.c ****     client_char->graphic.end_y = 0;
+ 183              		.loc 1 44 32 is_stmt 0 view .LVU52
+ 184 00ca 637F     		ldrb	r3, [r4, #29]	@ zero_extendqisi2
+ 185 00cc 03F00303 		and	r3, r3, #3
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 6
+
+
+ 186 00d0 6377     		strb	r3, [r4, #29]
+ 187 00d2 A37F     		ldrb	r3, [r4, #30]	@ zero_extendqisi2
+ 188 00d4 23F01F03 		bic	r3, r3, #31
+ 189 00d8 A377     		strb	r3, [r4, #30]
+  45:Application/client_interact.c ****     client_char->graphic.start_angle = size;
+ 190              		.loc 1 45 5 is_stmt 1 view .LVU53
+  45:Application/client_interact.c ****     client_char->graphic.start_angle = size;
+ 191              		.loc 1 45 32 is_stmt 0 view .LVU54
+ 192 00da DBB2     		uxtb	r3, r3
+ 193 00dc 03F01F03 		and	r3, r3, #31
+ 194 00e0 A377     		strb	r3, [r4, #30]
+ 195 00e2 0023     		movs	r3, #0
+ 196 00e4 E377     		strb	r3, [r4, #31]
+  46:Application/client_interact.c ****     client_char->graphic.end_angle = buff_len;
+ 197              		.loc 1 46 5 is_stmt 1 view .LVU55
+  46:Application/client_interact.c ****     client_char->graphic.end_angle = buff_len;
+ 198              		.loc 1 46 38 is_stmt 0 view .LVU56
+ 199 00e6 9DF83030 		ldrb	r3, [sp, #48]	@ zero_extendqisi2
+ 200 00ea 6375     		strb	r3, [r4, #21]
+ 201 00ec A37D     		ldrb	r3, [r4, #22]	@ zero_extendqisi2
+ 202 00ee 03F0FE03 		and	r3, r3, #254
+ 203 00f2 A375     		strb	r3, [r4, #22]
+  47:Application/client_interact.c ****     memcpy(UI_SendBuf, client_char, sizeof(client_char_t));
+ 204              		.loc 1 47 5 is_stmt 1 view .LVU57
+  47:Application/client_interact.c ****     memcpy(UI_SendBuf, client_char, sizeof(client_char_t));
+ 205              		.loc 1 47 36 is_stmt 0 view .LVU58
+ 206 00f4 08F07F03 		and	r3, r8, #127
+ 207 00f8 A27D     		ldrb	r2, [r4, #22]	@ zero_extendqisi2
+ 208 00fa 02F00102 		and	r2, r2, #1
+ 209 00fe 42EA4302 		orr	r2, r2, r3, lsl #1
+ 210 0102 A275     		strb	r2, [r4, #22]
+ 211 0104 E37D     		ldrb	r3, [r4, #23]	@ zero_extendqisi2
+ 212 0106 23F00303 		bic	r3, r3, #3
+ 213 010a 43EAD813 		orr	r3, r3, r8, lsr #7
+ 214 010e E375     		strb	r3, [r4, #23]
+  48:Application/client_interact.c ****     memcpy(client_char->data, buff, buff_len);
+ 215              		.loc 1 48 5 is_stmt 1 view .LVU59
+ 216 0110 A446     		mov	ip, r4
+ 217 0112 04F14007 		add	r7, r4, #64
+ 218              	.L3:
+  48:Application/client_interact.c ****     memcpy(client_char->data, buff, buff_len);
+ 219              		.loc 1 48 5 is_stmt 0 view .LVU60
+ 220 0116 AE46     		mov	lr, r5
+ 221 0118 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 222 011c DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 223 0120 DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 224 0124 DCF80C30 		ldr	r3, [ip, #12]	@ unaligned
+ 225 0128 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 226 012c 0CF1100C 		add	ip, ip, #16
+ 227 0130 7546     		mov	r5, lr
+ 228 0132 BC45     		cmp	ip, r7
+ 229 0134 EFD1     		bne	.L3
+  49:Application/client_interact.c ****     crc_16 = Get_CRC16_Check_Sum(UI_SendBuf, 58, CRC_INIT);
+ 230              		.loc 1 49 5 is_stmt 1 view .LVU61
+ 231 0136 4246     		mov	r2, r8
+ 232 0138 0F99     		ldr	r1, [sp, #60]
+ 233 013a 04F12000 		add	r0, r4, #32
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 7
+
+
+ 234 013e FFF7FEFF 		bl	memcpy
+ 235              	.LVL10:
+  50:Application/client_interact.c ****     client_char->frame_tail = crc_16;
+ 236              		.loc 1 50 5 view .LVU62
+  50:Application/client_interact.c ****     client_char->frame_tail = crc_16;
+ 237              		.loc 1 50 14 is_stmt 0 view .LVU63
+ 238 0142 174D     		ldr	r5, .L7
+ 239 0144 184B     		ldr	r3, .L7+8
+ 240 0146 1A88     		ldrh	r2, [r3]
+ 241 0148 3A21     		movs	r1, #58
+ 242 014a 2846     		mov	r0, r5
+ 243 014c FFF7FEFF 		bl	Get_CRC16_Check_Sum
+ 244              	.LVL11:
+  50:Application/client_interact.c ****     client_char->frame_tail = crc_16;
+ 245              		.loc 1 50 12 view .LVU64
+ 246 0150 164B     		ldr	r3, .L7+12
+ 247 0152 1880     		strh	r0, [r3]	@ movhi
+  51:Application/client_interact.c ****     memcpy(UI_SendBuf, client_char, sizeof(client_char_t));
+ 248              		.loc 1 51 5 is_stmt 1 view .LVU65
+  51:Application/client_interact.c ****     memcpy(UI_SendBuf, client_char, sizeof(client_char_t));
+ 249              		.loc 1 51 29 is_stmt 0 view .LVU66
+ 250 0154 E087     		strh	r0, [r4, #62]	@ movhi
+  52:Application/client_interact.c ****     if (HAL_UART_GetState(huart) != HAL_UART_STATE_BUSY_TX && (__HAL_UART_GET_FLAG(huart, UART_FLAG
+ 251              		.loc 1 52 5 is_stmt 1 view .LVU67
+ 252 0156 A446     		mov	ip, r4
+ 253 0158 4034     		adds	r4, r4, #64
+ 254              	.LVL12:
+ 255              	.L4:
+  52:Application/client_interact.c ****     if (HAL_UART_GetState(huart) != HAL_UART_STATE_BUSY_TX && (__HAL_UART_GET_FLAG(huart, UART_FLAG
+ 256              		.loc 1 52 5 is_stmt 0 view .LVU68
+ 257 015a AE46     		mov	lr, r5
+ 258 015c DCF80000 		ldr	r0, [ip]	@ unaligned
+ 259 0160 DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 260 0164 DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 261 0168 DCF80C30 		ldr	r3, [ip, #12]	@ unaligned
+ 262 016c AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 263 0170 0CF1100C 		add	ip, ip, #16
+ 264 0174 7546     		mov	r5, lr
+ 265 0176 A445     		cmp	ip, r4
+ 266 0178 EFD1     		bne	.L4
+  53:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, UI_SendBuf, sizeof(client_char_t));
+ 267              		.loc 1 53 5 is_stmt 1 view .LVU69
+  53:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, UI_SendBuf, sizeof(client_char_t));
+ 268              		.loc 1 53 9 is_stmt 0 view .LVU70
+ 269 017a 3046     		mov	r0, r6
+ 270 017c FFF7FEFF 		bl	HAL_UART_GetState
+ 271              	.LVL13:
+  53:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, UI_SendBuf, sizeof(client_char_t));
+ 272              		.loc 1 53 8 view .LVU71
+ 273 0180 2128     		cmp	r0, #33
+ 274 0182 3FF448AF 		beq	.L1
+  53:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, UI_SendBuf, sizeof(client_char_t));
+ 275              		.loc 1 53 64 discriminator 1 view .LVU72
+ 276 0186 3368     		ldr	r3, [r6]
+ 277 0188 1B68     		ldr	r3, [r3]
+  53:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, UI_SendBuf, sizeof(client_char_t));
+ 278              		.loc 1 53 60 discriminator 1 view .LVU73
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 8
+
+
+ 279 018a 13F0400F 		tst	r3, #64
+ 280 018e 3FF442AF 		beq	.L1
+  54:Application/client_interact.c **** }
+ 281              		.loc 1 54 9 is_stmt 1 view .LVU74
+ 282 0192 4022     		movs	r2, #64
+ 283 0194 0249     		ldr	r1, .L7
+ 284 0196 3046     		mov	r0, r6
+ 285 0198 FFF7FEFF 		bl	HAL_UART_Transmit_DMA
+ 286              	.LVL14:
+ 287 019c 3BE7     		b	.L1
+ 288              	.L8:
+ 289 019e 00BF     		.align	2
+ 290              	.L7:
+ 291 01a0 00000000 		.word	.LANCHOR0
+ 292 01a4 00000000 		.word	CRC8_INIT
+ 293 01a8 00000000 		.word	CRC_INIT
+ 294 01ac 00000000 		.word	.LANCHOR1
+ 295              		.cfi_endproc
+ 296              	.LFE130:
+ 298              		.section	.text.Line_Generate,"ax",%progbits
+ 299              		.align	1
+ 300              		.global	Line_Generate
+ 301              		.syntax unified
+ 302              		.thumb
+ 303              		.thumb_func
+ 305              	Line_Generate:
+ 306              	.LVL15:
+ 307              	.LFB131:
+  56:Application/client_interact.c **** 
+  57:Application/client_interact.c **** void Line_Generate(graphic_data_struct_t *line, uint8_t layer, uint8_t name, uint8_t operate, uint1
+  58:Application/client_interact.c **** {
+ 308              		.loc 1 58 1 view -0
+ 309              		.cfi_startproc
+ 310              		@ args = 24, pretend = 0, frame = 0
+ 311              		@ frame_needed = 0, uses_anonymous_args = 0
+ 312              		.loc 1 58 1 is_stmt 0 view .LVU76
+ 313 0000 70B5     		push	{r4, r5, r6, lr}
+ 314              	.LCFI1:
+ 315              		.cfi_def_cfa_offset 16
+ 316              		.cfi_offset 4, -16
+ 317              		.cfi_offset 5, -12
+ 318              		.cfi_offset 6, -8
+ 319              		.cfi_offset 14, -4
+ 320 0002 BDF81050 		ldrh	r5, [sp, #16]
+ 321 0006 BDF81440 		ldrh	r4, [sp, #20]
+ 322 000a BDF818E0 		ldrh	lr, [sp, #24]
+ 323 000e BDF81CC0 		ldrh	ip, [sp, #28]
+  59:Application/client_interact.c ****     line->operate_tpye = operate;     // 1Ôö¼Ó,ÐÞ¸Ä»¹ÊÇÉ¾³ý
+ 324              		.loc 1 59 5 is_stmt 1 view .LVU77
+ 325              		.loc 1 59 24 is_stmt 0 view .LVU78
+ 326 0012 C678     		ldrb	r6, [r0, #3]	@ zero_extendqisi2
+ 327 0014 63F30206 		bfi	r6, r3, #0, #3
+ 328 0018 C670     		strb	r6, [r0, #3]
+  60:Application/client_interact.c ****     line->graphic_tpye = CLIENT_LINE; //Ö±Ïß
+ 329              		.loc 1 60 5 is_stmt 1 view .LVU79
+ 330              		.loc 1 60 24 is_stmt 0 view .LVU80
+ 331 001a F3B2     		uxtb	r3, r6
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 9
+
+
+ 332              	.LVL16:
+ 333              		.loc 1 60 24 view .LVU81
+ 334 001c 6FF3C503 		bfc	r3, #3, #3
+ 335 0020 C370     		strb	r3, [r0, #3]
+  61:Application/client_interact.c ****     line->layer = layer;              //Í¼²ã
+ 336              		.loc 1 61 5 is_stmt 1 view .LVU82
+ 337              		.loc 1 61 17 is_stmt 0 view .LVU83
+ 338 0022 0379     		ldrb	r3, [r0, #4]	@ zero_extendqisi2
+ 339 0024 61F30303 		bfi	r3, r1, #0, #4
+ 340              	.LVL17:
+ 341              		.loc 1 61 17 view .LVU84
+ 342 0028 0371     		strb	r3, [r0, #4]
+ 343              	.LVL18:
+  62:Application/client_interact.c ****     line->color = color;              //ÑÕÉ«
+ 344              		.loc 1 62 5 is_stmt 1 view .LVU85
+ 345              		.loc 1 62 17 is_stmt 0 view .LVU86
+ 346 002a DBB2     		uxtb	r3, r3
+ 347 002c 9DF82460 		ldrb	r6, [sp, #36]	@ zero_extendqisi2
+ 348 0030 66F30713 		bfi	r3, r6, #4, #4
+ 349              		.loc 1 62 17 view .LVU87
+ 350 0034 0371     		strb	r3, [r0, #4]
+  63:Application/client_interact.c ****     line->graphic_name[0] = '0';      //Ãû³Æ
+ 351              		.loc 1 63 5 is_stmt 1 view .LVU88
+ 352              		.loc 1 63 27 is_stmt 0 view .LVU89
+ 353 0036 3023     		movs	r3, #48
+ 354 0038 0370     		strb	r3, [r0]
+  64:Application/client_interact.c ****     line->graphic_name[1] = '0' + layer;
+ 355              		.loc 1 64 5 is_stmt 1 view .LVU90
+ 356              		.loc 1 64 33 is_stmt 0 view .LVU91
+ 357 003a 1944     		add	r1, r1, r3
+ 358              		.loc 1 64 27 view .LVU92
+ 359 003c 4170     		strb	r1, [r0, #1]
+  65:Application/client_interact.c ****     line->graphic_name[2] = '0' + name;
+ 360              		.loc 1 65 5 is_stmt 1 view .LVU93
+ 361              		.loc 1 65 33 is_stmt 0 view .LVU94
+ 362 003e 1A44     		add	r2, r2, r3
+ 363              	.LVL19:
+ 364              		.loc 1 65 27 view .LVU95
+ 365 0040 8270     		strb	r2, [r0, #2]
+  66:Application/client_interact.c ****     line->width = width;     //Ïß¿í
+ 366              		.loc 1 66 5 is_stmt 1 view .LVU96
+ 367              		.loc 1 66 17 is_stmt 0 view .LVU97
+ 368 0042 9DF82030 		ldrb	r3, [sp, #32]	@ zero_extendqisi2
+ 369 0046 0372     		strb	r3, [r0, #8]
+ 370 0048 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+ 371 004a 03F0FC03 		and	r3, r3, #252
+ 372 004e 4372     		strb	r3, [r0, #9]
+  67:Application/client_interact.c ****     line->start_x = start_x; //Æðµãx×ø±ê
+ 373              		.loc 1 67 5 is_stmt 1 view .LVU98
+ 374              		.loc 1 67 19 is_stmt 0 view .LVU99
+ 375 0050 05F03F03 		and	r3, r5, #63
+ 376 0054 417A     		ldrb	r1, [r0, #9]	@ zero_extendqisi2
+ 377 0056 01F00301 		and	r1, r1, #3
+ 378 005a 41EA8301 		orr	r1, r1, r3, lsl #2
+ 379 005e 4172     		strb	r1, [r0, #9]
+ 380 0060 C5F38413 		ubfx	r3, r5, #6, #5
+ 381 0064 827A     		ldrb	r2, [r0, #10]	@ zero_extendqisi2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 10
+
+
+ 382 0066 22F01F02 		bic	r2, r2, #31
+ 383 006a 1A43     		orrs	r2, r2, r3
+ 384 006c 8272     		strb	r2, [r0, #10]
+  68:Application/client_interact.c ****     line->start_y = start_y; //Æðµãy×ø±ê
+ 385              		.loc 1 68 5 is_stmt 1 view .LVU100
+ 386              		.loc 1 68 19 is_stmt 0 view .LVU101
+ 387 006e 04F00703 		and	r3, r4, #7
+ 388 0072 D2B2     		uxtb	r2, r2
+ 389 0074 02F01F02 		and	r2, r2, #31
+ 390 0078 42EA4312 		orr	r2, r2, r3, lsl #5
+ 391 007c 8272     		strb	r2, [r0, #10]
+ 392 007e C4F3C704 		ubfx	r4, r4, #3, #8
+ 393 0082 C472     		strb	r4, [r0, #11]
+  69:Application/client_interact.c ****     line->end_x = end_x;     //ÖÕµãx×ø±ê
+ 394              		.loc 1 69 5 is_stmt 1 view .LVU102
+ 395              		.loc 1 69 17 is_stmt 0 view .LVU103
+ 396 0084 0EF03F03 		and	r3, lr, #63
+ 397 0088 427B     		ldrb	r2, [r0, #13]	@ zero_extendqisi2
+ 398 008a 02F00302 		and	r2, r2, #3
+ 399 008e 42EA8302 		orr	r2, r2, r3, lsl #2
+ 400 0092 4273     		strb	r2, [r0, #13]
+ 401 0094 CEF3841E 		ubfx	lr, lr, #6, #5
+ 402 0098 837B     		ldrb	r3, [r0, #14]	@ zero_extendqisi2
+ 403 009a 23F01F03 		bic	r3, r3, #31
+ 404 009e 43EA0E03 		orr	r3, r3, lr
+ 405 00a2 8373     		strb	r3, [r0, #14]
+  70:Application/client_interact.c ****     line->end_y = end_y;     //ÖÕµãy×ø±ê
+ 406              		.loc 1 70 5 is_stmt 1 view .LVU104
+ 407              		.loc 1 70 17 is_stmt 0 view .LVU105
+ 408 00a4 0CF00702 		and	r2, ip, #7
+ 409 00a8 DBB2     		uxtb	r3, r3
+ 410 00aa 03F01F03 		and	r3, r3, #31
+ 411 00ae 43EA4213 		orr	r3, r3, r2, lsl #5
+ 412 00b2 8373     		strb	r3, [r0, #14]
+ 413 00b4 CCF3C70C 		ubfx	ip, ip, #3, #8
+ 414 00b8 80F80FC0 		strb	ip, [r0, #15]
+  71:Application/client_interact.c **** }
+ 415              		.loc 1 71 1 view .LVU106
+ 416 00bc 70BD     		pop	{r4, r5, r6, pc}
+ 417              		.cfi_endproc
+ 418              	.LFE131:
+ 420              		.section	.text.circular_Generate,"ax",%progbits
+ 421              		.align	1
+ 422              		.global	circular_Generate
+ 423              		.syntax unified
+ 424              		.thumb
+ 425              		.thumb_func
+ 427              	circular_Generate:
+ 428              	.LVL20:
+ 429              	.LFB132:
+  72:Application/client_interact.c **** 
+  73:Application/client_interact.c **** void circular_Generate(graphic_data_struct_t *circular, uint8_t layer, uint8_t name, uint8_t operat
+  74:Application/client_interact.c **** {
+ 430              		.loc 1 74 1 is_stmt 1 view -0
+ 431              		.cfi_startproc
+ 432              		@ args = 20, pretend = 0, frame = 0
+ 433              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 11
+
+
+ 434              		.loc 1 74 1 is_stmt 0 view .LVU108
+ 435 0000 30B5     		push	{r4, r5, lr}
+ 436              	.LCFI2:
+ 437              		.cfi_def_cfa_offset 12
+ 438              		.cfi_offset 4, -12
+ 439              		.cfi_offset 5, -8
+ 440              		.cfi_offset 14, -4
+ 441 0002 BDF80C40 		ldrh	r4, [sp, #12]
+ 442 0006 BDF810E0 		ldrh	lr, [sp, #16]
+ 443 000a BDF814C0 		ldrh	ip, [sp, #20]
+  75:Application/client_interact.c ****     circular->operate_tpye = operate;         // 1Ôö¼Ó,ÐÞ¸Ä»¹ÊÇÉ¾³ý
+ 444              		.loc 1 75 5 is_stmt 1 view .LVU109
+ 445              		.loc 1 75 28 is_stmt 0 view .LVU110
+ 446 000e C578     		ldrb	r5, [r0, #3]	@ zero_extendqisi2
+ 447 0010 63F30205 		bfi	r5, r3, #0, #3
+ 448 0014 C570     		strb	r5, [r0, #3]
+  76:Application/client_interact.c ****     circular->graphic_tpye = CLIENT_CIRCULAR; //ÕýÔ²
+ 449              		.loc 1 76 5 is_stmt 1 view .LVU111
+ 450              		.loc 1 76 28 is_stmt 0 view .LVU112
+ 451 0016 EBB2     		uxtb	r3, r5
+ 452              	.LVL21:
+ 453              		.loc 1 76 28 view .LVU113
+ 454 0018 0225     		movs	r5, #2
+ 455 001a 65F3C503 		bfi	r3, r5, #3, #3
+ 456 001e C370     		strb	r3, [r0, #3]
+  77:Application/client_interact.c ****     circular->layer = layer;                  //Í¼²ã
+ 457              		.loc 1 77 5 is_stmt 1 view .LVU114
+ 458              		.loc 1 77 21 is_stmt 0 view .LVU115
+ 459 0020 0379     		ldrb	r3, [r0, #4]	@ zero_extendqisi2
+ 460 0022 61F30303 		bfi	r3, r1, #0, #4
+ 461              	.LVL22:
+ 462              		.loc 1 77 21 view .LVU116
+ 463 0026 0371     		strb	r3, [r0, #4]
+ 464              	.LVL23:
+  78:Application/client_interact.c ****     circular->color = color;                  //ÑÕÉ«
+ 465              		.loc 1 78 5 is_stmt 1 view .LVU117
+ 466              		.loc 1 78 21 is_stmt 0 view .LVU118
+ 467 0028 DBB2     		uxtb	r3, r3
+ 468 002a 9DF81C50 		ldrb	r5, [sp, #28]	@ zero_extendqisi2
+ 469 002e 65F30713 		bfi	r3, r5, #4, #4
+ 470              		.loc 1 78 21 view .LVU119
+ 471 0032 0371     		strb	r3, [r0, #4]
+  79:Application/client_interact.c ****     circular->graphic_name[0] = '0';          //Ãû³Æ
+ 472              		.loc 1 79 5 is_stmt 1 view .LVU120
+ 473              		.loc 1 79 31 is_stmt 0 view .LVU121
+ 474 0034 3023     		movs	r3, #48
+ 475 0036 0370     		strb	r3, [r0]
+  80:Application/client_interact.c ****     circular->graphic_name[1] = '0' + layer;
+ 476              		.loc 1 80 5 is_stmt 1 view .LVU122
+ 477              		.loc 1 80 37 is_stmt 0 view .LVU123
+ 478 0038 1944     		add	r1, r1, r3
+ 479              		.loc 1 80 31 view .LVU124
+ 480 003a 4170     		strb	r1, [r0, #1]
+  81:Application/client_interact.c ****     circular->graphic_name[2] = '0' + name;
+ 481              		.loc 1 81 5 is_stmt 1 view .LVU125
+ 482              		.loc 1 81 37 is_stmt 0 view .LVU126
+ 483 003c 1A44     		add	r2, r2, r3
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 12
+
+
+ 484              	.LVL24:
+ 485              		.loc 1 81 31 view .LVU127
+ 486 003e 8270     		strb	r2, [r0, #2]
+  82:Application/client_interact.c ****     circular->width = width;      //Ïß¿í
+ 487              		.loc 1 82 5 is_stmt 1 view .LVU128
+ 488              		.loc 1 82 21 is_stmt 0 view .LVU129
+ 489 0040 9DF81830 		ldrb	r3, [sp, #24]	@ zero_extendqisi2
+ 490 0044 0372     		strb	r3, [r0, #8]
+ 491 0046 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+ 492 0048 03F0FC03 		and	r3, r3, #252
+ 493 004c 4372     		strb	r3, [r0, #9]
+  83:Application/client_interact.c ****     circular->start_x = center_x; //Ô²ÐÄx×ø±ê
+ 494              		.loc 1 83 5 is_stmt 1 view .LVU130
+ 495              		.loc 1 83 23 is_stmt 0 view .LVU131
+ 496 004e 04F03F03 		and	r3, r4, #63
+ 497 0052 417A     		ldrb	r1, [r0, #9]	@ zero_extendqisi2
+ 498 0054 01F00301 		and	r1, r1, #3
+ 499 0058 41EA8301 		orr	r1, r1, r3, lsl #2
+ 500 005c 4172     		strb	r1, [r0, #9]
+ 501 005e C4F38413 		ubfx	r3, r4, #6, #5
+ 502 0062 827A     		ldrb	r2, [r0, #10]	@ zero_extendqisi2
+ 503 0064 22F01F02 		bic	r2, r2, #31
+ 504 0068 1A43     		orrs	r2, r2, r3
+ 505 006a 8272     		strb	r2, [r0, #10]
+  84:Application/client_interact.c ****     circular->start_y = center_y; //Ô²ÐÄy×ø±ê
+ 506              		.loc 1 84 5 is_stmt 1 view .LVU132
+ 507              		.loc 1 84 23 is_stmt 0 view .LVU133
+ 508 006c 0EF00703 		and	r3, lr, #7
+ 509 0070 D2B2     		uxtb	r2, r2
+ 510 0072 02F01F02 		and	r2, r2, #31
+ 511 0076 42EA4312 		orr	r2, r2, r3, lsl #5
+ 512 007a 8272     		strb	r2, [r0, #10]
+ 513 007c CEF3C70E 		ubfx	lr, lr, #3, #8
+ 514 0080 80F80BE0 		strb	lr, [r0, #11]
+  85:Application/client_interact.c ****     circular->radius = radius;    //°ë¾¶
+ 515              		.loc 1 85 5 is_stmt 1 view .LVU134
+ 516              		.loc 1 85 22 is_stmt 0 view .LVU135
+ 517 0084 80F80CC0 		strb	ip, [r0, #12]
+ 518 0088 CCF3012C 		ubfx	ip, ip, #8, #2
+ 519 008c 437B     		ldrb	r3, [r0, #13]	@ zero_extendqisi2
+ 520 008e 23F00303 		bic	r3, r3, #3
+ 521 0092 43EA0C03 		orr	r3, r3, ip
+ 522 0096 4373     		strb	r3, [r0, #13]
+  86:Application/client_interact.c **** }
+ 523              		.loc 1 86 1 view .LVU136
+ 524 0098 30BD     		pop	{r4, r5, pc}
+ 525              		.cfi_endproc
+ 526              	.LFE132:
+ 528              		.section	.text.rect_Generate,"ax",%progbits
+ 529              		.align	1
+ 530              		.global	rect_Generate
+ 531              		.syntax unified
+ 532              		.thumb
+ 533              		.thumb_func
+ 535              	rect_Generate:
+ 536              	.LVL25:
+ 537              	.LFB133:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 13
+
+
+  87:Application/client_interact.c **** 
+  88:Application/client_interact.c **** //¾ØÐÎ
+  89:Application/client_interact.c **** void rect_Generate(graphic_data_struct_t *rect, uint8_t layer, uint8_t name, uint8_t operate, uint1
+  90:Application/client_interact.c **** {
+ 538              		.loc 1 90 1 is_stmt 1 view -0
+ 539              		.cfi_startproc
+ 540              		@ args = 24, pretend = 0, frame = 0
+ 541              		@ frame_needed = 0, uses_anonymous_args = 0
+ 542              		.loc 1 90 1 is_stmt 0 view .LVU138
+ 543 0000 70B5     		push	{r4, r5, r6, lr}
+ 544              	.LCFI3:
+ 545              		.cfi_def_cfa_offset 16
+ 546              		.cfi_offset 4, -16
+ 547              		.cfi_offset 5, -12
+ 548              		.cfi_offset 6, -8
+ 549              		.cfi_offset 14, -4
+ 550 0002 BDF81050 		ldrh	r5, [sp, #16]
+ 551 0006 BDF81440 		ldrh	r4, [sp, #20]
+ 552 000a BDF818E0 		ldrh	lr, [sp, #24]
+ 553 000e BDF81CC0 		ldrh	ip, [sp, #28]
+  91:Application/client_interact.c ****     rect->operate_tpye = operate;     // 1Ôö¼Ó,ÐÞ¸Ä»¹ÊÇÉ¾³ý
+ 554              		.loc 1 91 5 is_stmt 1 view .LVU139
+ 555              		.loc 1 91 24 is_stmt 0 view .LVU140
+ 556 0012 C678     		ldrb	r6, [r0, #3]	@ zero_extendqisi2
+ 557 0014 63F30206 		bfi	r6, r3, #0, #3
+ 558 0018 C670     		strb	r6, [r0, #3]
+  92:Application/client_interact.c ****     rect->graphic_tpye = CLIENT_Rect; //Ö±Ïß
+ 559              		.loc 1 92 5 is_stmt 1 view .LVU141
+ 560              		.loc 1 92 24 is_stmt 0 view .LVU142
+ 561 001a F3B2     		uxtb	r3, r6
+ 562              	.LVL26:
+ 563              		.loc 1 92 24 view .LVU143
+ 564 001c 0126     		movs	r6, #1
+ 565 001e 66F3C503 		bfi	r3, r6, #3, #3
+ 566 0022 C370     		strb	r3, [r0, #3]
+  93:Application/client_interact.c ****     rect->layer = layer;              //Í¼²ã
+ 567              		.loc 1 93 5 is_stmt 1 view .LVU144
+ 568              		.loc 1 93 17 is_stmt 0 view .LVU145
+ 569 0024 0379     		ldrb	r3, [r0, #4]	@ zero_extendqisi2
+ 570 0026 61F30303 		bfi	r3, r1, #0, #4
+ 571              	.LVL27:
+ 572              		.loc 1 93 17 view .LVU146
+ 573 002a 0371     		strb	r3, [r0, #4]
+ 574              	.LVL28:
+  94:Application/client_interact.c ****     rect->color = color;              //ÑÕÉ«
+ 575              		.loc 1 94 5 is_stmt 1 view .LVU147
+ 576              		.loc 1 94 17 is_stmt 0 view .LVU148
+ 577 002c DBB2     		uxtb	r3, r3
+ 578 002e 9DF82460 		ldrb	r6, [sp, #36]	@ zero_extendqisi2
+ 579 0032 66F30713 		bfi	r3, r6, #4, #4
+ 580              		.loc 1 94 17 view .LVU149
+ 581 0036 0371     		strb	r3, [r0, #4]
+  95:Application/client_interact.c ****     rect->graphic_name[0] = '0';      //Ãû³Æ
+ 582              		.loc 1 95 5 is_stmt 1 view .LVU150
+ 583              		.loc 1 95 27 is_stmt 0 view .LVU151
+ 584 0038 3023     		movs	r3, #48
+ 585 003a 0370     		strb	r3, [r0]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 14
+
+
+  96:Application/client_interact.c ****     rect->graphic_name[1] = '0' + layer;
+ 586              		.loc 1 96 5 is_stmt 1 view .LVU152
+ 587              		.loc 1 96 33 is_stmt 0 view .LVU153
+ 588 003c 1944     		add	r1, r1, r3
+ 589              		.loc 1 96 27 view .LVU154
+ 590 003e 4170     		strb	r1, [r0, #1]
+  97:Application/client_interact.c ****     rect->graphic_name[2] = '0' + name;
+ 591              		.loc 1 97 5 is_stmt 1 view .LVU155
+ 592              		.loc 1 97 33 is_stmt 0 view .LVU156
+ 593 0040 1A44     		add	r2, r2, r3
+ 594              	.LVL29:
+ 595              		.loc 1 97 27 view .LVU157
+ 596 0042 8270     		strb	r2, [r0, #2]
+  98:Application/client_interact.c ****     rect->width = width;     //Ïß¿í
+ 597              		.loc 1 98 5 is_stmt 1 view .LVU158
+ 598              		.loc 1 98 17 is_stmt 0 view .LVU159
+ 599 0044 9DF82030 		ldrb	r3, [sp, #32]	@ zero_extendqisi2
+ 600 0048 0372     		strb	r3, [r0, #8]
+ 601 004a 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+ 602 004c 03F0FC03 		and	r3, r3, #252
+ 603 0050 4372     		strb	r3, [r0, #9]
+  99:Application/client_interact.c ****     rect->start_x = start_x; //Æðµãx×ø±ê
+ 604              		.loc 1 99 5 is_stmt 1 view .LVU160
+ 605              		.loc 1 99 19 is_stmt 0 view .LVU161
+ 606 0052 05F03F03 		and	r3, r5, #63
+ 607 0056 417A     		ldrb	r1, [r0, #9]	@ zero_extendqisi2
+ 608 0058 01F00301 		and	r1, r1, #3
+ 609 005c 41EA8301 		orr	r1, r1, r3, lsl #2
+ 610 0060 4172     		strb	r1, [r0, #9]
+ 611 0062 C5F38413 		ubfx	r3, r5, #6, #5
+ 612 0066 827A     		ldrb	r2, [r0, #10]	@ zero_extendqisi2
+ 613 0068 22F01F02 		bic	r2, r2, #31
+ 614 006c 1A43     		orrs	r2, r2, r3
+ 615 006e 8272     		strb	r2, [r0, #10]
+ 100:Application/client_interact.c ****     rect->start_y = start_y; //Æðµãy×ø±ê
+ 616              		.loc 1 100 5 is_stmt 1 view .LVU162
+ 617              		.loc 1 100 19 is_stmt 0 view .LVU163
+ 618 0070 04F00703 		and	r3, r4, #7
+ 619 0074 D2B2     		uxtb	r2, r2
+ 620 0076 02F01F02 		and	r2, r2, #31
+ 621 007a 42EA4312 		orr	r2, r2, r3, lsl #5
+ 622 007e 8272     		strb	r2, [r0, #10]
+ 623 0080 C4F3C704 		ubfx	r4, r4, #3, #8
+ 624 0084 C472     		strb	r4, [r0, #11]
+ 101:Application/client_interact.c ****     rect->end_x = end_x;     //¶Ô½Çx×ø±ê
+ 625              		.loc 1 101 5 is_stmt 1 view .LVU164
+ 626              		.loc 1 101 17 is_stmt 0 view .LVU165
+ 627 0086 0EF03F03 		and	r3, lr, #63
+ 628 008a 427B     		ldrb	r2, [r0, #13]	@ zero_extendqisi2
+ 629 008c 02F00302 		and	r2, r2, #3
+ 630 0090 42EA8302 		orr	r2, r2, r3, lsl #2
+ 631 0094 4273     		strb	r2, [r0, #13]
+ 632 0096 CEF3841E 		ubfx	lr, lr, #6, #5
+ 633 009a 837B     		ldrb	r3, [r0, #14]	@ zero_extendqisi2
+ 634 009c 23F01F03 		bic	r3, r3, #31
+ 635 00a0 43EA0E03 		orr	r3, r3, lr
+ 636 00a4 8373     		strb	r3, [r0, #14]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 15
+
+
+ 102:Application/client_interact.c ****     rect->end_y = end_y;     //¶Ô½Çy×ø±ê
+ 637              		.loc 1 102 5 is_stmt 1 view .LVU166
+ 638              		.loc 1 102 17 is_stmt 0 view .LVU167
+ 639 00a6 0CF00702 		and	r2, ip, #7
+ 640 00aa DBB2     		uxtb	r3, r3
+ 641 00ac 03F01F03 		and	r3, r3, #31
+ 642 00b0 43EA4213 		orr	r3, r3, r2, lsl #5
+ 643 00b4 8373     		strb	r3, [r0, #14]
+ 644 00b6 CCF3C70C 		ubfx	ip, ip, #3, #8
+ 645 00ba 80F80FC0 		strb	ip, [r0, #15]
+ 103:Application/client_interact.c **** }
+ 646              		.loc 1 103 1 view .LVU168
+ 647 00be 70BD     		pop	{r4, r5, r6, pc}
+ 648              		.cfi_endproc
+ 649              	.LFE133:
+ 651              		.section	.text.client_draw,"ax",%progbits
+ 652              		.align	1
+ 653              		.global	client_draw
+ 654              		.syntax unified
+ 655              		.thumb
+ 656              		.thumb_func
+ 658              	client_draw:
+ 659              	.LVL30:
+ 660              	.LFB134:
+ 104:Application/client_interact.c **** void client_draw(UART_HandleTypeDef *huart, uint8_t graphic_num, graphic_data_struct_t *graphic, ui
+ 105:Application/client_interact.c **** {
+ 661              		.loc 1 105 1 is_stmt 1 view -0
+ 662              		.cfi_startproc
+ 663              		@ args = 4, pretend = 0, frame = 0
+ 664              		@ frame_needed = 0, uses_anonymous_args = 0
+ 665              		.loc 1 105 1 is_stmt 0 view .LVU170
+ 666 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 667              	.LCFI4:
+ 668              		.cfi_def_cfa_offset 32
+ 669              		.cfi_offset 3, -32
+ 670              		.cfi_offset 4, -28
+ 671              		.cfi_offset 5, -24
+ 672              		.cfi_offset 6, -20
+ 673              		.cfi_offset 7, -16
+ 674              		.cfi_offset 8, -12
+ 675              		.cfi_offset 9, -8
+ 676              		.cfi_offset 14, -4
+ 677 0004 0646     		mov	r6, r0
+ 678 0006 1746     		mov	r7, r2
+ 679 0008 9946     		mov	r9, r3
+ 106:Application/client_interact.c ****     static uint8_t send_length = 0; //·¢ËÍ³¤¶È
+ 680              		.loc 1 106 5 is_stmt 1 view .LVU171
+ 107:Application/client_interact.c ****     static uint16_t crc_16;         // crc16Ð£Ñé
+ 681              		.loc 1 107 5 view .LVU172
+ 108:Application/client_interact.c **** 
+ 109:Application/client_interact.c ****     static frame_header_t frame_header;
+ 682              		.loc 1 109 5 view .LVU173
+ 110:Application/client_interact.c ****     static uint16_t frame_tail;
+ 683              		.loc 1 110 5 view .LVU174
+ 111:Application/client_interact.c **** 
+ 112:Application/client_interact.c ****     switch (graphic_num)
+ 684              		.loc 1 112 5 view .LVU175
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 16
+
+
+ 685 000a 0139     		subs	r1, r1, #1
+ 686              	.LVL31:
+ 687              		.loc 1 112 5 is_stmt 0 view .LVU176
+ 688 000c 0629     		cmp	r1, #6
+ 689 000e 51D8     		bhi	.L15
+ 690 0010 DFE801F0 		tbb	[pc, r1]
+ 691              	.LVL32:
+ 692              	.L18:
+ 693 0014 04       		.byte	(.L21-.L18)/2
+ 694 0015 52       		.byte	(.L20-.L18)/2
+ 695 0016 50       		.byte	(.L15-.L18)/2
+ 696 0017 50       		.byte	(.L15-.L18)/2
+ 697 0018 5A       		.byte	(.L19-.L18)/2
+ 698 0019 50       		.byte	(.L15-.L18)/2
+ 699 001a 62       		.byte	(.L17-.L18)/2
+ 700 001b 00       		.p2align 1
+ 701              	.L21:
+ 113:Application/client_interact.c ****     {
+ 114:Application/client_interact.c ****     case 1:
+ 115:Application/client_interact.c ****         send_length = sizeof(client_frame_t);
+ 702              		.loc 1 115 9 is_stmt 1 view .LVU177
+ 703              		.loc 1 115 21 is_stmt 0 view .LVU178
+ 704 001c 364B     		ldr	r3, .L25
+ 705 001e 2422     		movs	r2, #36
+ 706              	.LVL33:
+ 707              		.loc 1 115 21 view .LVU179
+ 708 0020 1A70     		strb	r2, [r3]
+ 116:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_1;
+ 709              		.loc 1 116 9 is_stmt 1 view .LVU180
+ 710              		.loc 1 116 33 is_stmt 0 view .LVU181
+ 711 0022 364B     		ldr	r3, .L25+4
+ 712 0024 40F20112 		movw	r2, #257
+ 713 0028 1A81     		strh	r2, [r3, #8]	@ movhi
+ 117:Application/client_interact.c ****         break;
+ 714              		.loc 1 117 9 is_stmt 1 view .LVU182
+ 715              	.L22:
+ 118:Application/client_interact.c ****     case 2:
+ 119:Application/client_interact.c ****         send_length = sizeof(client_frame_t_2);
+ 120:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_2;
+ 121:Application/client_interact.c ****         break;
+ 122:Application/client_interact.c ****     case 5:
+ 123:Application/client_interact.c ****         send_length = sizeof(client_frame_t_5);
+ 124:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_5;
+ 125:Application/client_interact.c ****         break;
+ 126:Application/client_interact.c ****     case 7:
+ 127:Application/client_interact.c ****         send_length = sizeof(client_frame_t_7);
+ 128:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_7;
+ 129:Application/client_interact.c ****         break;
+ 130:Application/client_interact.c ****     default:
+ 131:Application/client_interact.c ****         return;
+ 132:Application/client_interact.c ****     }
+ 133:Application/client_interact.c ****     // frame_header
+ 134:Application/client_interact.c ****     frame_header.Sof = 0xa5;
+ 716              		.loc 1 134 5 view .LVU183
+ 717              		.loc 1 134 22 is_stmt 0 view .LVU184
+ 718 002a 344C     		ldr	r4, .L25+4
+ 719 002c A523     		movs	r3, #165
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 17
+
+
+ 720 002e 2370     		strb	r3, [r4]
+ 135:Application/client_interact.c ****     frame_header.data_length = send_length - 9; //Êý¾Ý³¤¶ÈµÈÓÚ×Ü³¤¶È-9
+ 721              		.loc 1 135 5 is_stmt 1 view .LVU185
+ 722              		.loc 1 135 44 is_stmt 0 view .LVU186
+ 723 0030 DFF8C480 		ldr	r8, .L25
+ 724 0034 98F80030 		ldrb	r3, [r8]	@ zero_extendqisi2
+ 725 0038 093B     		subs	r3, r3, #9
+ 726              		.loc 1 135 30 view .LVU187
+ 727 003a 6380     		strh	r3, [r4, #2]	@ movhi
+ 136:Application/client_interact.c ****     frame_header.seq = 2;
+ 728              		.loc 1 136 5 is_stmt 1 view .LVU188
+ 729              		.loc 1 136 22 is_stmt 0 view .LVU189
+ 730 003c 0223     		movs	r3, #2
+ 731 003e 2371     		strb	r3, [r4, #4]
+ 137:Application/client_interact.c ****     memcpy(UI_SendBuf, &frame_header, 4);
+ 732              		.loc 1 137 5 is_stmt 1 view .LVU190
+ 733 0040 2F4D     		ldr	r5, .L25+8
+ 734 0042 2368     		ldr	r3, [r4]
+ 735 0044 2B60     		str	r3, [r5]
+ 138:Application/client_interact.c ****     frame_header.CRC8 = Get_CRC8_Check_Sum((unsigned char *)UI_SendBuf, 4, CRC8_INIT);
+ 736              		.loc 1 138 5 view .LVU191
+ 737              		.loc 1 138 25 is_stmt 0 view .LVU192
+ 738 0046 2F4B     		ldr	r3, .L25+12
+ 739 0048 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 740 004a 0421     		movs	r1, #4
+ 741 004c 2846     		mov	r0, r5
+ 742              	.LVL34:
+ 743              		.loc 1 138 25 view .LVU193
+ 744 004e FFF7FEFF 		bl	Get_CRC8_Check_Sum
+ 745              	.LVL35:
+ 746              		.loc 1 138 23 view .LVU194
+ 747 0052 6071     		strb	r0, [r4, #5]
+ 139:Application/client_interact.c ****     frame_header.cmd_id = ROBOT_COMMUICATE;
+ 748              		.loc 1 139 5 is_stmt 1 view .LVU195
+ 749              		.loc 1 139 25 is_stmt 0 view .LVU196
+ 750 0054 40F20133 		movw	r3, #769
+ 751 0058 E380     		strh	r3, [r4, #6]	@ movhi
+ 140:Application/client_interact.c ****     frame_header.sender_id = sender;
+ 752              		.loc 1 140 5 is_stmt 1 view .LVU197
+ 753              		.loc 1 140 28 is_stmt 0 view .LVU198
+ 754 005a A4F80A90 		strh	r9, [r4, #10]	@ movhi
+ 141:Application/client_interact.c ****     frame_header.receiver_id = receiver;
+ 755              		.loc 1 141 5 is_stmt 1 view .LVU199
+ 756              		.loc 1 141 30 is_stmt 0 view .LVU200
+ 757 005e BDF82030 		ldrh	r3, [sp, #32]
+ 758 0062 A381     		strh	r3, [r4, #12]	@ movhi
+ 142:Application/client_interact.c ****     memcpy(UI_SendBuf, &frame_header, sizeof(frame_header_t));
+ 759              		.loc 1 142 5 is_stmt 1 view .LVU201
+ 760 0064 AC46     		mov	ip, r5
+ 761 0066 94E80F00 		ldm	r4, {r0, r1, r2, r3}
+ 762 006a ACE80700 		stmia	ip!, {r0, r1, r2}
+ 763 006e ACF80030 		strh	r3, [ip]	@ movhi
+ 143:Application/client_interact.c **** 
+ 144:Application/client_interact.c ****     // graphic
+ 145:Application/client_interact.c ****     memcpy(UI_SendBuf + sizeof(frame_header_t), graphic, send_length - 15);
+ 764              		.loc 1 145 5 view .LVU202
+ 765              		.loc 1 145 70 is_stmt 0 view .LVU203
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 18
+
+
+ 766 0072 98F80040 		ldrb	r4, [r8]	@ zero_extendqisi2
+ 767              		.loc 1 145 5 view .LVU204
+ 768 0076 A4F10F02 		sub	r2, r4, #15
+ 769 007a 3946     		mov	r1, r7
+ 770 007c 05F10E00 		add	r0, r5, #14
+ 771 0080 FFF7FEFF 		bl	memcpy
+ 772              	.LVL36:
+ 146:Application/client_interact.c **** 
+ 147:Application/client_interact.c ****     // frame_tail
+ 148:Application/client_interact.c ****     crc_16 = Get_CRC16_Check_Sum(UI_SendBuf, send_length - 2, CRC_INIT);
+ 773              		.loc 1 148 5 is_stmt 1 view .LVU205
+ 774              		.loc 1 148 14 is_stmt 0 view .LVU206
+ 775 0084 204B     		ldr	r3, .L25+16
+ 776 0086 1A88     		ldrh	r2, [r3]
+ 777 0088 A11E     		subs	r1, r4, #2
+ 778 008a 2846     		mov	r0, r5
+ 779 008c FFF7FEFF 		bl	Get_CRC16_Check_Sum
+ 780              	.LVL37:
+ 781              		.loc 1 148 12 view .LVU207
+ 782 0090 1E4B     		ldr	r3, .L25+20
+ 783 0092 1880     		strh	r0, [r3]	@ movhi
+ 149:Application/client_interact.c ****     frame_tail = crc_16;
+ 784              		.loc 1 149 5 is_stmt 1 view .LVU208
+ 785              		.loc 1 149 16 is_stmt 0 view .LVU209
+ 786 0094 1E4B     		ldr	r3, .L25+24
+ 787 0096 1880     		strh	r0, [r3]	@ movhi
+ 150:Application/client_interact.c ****     memcpy(UI_SendBuf + send_length - 2, &frame_tail, 2);
+ 788              		.loc 1 150 5 is_stmt 1 view .LVU210
+ 789              		.loc 1 150 37 is_stmt 0 view .LVU211
+ 790 0098 98F80030 		ldrb	r3, [r8]	@ zero_extendqisi2
+ 791 009c 023B     		subs	r3, r3, #2
+ 792              		.loc 1 150 5 view .LVU212
+ 793 009e E852     		strh	r0, [r5, r3]	@ unaligned
+ 151:Application/client_interact.c **** 
+ 152:Application/client_interact.c ****     // DMA·¢ËÍ
+ 153:Application/client_interact.c ****     if (HAL_UART_GetState(huart) != HAL_UART_STATE_BUSY_TX && (__HAL_UART_GET_FLAG(huart, UART_FLAG
+ 794              		.loc 1 153 5 is_stmt 1 view .LVU213
+ 795              		.loc 1 153 9 is_stmt 0 view .LVU214
+ 796 00a0 3046     		mov	r0, r6
+ 797 00a2 FFF7FEFF 		bl	HAL_UART_GetState
+ 798              	.LVL38:
+ 799              		.loc 1 153 8 view .LVU215
+ 800 00a6 2128     		cmp	r0, #33
+ 801 00a8 04D0     		beq	.L15
+ 802              		.loc 1 153 64 discriminator 1 view .LVU216
+ 803 00aa 3368     		ldr	r3, [r6]
+ 804 00ac 1B68     		ldr	r3, [r3]
+ 805              		.loc 1 153 60 discriminator 1 view .LVU217
+ 806 00ae 13F0400F 		tst	r3, #64
+ 807 00b2 19D1     		bne	.L24
+ 808              	.L15:
+ 154:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, UI_SendBuf, send_length);
+ 155:Application/client_interact.c **** }
+ 809              		.loc 1 155 1 view .LVU218
+ 810 00b4 BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 811              	.LVL39:
+ 812              	.L20:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 19
+
+
+ 119:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_2;
+ 813              		.loc 1 119 9 is_stmt 1 view .LVU219
+ 119:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_2;
+ 814              		.loc 1 119 21 is_stmt 0 view .LVU220
+ 815 00b8 0F4B     		ldr	r3, .L25
+ 816 00ba 3422     		movs	r2, #52
+ 817              	.LVL40:
+ 119:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_2;
+ 818              		.loc 1 119 21 view .LVU221
+ 819 00bc 1A70     		strb	r2, [r3]
+ 120:Application/client_interact.c ****         break;
+ 820              		.loc 1 120 9 is_stmt 1 view .LVU222
+ 120:Application/client_interact.c ****         break;
+ 821              		.loc 1 120 33 is_stmt 0 view .LVU223
+ 822 00be 0F4B     		ldr	r3, .L25+4
+ 823 00c0 4FF48172 		mov	r2, #258
+ 824 00c4 1A81     		strh	r2, [r3, #8]	@ movhi
+ 121:Application/client_interact.c ****     case 5:
+ 825              		.loc 1 121 9 is_stmt 1 view .LVU224
+ 826 00c6 B0E7     		b	.L22
+ 827              	.LVL41:
+ 828              	.L19:
+ 123:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_5;
+ 829              		.loc 1 123 9 view .LVU225
+ 123:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_5;
+ 830              		.loc 1 123 21 is_stmt 0 view .LVU226
+ 831 00c8 0B4B     		ldr	r3, .L25
+ 832 00ca 6422     		movs	r2, #100
+ 833              	.LVL42:
+ 123:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_5;
+ 834              		.loc 1 123 21 view .LVU227
+ 835 00cc 1A70     		strb	r2, [r3]
+ 124:Application/client_interact.c ****         break;
+ 836              		.loc 1 124 9 is_stmt 1 view .LVU228
+ 124:Application/client_interact.c ****         break;
+ 837              		.loc 1 124 33 is_stmt 0 view .LVU229
+ 838 00ce 0B4B     		ldr	r3, .L25+4
+ 839 00d0 40F20312 		movw	r2, #259
+ 840 00d4 1A81     		strh	r2, [r3, #8]	@ movhi
+ 125:Application/client_interact.c ****     case 7:
+ 841              		.loc 1 125 9 is_stmt 1 view .LVU230
+ 842 00d6 A8E7     		b	.L22
+ 843              	.LVL43:
+ 844              	.L17:
+ 127:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_7;
+ 845              		.loc 1 127 9 view .LVU231
+ 127:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_7;
+ 846              		.loc 1 127 21 is_stmt 0 view .LVU232
+ 847 00d8 074B     		ldr	r3, .L25
+ 848 00da 8422     		movs	r2, #132
+ 849              	.LVL44:
+ 127:Application/client_interact.c ****         frame_header.content_id = ROBOT_DRAW_CHART_7;
+ 850              		.loc 1 127 21 view .LVU233
+ 851 00dc 1A70     		strb	r2, [r3]
+ 128:Application/client_interact.c ****         break;
+ 852              		.loc 1 128 9 is_stmt 1 view .LVU234
+ 128:Application/client_interact.c ****         break;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 20
+
+
+ 853              		.loc 1 128 33 is_stmt 0 view .LVU235
+ 854 00de 074B     		ldr	r3, .L25+4
+ 855 00e0 4FF48272 		mov	r2, #260
+ 856 00e4 1A81     		strh	r2, [r3, #8]	@ movhi
+ 129:Application/client_interact.c ****     default:
+ 857              		.loc 1 129 9 is_stmt 1 view .LVU236
+ 858 00e6 A0E7     		b	.L22
+ 859              	.LVL45:
+ 860              	.L24:
+ 154:Application/client_interact.c **** }
+ 861              		.loc 1 154 9 view .LVU237
+ 862 00e8 98F80020 		ldrb	r2, [r8]	@ zero_extendqisi2
+ 863 00ec 2946     		mov	r1, r5
+ 864 00ee 3046     		mov	r0, r6
+ 865 00f0 FFF7FEFF 		bl	HAL_UART_Transmit_DMA
+ 866              	.LVL46:
+ 867 00f4 DEE7     		b	.L15
+ 868              	.L26:
+ 869 00f6 00BF     		.align	2
+ 870              	.L25:
+ 871 00f8 00000000 		.word	.LANCHOR2
+ 872 00fc 00000000 		.word	.LANCHOR3
+ 873 0100 00000000 		.word	.LANCHOR0
+ 874 0104 00000000 		.word	CRC8_INIT
+ 875 0108 00000000 		.word	CRC_INIT
+ 876 010c 00000000 		.word	.LANCHOR4
+ 877 0110 00000000 		.word	.LANCHOR5
+ 878              		.cfi_endproc
+ 879              	.LFE134:
+ 881              		.section	.text.client_draw_char_2,"ax",%progbits
+ 882              		.align	1
+ 883              		.global	client_draw_char_2
+ 884              		.syntax unified
+ 885              		.thumb
+ 886              		.thumb_func
+ 888              	client_draw_char_2:
+ 889              	.LVL47:
+ 890              	.LFB135:
+ 156:Application/client_interact.c **** void client_draw_char_2(
+ 157:Application/client_interact.c ****     UART_HandleTypeDef *huart, client_frame_t *line,
+ 158:Application/client_interact.c ****     uint8_t layer, uint8_t operate,
+ 159:Application/client_interact.c ****     uint16_t start_x, uint16_t start_y, uint8_t size,
+ 160:Application/client_interact.c ****     uint16_t sender, uint16_t receiver, uint8_t *buff, uint8_t buff_len, uint8_t color)
+ 161:Application/client_interact.c **** {
+ 891              		.loc 1 161 1 view -0
+ 892              		.cfi_startproc
+ 893              		@ args = 32, pretend = 0, frame = 0
+ 894              		@ frame_needed = 0, uses_anonymous_args = 0
+ 895              		.loc 1 161 1 is_stmt 0 view .LVU239
+ 896 0000 2DE9F84F 		push	{r3, r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 897              	.LCFI5:
+ 898              		.cfi_def_cfa_offset 40
+ 899              		.cfi_offset 3, -40
+ 900              		.cfi_offset 4, -36
+ 901              		.cfi_offset 5, -32
+ 902              		.cfi_offset 6, -28
+ 903              		.cfi_offset 7, -24
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 21
+
+
+ 904              		.cfi_offset 8, -20
+ 905              		.cfi_offset 9, -16
+ 906              		.cfi_offset 10, -12
+ 907              		.cfi_offset 11, -8
+ 908              		.cfi_offset 14, -4
+ 909 0004 BDF828A0 		ldrh	r10, [sp, #40]
+ 910 0008 BDF82C90 		ldrh	r9, [sp, #44]
+ 911 000c 9DF84070 		ldrb	r7, [sp, #64]	@ zero_extendqisi2
+ 162:Application/client_interact.c ****     static uint8_t temp_buff[60] = {0};
+ 912              		.loc 1 162 5 is_stmt 1 view .LVU240
+ 163:Application/client_interact.c ****     static uint16_t crc_16;
+ 913              		.loc 1 163 5 view .LVU241
+ 164:Application/client_interact.c **** 
+ 165:Application/client_interact.c ****     uint8_t *p = temp_buff;
+ 914              		.loc 1 165 5 view .LVU242
+ 915              	.LVL48:
+ 166:Application/client_interact.c **** 
+ 167:Application/client_interact.c ****     if (buff_len > 30)
+ 916              		.loc 1 167 5 view .LVU243
+ 917              		.loc 1 167 8 is_stmt 0 view .LVU244
+ 918 0010 1E2F     		cmp	r7, #30
+ 919 0012 01D9     		bls	.L31
+ 920              	.LVL49:
+ 921              	.L27:
+ 168:Application/client_interact.c ****         return;
+ 169:Application/client_interact.c ****     line->frame_header.Sof = 0xa5;
+ 170:Application/client_interact.c ****     line->frame_header.data_length = 51;
+ 171:Application/client_interact.c ****     line->frame_header.seq = 2;
+ 172:Application/client_interact.c ****     memcpy(temp_buff, line, 4);
+ 173:Application/client_interact.c ****     line->frame_header.CRC8 = Get_CRC8_Check_Sum((unsigned char *)temp_buff, 4, CRC8_INIT);
+ 174:Application/client_interact.c ****     line->frame_header.cmd_id = ROBOT_COMMUICATE;     //0x301»úÆ÷ÈË½»»¥
+ 175:Application/client_interact.c ****     line->frame_header.content_id = ROBOT_DRAW_CHARA; //¾Í»­Ò»²ãÍ¼£¬ROBOT_DRAW_CHART_2Á½¸öÍ¼£¬»­¶à¸
+ 176:Application/client_interact.c ****     line->frame_header.sender_id = sender;            //Ê¾ÀýRED_INFANTRY_ID3
+ 177:Application/client_interact.c ****     line->frame_header.receiver_id = receiver;        //Ê¾ÀýSERVER_RED_INFANTRY_ID3;
+ 178:Application/client_interact.c **** 
+ 179:Application/client_interact.c ****     line->graphic.operate_tpye = operate;     //1Ôö¼Ó,ÐÞ¸Ä»¹ÊÇÉ¾³ý
+ 180:Application/client_interact.c ****     line->graphic.graphic_tpye = CLIENT_CHAR; //×Ö·û
+ 181:Application/client_interact.c ****     line->graphic.layer = layer;              //Í¼²ã
+ 182:Application/client_interact.c ****     line->graphic.color = color;              //ÑÕÉ«
+ 183:Application/client_interact.c ****     line->graphic.graphic_name[0] = '0';      //Ãû³Æ
+ 184:Application/client_interact.c ****     line->graphic.graphic_name[1] = '0';
+ 185:Application/client_interact.c ****     line->graphic.graphic_name[2] = '0' + layer;
+ 186:Application/client_interact.c ****     line->graphic.width = 3;         //Ïß¿í
+ 187:Application/client_interact.c ****     line->graphic.start_x = start_x; //×ø±ê
+ 188:Application/client_interact.c ****     line->graphic.start_y = start_y;
+ 189:Application/client_interact.c ****     line->graphic.end_x = 0;
+ 190:Application/client_interact.c ****     line->graphic.end_y = 0;
+ 191:Application/client_interact.c ****     line->graphic.start_angle = size;
+ 192:Application/client_interact.c ****     line->graphic.end_angle = buff_len;
+ 193:Application/client_interact.c ****     memcpy(temp_buff, line, sizeof(client_frame_t));
+ 194:Application/client_interact.c ****     //ÕâÀï½á¹¹ÌåÒÑ¾­ÅäÖÃÍêÁË£¬¾ÍÊÇ²îÒ»¸ö30×Ö½ÚµÄ×Ô¶¨ÒåÊý¾Ý£¬Ï¹´ò¼¸¸ö
+ 195:Application/client_interact.c ****     p += 28; //ÕâÀïÊÇ28£¬ÊÇÒòÎªÇ°Ãæ28¸ö×Ö½Ú
+ 196:Application/client_interact.c ****     memcpy(p, buff, buff_len);
+ 197:Application/client_interact.c ****     crc_16 = Get_CRC16_Check_Sum(temp_buff, 58, CRC_INIT);
+ 198:Application/client_interact.c ****     temp_buff[58] = crc_16;
+ 199:Application/client_interact.c ****     temp_buff[59] = crc_16 >> 8;
+ 200:Application/client_interact.c **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 22
+
+
+ 201:Application/client_interact.c ****     //		if (!__HAL_UART_GET_FLAG(huart, UART_FLAG_RXNE))
+ 202:Application/client_interact.c ****     //        HAL_UART_Transmit(huart, temp_buff, sizeof(temp_buff), 10);
+ 203:Application/client_interact.c ****     //DMA·¢
+ 204:Application/client_interact.c ****     if (HAL_UART_GetState(huart) != HAL_UART_STATE_BUSY_TX && (__HAL_UART_GET_FLAG(huart, UART_FLAG
+ 205:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, temp_buff, sizeof(temp_buff));
+ 206:Application/client_interact.c **** }
+ 922              		.loc 1 206 1 view .LVU245
+ 923 0014 BDE8F88F 		pop	{r3, r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 924              	.LVL50:
+ 925              	.L31:
+ 926              		.loc 1 206 1 view .LVU246
+ 927 0018 0646     		mov	r6, r0
+ 928 001a 0C46     		mov	r4, r1
+ 929 001c 9046     		mov	r8, r2
+ 930 001e 9B46     		mov	fp, r3
+ 169:Application/client_interact.c ****     line->frame_header.data_length = 51;
+ 931              		.loc 1 169 5 is_stmt 1 view .LVU247
+ 169:Application/client_interact.c ****     line->frame_header.data_length = 51;
+ 932              		.loc 1 169 28 is_stmt 0 view .LVU248
+ 933 0020 A523     		movs	r3, #165
+ 934              	.LVL51:
+ 169:Application/client_interact.c ****     line->frame_header.data_length = 51;
+ 935              		.loc 1 169 28 view .LVU249
+ 936 0022 0B70     		strb	r3, [r1]
+ 170:Application/client_interact.c ****     line->frame_header.seq = 2;
+ 937              		.loc 1 170 5 is_stmt 1 view .LVU250
+ 170:Application/client_interact.c ****     line->frame_header.seq = 2;
+ 938              		.loc 1 170 36 is_stmt 0 view .LVU251
+ 939 0024 3323     		movs	r3, #51
+ 940 0026 4B80     		strh	r3, [r1, #2]	@ movhi
+ 171:Application/client_interact.c ****     memcpy(temp_buff, line, 4);
+ 941              		.loc 1 171 5 is_stmt 1 view .LVU252
+ 171:Application/client_interact.c ****     memcpy(temp_buff, line, 4);
+ 942              		.loc 1 171 28 is_stmt 0 view .LVU253
+ 943 0028 0223     		movs	r3, #2
+ 944 002a 0B71     		strb	r3, [r1, #4]
+ 172:Application/client_interact.c ****     line->frame_header.CRC8 = Get_CRC8_Check_Sum((unsigned char *)temp_buff, 4, CRC8_INIT);
+ 945              		.loc 1 172 5 is_stmt 1 view .LVU254
+ 946 002c 0B68     		ldr	r3, [r1]	@ unaligned
+ 947 002e 564D     		ldr	r5, .L32
+ 948 0030 2B60     		str	r3, [r5]
+ 173:Application/client_interact.c ****     line->frame_header.cmd_id = ROBOT_COMMUICATE;     //0x301»úÆ÷ÈË½»»¥
+ 949              		.loc 1 173 5 view .LVU255
+ 173:Application/client_interact.c ****     line->frame_header.cmd_id = ROBOT_COMMUICATE;     //0x301»úÆ÷ÈË½»»¥
+ 950              		.loc 1 173 31 is_stmt 0 view .LVU256
+ 951 0032 564B     		ldr	r3, .L32+4
+ 952 0034 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 953              	.LVL52:
+ 173:Application/client_interact.c ****     line->frame_header.cmd_id = ROBOT_COMMUICATE;     //0x301»úÆ÷ÈË½»»¥
+ 954              		.loc 1 173 31 view .LVU257
+ 955 0036 0421     		movs	r1, #4
+ 956              	.LVL53:
+ 173:Application/client_interact.c ****     line->frame_header.cmd_id = ROBOT_COMMUICATE;     //0x301»úÆ÷ÈË½»»¥
+ 957              		.loc 1 173 31 view .LVU258
+ 958 0038 2846     		mov	r0, r5
+ 959              	.LVL54:
+ 173:Application/client_interact.c ****     line->frame_header.cmd_id = ROBOT_COMMUICATE;     //0x301»úÆ÷ÈË½»»¥
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 23
+
+
+ 960              		.loc 1 173 31 view .LVU259
+ 961 003a FFF7FEFF 		bl	Get_CRC8_Check_Sum
+ 962              	.LVL55:
+ 173:Application/client_interact.c ****     line->frame_header.cmd_id = ROBOT_COMMUICATE;     //0x301»úÆ÷ÈË½»»¥
+ 963              		.loc 1 173 29 view .LVU260
+ 964 003e 6071     		strb	r0, [r4, #5]
+ 174:Application/client_interact.c ****     line->frame_header.content_id = ROBOT_DRAW_CHARA; //¾Í»­Ò»²ãÍ¼£¬ROBOT_DRAW_CHART_2Á½¸öÍ¼£¬»­¶à¸
+ 965              		.loc 1 174 5 is_stmt 1 view .LVU261
+ 174:Application/client_interact.c ****     line->frame_header.content_id = ROBOT_DRAW_CHARA; //¾Í»­Ò»²ãÍ¼£¬ROBOT_DRAW_CHART_2Á½¸öÍ¼£¬»­¶à¸
+ 966              		.loc 1 174 31 is_stmt 0 view .LVU262
+ 967 0040 40F20133 		movw	r3, #769
+ 968 0044 E380     		strh	r3, [r4, #6]	@ movhi
+ 175:Application/client_interact.c ****     line->frame_header.sender_id = sender;            //Ê¾ÀýRED_INFANTRY_ID3
+ 969              		.loc 1 175 5 is_stmt 1 view .LVU263
+ 175:Application/client_interact.c ****     line->frame_header.sender_id = sender;            //Ê¾ÀýRED_INFANTRY_ID3
+ 970              		.loc 1 175 35 is_stmt 0 view .LVU264
+ 971 0046 4FF48873 		mov	r3, #272
+ 972 004a 2381     		strh	r3, [r4, #8]	@ movhi
+ 176:Application/client_interact.c ****     line->frame_header.receiver_id = receiver;        //Ê¾ÀýSERVER_RED_INFANTRY_ID3;
+ 973              		.loc 1 176 5 is_stmt 1 view .LVU265
+ 176:Application/client_interact.c ****     line->frame_header.receiver_id = receiver;        //Ê¾ÀýSERVER_RED_INFANTRY_ID3;
+ 974              		.loc 1 176 34 is_stmt 0 view .LVU266
+ 975 004c BDF83430 		ldrh	r3, [sp, #52]
+ 976 0050 6381     		strh	r3, [r4, #10]	@ movhi
+ 177:Application/client_interact.c **** 
+ 977              		.loc 1 177 5 is_stmt 1 view .LVU267
+ 177:Application/client_interact.c **** 
+ 978              		.loc 1 177 36 is_stmt 0 view .LVU268
+ 979 0052 BDF83830 		ldrh	r3, [sp, #56]
+ 980 0056 A381     		strh	r3, [r4, #12]	@ movhi
+ 179:Application/client_interact.c ****     line->graphic.graphic_tpye = CLIENT_CHAR; //×Ö·û
+ 981              		.loc 1 179 5 is_stmt 1 view .LVU269
+ 179:Application/client_interact.c ****     line->graphic.graphic_tpye = CLIENT_CHAR; //×Ö·û
+ 982              		.loc 1 179 32 is_stmt 0 view .LVU270
+ 983 0058 E37C     		ldrb	r3, [r4, #19]	@ zero_extendqisi2
+ 984 005a 6BF30203 		bfi	r3, fp, #0, #3
+ 985 005e E374     		strb	r3, [r4, #19]
+ 180:Application/client_interact.c ****     line->graphic.layer = layer;              //Í¼²ã
+ 986              		.loc 1 180 5 is_stmt 1 view .LVU271
+ 180:Application/client_interact.c ****     line->graphic.layer = layer;              //Í¼²ã
+ 987              		.loc 1 180 32 is_stmt 0 view .LVU272
+ 988 0060 DBB2     		uxtb	r3, r3
+ 989 0062 43F03803 		orr	r3, r3, #56
+ 990 0066 E374     		strb	r3, [r4, #19]
+ 181:Application/client_interact.c ****     line->graphic.color = color;              //ÑÕÉ«
+ 991              		.loc 1 181 5 is_stmt 1 view .LVU273
+ 181:Application/client_interact.c ****     line->graphic.color = color;              //ÑÕÉ«
+ 992              		.loc 1 181 25 is_stmt 0 view .LVU274
+ 993 0068 237D     		ldrb	r3, [r4, #20]	@ zero_extendqisi2
+ 994 006a 68F30303 		bfi	r3, r8, #0, #4
+ 995              	.LVL56:
+ 181:Application/client_interact.c ****     line->graphic.color = color;              //ÑÕÉ«
+ 996              		.loc 1 181 25 view .LVU275
+ 997 006e 2375     		strb	r3, [r4, #20]
+ 998              	.LVL57:
+ 182:Application/client_interact.c ****     line->graphic.graphic_name[0] = '0';      //Ãû³Æ
+ 999              		.loc 1 182 5 is_stmt 1 view .LVU276
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 24
+
+
+ 182:Application/client_interact.c ****     line->graphic.graphic_name[0] = '0';      //Ãû³Æ
+ 1000              		.loc 1 182 25 is_stmt 0 view .LVU277
+ 1001 0070 DBB2     		uxtb	r3, r3
+ 1002 0072 9DF84420 		ldrb	r2, [sp, #68]	@ zero_extendqisi2
+ 1003 0076 62F30713 		bfi	r3, r2, #4, #4
+ 1004 007a 2375     		strb	r3, [r4, #20]
+ 183:Application/client_interact.c ****     line->graphic.graphic_name[1] = '0';
+ 1005              		.loc 1 183 5 is_stmt 1 view .LVU278
+ 183:Application/client_interact.c ****     line->graphic.graphic_name[1] = '0';
+ 1006              		.loc 1 183 35 is_stmt 0 view .LVU279
+ 1007 007c 3023     		movs	r3, #48
+ 1008 007e 2374     		strb	r3, [r4, #16]
+ 184:Application/client_interact.c ****     line->graphic.graphic_name[2] = '0' + layer;
+ 1009              		.loc 1 184 5 is_stmt 1 view .LVU280
+ 184:Application/client_interact.c ****     line->graphic.graphic_name[2] = '0' + layer;
+ 1010              		.loc 1 184 35 is_stmt 0 view .LVU281
+ 1011 0080 6374     		strb	r3, [r4, #17]
+ 185:Application/client_interact.c ****     line->graphic.width = 3;         //Ïß¿í
+ 1012              		.loc 1 185 5 is_stmt 1 view .LVU282
+ 185:Application/client_interact.c ****     line->graphic.width = 3;         //Ïß¿í
+ 1013              		.loc 1 185 41 is_stmt 0 view .LVU283
+ 1014 0082 9844     		add	r8, r8, r3
+ 185:Application/client_interact.c ****     line->graphic.width = 3;         //Ïß¿í
+ 1015              		.loc 1 185 35 view .LVU284
+ 1016 0084 84F81280 		strb	r8, [r4, #18]
+ 186:Application/client_interact.c ****     line->graphic.start_x = start_x; //×ø±ê
+ 1017              		.loc 1 186 5 is_stmt 1 view .LVU285
+ 186:Application/client_interact.c ****     line->graphic.start_x = start_x; //×ø±ê
+ 1018              		.loc 1 186 25 is_stmt 0 view .LVU286
+ 1019 0088 0323     		movs	r3, #3
+ 1020 008a 2376     		strb	r3, [r4, #24]
+ 1021 008c 637E     		ldrb	r3, [r4, #25]	@ zero_extendqisi2
+ 1022 008e 23F00303 		bic	r3, r3, #3
+ 1023 0092 6376     		strb	r3, [r4, #25]
+ 187:Application/client_interact.c ****     line->graphic.start_y = start_y;
+ 1024              		.loc 1 187 5 is_stmt 1 view .LVU287
+ 187:Application/client_interact.c ****     line->graphic.start_y = start_y;
+ 1025              		.loc 1 187 27 is_stmt 0 view .LVU288
+ 1026 0094 0AF03F02 		and	r2, r10, #63
+ 1027 0098 DBB2     		uxtb	r3, r3
+ 1028 009a 03F00303 		and	r3, r3, #3
+ 1029 009e 43EA8203 		orr	r3, r3, r2, lsl #2
+ 1030 00a2 6376     		strb	r3, [r4, #25]
+ 1031 00a4 CAF38413 		ubfx	r3, r10, #6, #5
+ 1032 00a8 A27E     		ldrb	r2, [r4, #26]	@ zero_extendqisi2
+ 1033 00aa 22F01F02 		bic	r2, r2, #31
+ 1034 00ae 1343     		orrs	r3, r3, r2
+ 1035 00b0 A376     		strb	r3, [r4, #26]
+ 188:Application/client_interact.c ****     line->graphic.end_x = 0;
+ 1036              		.loc 1 188 5 is_stmt 1 view .LVU289
+ 188:Application/client_interact.c ****     line->graphic.end_x = 0;
+ 1037              		.loc 1 188 27 is_stmt 0 view .LVU290
+ 1038 00b2 09F00702 		and	r2, r9, #7
+ 1039 00b6 DBB2     		uxtb	r3, r3
+ 1040 00b8 03F01F03 		and	r3, r3, #31
+ 1041 00bc 43EA4213 		orr	r3, r3, r2, lsl #5
+ 1042 00c0 A376     		strb	r3, [r4, #26]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 25
+
+
+ 1043 00c2 C9F3C703 		ubfx	r3, r9, #3, #8
+ 1044 00c6 E376     		strb	r3, [r4, #27]
+ 189:Application/client_interact.c ****     line->graphic.end_y = 0;
+ 1045              		.loc 1 189 5 is_stmt 1 view .LVU291
+ 189:Application/client_interact.c ****     line->graphic.end_y = 0;
+ 1046              		.loc 1 189 25 is_stmt 0 view .LVU292
+ 1047 00c8 637F     		ldrb	r3, [r4, #29]	@ zero_extendqisi2
+ 1048 00ca 03F00303 		and	r3, r3, #3
+ 1049 00ce 6377     		strb	r3, [r4, #29]
+ 1050 00d0 A37F     		ldrb	r3, [r4, #30]	@ zero_extendqisi2
+ 1051 00d2 23F01F03 		bic	r3, r3, #31
+ 1052 00d6 A377     		strb	r3, [r4, #30]
+ 190:Application/client_interact.c ****     line->graphic.start_angle = size;
+ 1053              		.loc 1 190 5 is_stmt 1 view .LVU293
+ 190:Application/client_interact.c ****     line->graphic.start_angle = size;
+ 1054              		.loc 1 190 25 is_stmt 0 view .LVU294
+ 1055 00d8 DBB2     		uxtb	r3, r3
+ 1056 00da 03F01F03 		and	r3, r3, #31
+ 1057 00de A377     		strb	r3, [r4, #30]
+ 1058 00e0 0023     		movs	r3, #0
+ 1059 00e2 E377     		strb	r3, [r4, #31]
+ 191:Application/client_interact.c ****     line->graphic.end_angle = buff_len;
+ 1060              		.loc 1 191 5 is_stmt 1 view .LVU295
+ 191:Application/client_interact.c ****     line->graphic.end_angle = buff_len;
+ 1061              		.loc 1 191 31 is_stmt 0 view .LVU296
+ 1062 00e4 9DF83030 		ldrb	r3, [sp, #48]	@ zero_extendqisi2
+ 1063 00e8 6375     		strb	r3, [r4, #21]
+ 1064 00ea A37D     		ldrb	r3, [r4, #22]	@ zero_extendqisi2
+ 1065 00ec 03F0FE03 		and	r3, r3, #254
+ 1066 00f0 A375     		strb	r3, [r4, #22]
+ 192:Application/client_interact.c ****     memcpy(temp_buff, line, sizeof(client_frame_t));
+ 1067              		.loc 1 192 5 is_stmt 1 view .LVU297
+ 192:Application/client_interact.c ****     memcpy(temp_buff, line, sizeof(client_frame_t));
+ 1068              		.loc 1 192 29 is_stmt 0 view .LVU298
+ 1069 00f2 07F07F03 		and	r3, r7, #127
+ 1070 00f6 A27D     		ldrb	r2, [r4, #22]	@ zero_extendqisi2
+ 1071 00f8 02F00102 		and	r2, r2, #1
+ 1072 00fc 42EA4302 		orr	r2, r2, r3, lsl #1
+ 1073 0100 A275     		strb	r2, [r4, #22]
+ 1074 0102 E37D     		ldrb	r3, [r4, #23]	@ zero_extendqisi2
+ 1075 0104 23F00303 		bic	r3, r3, #3
+ 1076 0108 43EAD713 		orr	r3, r3, r7, lsr #7
+ 1077 010c E375     		strb	r3, [r4, #23]
+ 193:Application/client_interact.c ****     //ÕâÀï½á¹¹ÌåÒÑ¾­ÅäÖÃÍêÁË£¬¾ÍÊÇ²îÒ»¸ö30×Ö½ÚµÄ×Ô¶¨ÒåÊý¾Ý£¬Ï¹´ò¼¸¸ö
+ 1078              		.loc 1 193 5 is_stmt 1 view .LVU299
+ 1079 010e A446     		mov	ip, r4
+ 1080 0110 2034     		adds	r4, r4, #32
+ 1081              	.LVL58:
+ 1082              	.L29:
+ 193:Application/client_interact.c ****     //ÕâÀï½á¹¹ÌåÒÑ¾­ÅäÖÃÍêÁË£¬¾ÍÊÇ²îÒ»¸ö30×Ö½ÚµÄ×Ô¶¨ÒåÊý¾Ý£¬Ï¹´ò¼¸¸ö
+ 1083              		.loc 1 193 5 is_stmt 0 view .LVU300
+ 1084 0112 AE46     		mov	lr, r5
+ 1085 0114 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 1086 0118 DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 1087 011c DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 1088 0120 DCF80C30 		ldr	r3, [ip, #12]	@ unaligned
+ 1089 0124 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 26
+
+
+ 1090 0128 0CF1100C 		add	ip, ip, #16
+ 1091 012c 7546     		mov	r5, lr
+ 1092 012e A445     		cmp	ip, r4
+ 1093 0130 EFD1     		bne	.L29
+ 1094 0132 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 1095 0136 CEF80000 		str	r0, [lr]
+ 195:Application/client_interact.c ****     memcpy(p, buff, buff_len);
+ 1096              		.loc 1 195 5 is_stmt 1 view .LVU301
+ 1097              	.LVL59:
+ 196:Application/client_interact.c ****     crc_16 = Get_CRC16_Check_Sum(temp_buff, 58, CRC_INIT);
+ 1098              		.loc 1 196 5 view .LVU302
+ 1099 013a 134C     		ldr	r4, .L32
+ 1100              	.LVL60:
+ 196:Application/client_interact.c ****     crc_16 = Get_CRC16_Check_Sum(temp_buff, 58, CRC_INIT);
+ 1101              		.loc 1 196 5 is_stmt 0 view .LVU303
+ 1102 013c 3A46     		mov	r2, r7
+ 1103 013e 0F99     		ldr	r1, [sp, #60]
+ 1104 0140 04F11C00 		add	r0, r4, #28
+ 1105 0144 FFF7FEFF 		bl	memcpy
+ 1106              	.LVL61:
+ 197:Application/client_interact.c ****     temp_buff[58] = crc_16;
+ 1107              		.loc 1 197 5 is_stmt 1 view .LVU304
+ 197:Application/client_interact.c ****     temp_buff[58] = crc_16;
+ 1108              		.loc 1 197 14 is_stmt 0 view .LVU305
+ 1109 0148 114B     		ldr	r3, .L32+8
+ 1110 014a 1A88     		ldrh	r2, [r3]
+ 1111 014c 3A21     		movs	r1, #58
+ 1112 014e 2046     		mov	r0, r4
+ 1113 0150 FFF7FEFF 		bl	Get_CRC16_Check_Sum
+ 1114              	.LVL62:
+ 197:Application/client_interact.c ****     temp_buff[58] = crc_16;
+ 1115              		.loc 1 197 12 view .LVU306
+ 1116 0154 0F4B     		ldr	r3, .L32+12
+ 1117 0156 1880     		strh	r0, [r3]	@ movhi
+ 198:Application/client_interact.c ****     temp_buff[59] = crc_16 >> 8;
+ 1118              		.loc 1 198 5 is_stmt 1 view .LVU307
+ 198:Application/client_interact.c ****     temp_buff[59] = crc_16 >> 8;
+ 1119              		.loc 1 198 19 is_stmt 0 view .LVU308
+ 1120 0158 84F83A00 		strb	r0, [r4, #58]
+ 199:Application/client_interact.c **** 
+ 1121              		.loc 1 199 5 is_stmt 1 view .LVU309
+ 199:Application/client_interact.c **** 
+ 1122              		.loc 1 199 19 is_stmt 0 view .LVU310
+ 1123 015c 000A     		lsrs	r0, r0, #8
+ 1124 015e 84F83B00 		strb	r0, [r4, #59]
+ 204:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, temp_buff, sizeof(temp_buff));
+ 1125              		.loc 1 204 5 is_stmt 1 view .LVU311
+ 204:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, temp_buff, sizeof(temp_buff));
+ 1126              		.loc 1 204 9 is_stmt 0 view .LVU312
+ 1127 0162 3046     		mov	r0, r6
+ 1128 0164 FFF7FEFF 		bl	HAL_UART_GetState
+ 1129              	.LVL63:
+ 204:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, temp_buff, sizeof(temp_buff));
+ 1130              		.loc 1 204 8 view .LVU313
+ 1131 0168 2128     		cmp	r0, #33
+ 1132 016a 3FF453AF 		beq	.L27
+ 204:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, temp_buff, sizeof(temp_buff));
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 27
+
+
+ 1133              		.loc 1 204 64 discriminator 1 view .LVU314
+ 1134 016e 3368     		ldr	r3, [r6]
+ 1135 0170 1B68     		ldr	r3, [r3]
+ 204:Application/client_interact.c ****         HAL_UART_Transmit_DMA(huart, temp_buff, sizeof(temp_buff));
+ 1136              		.loc 1 204 60 discriminator 1 view .LVU315
+ 1137 0172 13F0400F 		tst	r3, #64
+ 1138 0176 3FF44DAF 		beq	.L27
+ 205:Application/client_interact.c **** }
+ 1139              		.loc 1 205 9 is_stmt 1 view .LVU316
+ 1140 017a 3C22     		movs	r2, #60
+ 1141 017c 2146     		mov	r1, r4
+ 1142 017e 3046     		mov	r0, r6
+ 1143 0180 FFF7FEFF 		bl	HAL_UART_Transmit_DMA
+ 1144              	.LVL64:
+ 1145 0184 46E7     		b	.L27
+ 1146              	.L33:
+ 1147 0186 00BF     		.align	2
+ 1148              	.L32:
+ 1149 0188 00000000 		.word	.LANCHOR6
+ 1150 018c 00000000 		.word	CRC8_INIT
+ 1151 0190 00000000 		.word	CRC_INIT
+ 1152 0194 00000000 		.word	.LANCHOR7
+ 1153              		.cfi_endproc
+ 1154              	.LFE135:
+ 1156              		.section	.text.Image_maps,"ax",%progbits
+ 1157              		.align	1
+ 1158              		.global	Image_maps
+ 1159              		.syntax unified
+ 1160              		.thumb
+ 1161              		.thumb_func
+ 1163              	Image_maps:
+ 1164              	.LVL65:
+ 1165              	.LFB136:
+ 207:Application/client_interact.c **** void Image_maps(image_maps_t *image_maps,int16_t x,uint16_t y,int16_t z)
+ 208:Application/client_interact.c **** {
+ 1166              		.loc 1 208 1 view -0
+ 1167              		.cfi_startproc
+ 1168              		@ args = 0, pretend = 0, frame = 0
+ 1169              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1170              		@ link register save eliminated.
+ 209:Application/client_interact.c **** 
+ 210:Application/client_interact.c **** }...
+ 1171              		.loc 1 210 1 view .LVU318
+ 1172 0000 7047     		bx	lr
+ 1173              		.cfi_endproc
+ 1174              	.LFE136:
+ 1176              		.global	UI_SendBuf
+ 1177              		.section	.bss.UI_SendBuf,"aw",%nobits
+ 1178              		.align	2
+ 1179              		.set	.LANCHOR0,. + 0
+ 1182              	UI_SendBuf:
+ 1183 0000 00000000 		.space	120
+ 1183      00000000 
+ 1183      00000000 
+ 1183      00000000 
+ 1183      00000000 
+ 1184              		.section	.bss.crc_16.0,"aw",%nobits
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 28
+
+
+ 1185              		.align	1
+ 1186              		.set	.LANCHOR7,. + 0
+ 1189              	crc_16.0:
+ 1190 0000 0000     		.space	2
+ 1191              		.section	.bss.crc_16.3,"aw",%nobits
+ 1192              		.align	1
+ 1193              		.set	.LANCHOR4,. + 0
+ 1196              	crc_16.3:
+ 1197 0000 0000     		.space	2
+ 1198              		.section	.bss.crc_16.6,"aw",%nobits
+ 1199              		.align	1
+ 1200              		.set	.LANCHOR1,. + 0
+ 1203              	crc_16.6:
+ 1204 0000 0000     		.space	2
+ 1205              		.section	.bss.frame_header.4,"aw",%nobits
+ 1206              		.align	2
+ 1207              		.set	.LANCHOR3,. + 0
+ 1210              	frame_header.4:
+ 1211 0000 00000000 		.space	14
+ 1211      00000000 
+ 1211      00000000 
+ 1211      0000
+ 1212              		.section	.bss.frame_tail.2,"aw",%nobits
+ 1213              		.align	1
+ 1214              		.set	.LANCHOR5,. + 0
+ 1217              	frame_tail.2:
+ 1218 0000 0000     		.space	2
+ 1219              		.section	.bss.send_length.5,"aw",%nobits
+ 1220              		.set	.LANCHOR2,. + 0
+ 1223              	send_length.5:
+ 1224 0000 00       		.space	1
+ 1225              		.section	.bss.temp_buff.1,"aw",%nobits
+ 1226              		.align	2
+ 1227              		.set	.LANCHOR6,. + 0
+ 1230              	temp_buff.1:
+ 1231 0000 00000000 		.space	60
+ 1231      00000000 
+ 1231      00000000 
+ 1231      00000000 
+ 1231      00000000 
+ 1232              		.text
+ 1233              	.Letext0:
+ 1234              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1235              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1236              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 1237              		.file 5 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
+ 1238              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 1239              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 1240              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ 1241              		.file 9 "Application/client_interact.h"
+ 1242              		.file 10 "Application/judgement_info.h"
+ 1243              		.file 11 "<built-in>"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccIy21Un.s 			page 29
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 client_interact.c
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:20     .text.client_draw_char:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:26     .text.client_draw_char:00000000 client_draw_char
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:291    .text.client_draw_char:000001a0 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:299    .text.Line_Generate:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:305    .text.Line_Generate:00000000 Line_Generate
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:421    .text.circular_Generate:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:427    .text.circular_Generate:00000000 circular_Generate
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:529    .text.rect_Generate:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:535    .text.rect_Generate:00000000 rect_Generate
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:652    .text.client_draw:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:658    .text.client_draw:00000000 client_draw
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:693    .text.client_draw:00000014 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:871    .text.client_draw:000000f8 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:882    .text.client_draw_char_2:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:888    .text.client_draw_char_2:00000000 client_draw_char_2
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1149   .text.client_draw_char_2:00000188 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1157   .text.Image_maps:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1163   .text.Image_maps:00000000 Image_maps
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1182   .bss.UI_SendBuf:00000000 UI_SendBuf
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1178   .bss.UI_SendBuf:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1185   .bss.crc_16.0:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1189   .bss.crc_16.0:00000000 crc_16.0
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1192   .bss.crc_16.3:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1196   .bss.crc_16.3:00000000 crc_16.3
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1199   .bss.crc_16.6:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1203   .bss.crc_16.6:00000000 crc_16.6
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1206   .bss.frame_header.4:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1210   .bss.frame_header.4:00000000 frame_header.4
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1213   .bss.frame_tail.2:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1217   .bss.frame_tail.2:00000000 frame_tail.2
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1223   .bss.send_length.5:00000000 send_length.5
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1224   .bss.send_length.5:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1226   .bss.temp_buff.1:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:1230   .bss.temp_buff.1:00000000 temp_buff.1
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:700    .text.client_draw:0000001b $d
+C:\Users\86152\AppData\Local\Temp\ccIy21Un.s:700    .text.client_draw:0000001c $t
+
+UNDEFINED SYMBOLS
+Get_CRC8_Check_Sum
+memcpy
+Get_CRC16_Check_Sum
+HAL_UART_GetState
+HAL_UART_Transmit_DMA
+CRC8_INIT
+CRC_INIT

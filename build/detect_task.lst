@@ -1,0 +1,1151 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"detect_task.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Detect_Init,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Detect_Init:
+  26              	.LVL0:
+  27              	.LFB175:
+  28              		.file 1 "Application/detect_task.c"
+   1:Application/detect_task.c **** /**
+   2:Application/detect_task.c ****  ******************************************************************************
+   3:Application/detect_task.c ****  * @file    detect task.h
+   4:Application/detect_task.c ****  * @author  Wang Hongxi
+   5:Application/detect_task.c ****  * @version V1.0.0
+   6:Application/detect_task.c ****  * @date    2020/1/30
+   7:Application/detect_task.c ****  * @brief
+   8:Application/detect_task.c ****  ******************************************************************************
+   9:Application/detect_task.c ****  * @attention
+  10:Application/detect_task.c ****  *
+  11:Application/detect_task.c ****  ******************************************************************************
+  12:Application/detect_task.c ****  */
+  13:Application/detect_task.c **** #include "detect_task.h"
+  14:Application/detect_task.c **** 
+  15:Application/detect_task.c **** uint32_t resetCount = 0;
+  16:Application/detect_task.c **** 
+  17:Application/detect_task.c **** Detect_t Detect_List[DETECT_LIST_LENGHT + 1];
+  18:Application/detect_task.c **** BoardState_t BoardState;
+  19:Application/detect_task.c **** 
+  20:Application/detect_task.c **** static void Detect_Init(uint32_t time);
+  21:Application/detect_task.c **** 
+  22:Application/detect_task.c **** void Detect_Task_Init(void)
+  23:Application/detect_task.c **** {
+  24:Application/detect_task.c ****     static uint32_t system_time;
+  25:Application/detect_task.c ****     system_time = USER_GetTick();
+  26:Application/detect_task.c **** 
+  27:Application/detect_task.c ****     Detect_Init(system_time);
+  28:Application/detect_task.c **** 
+  29:Application/detect_task.c ****     USER_Delay_ms(60);
+  30:Application/detect_task.c **** }
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 2
+
+
+  31:Application/detect_task.c **** 
+  32:Application/detect_task.c **** void Detect_Task(void)
+  33:Application/detect_task.c **** {
+  34:Application/detect_task.c ****     static uint32_t system_time;
+  35:Application/detect_task.c ****     static uint8_t error_num_display = 0;
+  36:Application/detect_task.c ****     system_time = USER_GetTick();
+  37:Application/detect_task.c **** 
+  38:Application/detect_task.c ****     error_num_display = DETECT_LIST_LENGHT;
+  39:Application/detect_task.c ****     Detect_List[DETECT_LIST_LENGHT].is_Lost = 0;
+  40:Application/detect_task.c ****     Detect_List[DETECT_LIST_LENGHT].Error_Exist = 0;
+  41:Application/detect_task.c **** 
+  42:Application/detect_task.c ****     BoardState.Voltage = get_battery_voltage();
+  43:Application/detect_task.c ****     BoardState.Temperature = get_temprate();
+  44:Application/detect_task.c **** 
+  45:Application/detect_task.c ****     for (int i = 0; i < DETECT_LIST_LENGHT; i++)
+  46:Application/detect_task.c ****     {
+  47:Application/detect_task.c ****         if (Detect_List[i].Enable == 0)
+  48:Application/detect_task.c ****         {
+  49:Application/detect_task.c ****             continue;
+  50:Application/detect_task.c ****         }
+  51:Application/detect_task.c **** 
+  52:Application/detect_task.c ****         //掉线判断
+  53:Application/detect_task.c ****         if (system_time - Detect_List[i].New_Time > Detect_List[i].Offline_Time)
+  54:Application/detect_task.c ****         {
+  55:Application/detect_task.c ****             if (Detect_List[i].Error_Exist == 0)
+  56:Application/detect_task.c ****             {
+  57:Application/detect_task.c ****                 //记录错误以及掉线时间
+  58:Application/detect_task.c ****                 Detect_List[i].is_Lost = 1;
+  59:Application/detect_task.c ****                 Detect_List[i].Error_Exist = 1;
+  60:Application/detect_task.c ****                 Detect_List[i].Lost_Time = system_time;
+  61:Application/detect_task.c ****             }
+  62:Application/detect_task.c **** 
+  63:Application/detect_task.c ****             //保存优先级最高的错误码
+  64:Application/detect_task.c ****             if (Detect_List[i].Priority > Detect_List[error_num_display].Priority)
+  65:Application/detect_task.c ****             {
+  66:Application/detect_task.c ****                 error_num_display = i;
+  67:Application/detect_task.c ****             }
+  68:Application/detect_task.c **** 
+  69:Application/detect_task.c ****             Detect_List[DETECT_LIST_LENGHT].is_Lost = 1;
+  70:Application/detect_task.c ****             Detect_List[DETECT_LIST_LENGHT].Error_Exist = 1;
+  71:Application/detect_task.c **** 
+  72:Application/detect_task.c ****             //如果提供解决函数，运行解决函数
+  73:Application/detect_task.c ****             if (Detect_List[i].f_Solve_Lost != NULL)
+  74:Application/detect_task.c ****             {
+  75:Application/detect_task.c ****                 Detect_List[i].f_Solve_Lost();
+  76:Application/detect_task.c ****             }
+  77:Application/detect_task.c ****         }
+  78:Application/detect_task.c ****         else if (system_time - Detect_List[i].Work_Time < Detect_List[i].Online_Time)
+  79:Application/detect_task.c ****         {
+  80:Application/detect_task.c ****             //刚刚上线，可能存在数据不稳定，只记录不丢失，
+  81:Application/detect_task.c ****             Detect_List[i].is_Lost = 0;
+  82:Application/detect_task.c ****             Detect_List[i].Error_Exist = 1;
+  83:Application/detect_task.c ****         }
+  84:Application/detect_task.c ****         else
+  85:Application/detect_task.c ****         {
+  86:Application/detect_task.c ****             Detect_List[i].is_Lost = 0;
+  87:Application/detect_task.c ****             //判断是否存在数据错误
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 3
+
+
+  88:Application/detect_task.c ****             if (Detect_List[i].is_Data_Error != NULL)
+  89:Application/detect_task.c ****             {
+  90:Application/detect_task.c ****                 Detect_List[i].Error_Exist = 1;
+  91:Application/detect_task.c ****             }
+  92:Application/detect_task.c ****             else
+  93:Application/detect_task.c ****             {
+  94:Application/detect_task.c ****                 Detect_List[i].Error_Exist = 0;
+  95:Application/detect_task.c ****             }
+  96:Application/detect_task.c **** 
+  97:Application/detect_task.c ****             //计算频率
+  98:Application/detect_task.c ****             if (Detect_List[i].New_Time > Detect_List[i].Last_Time)
+  99:Application/detect_task.c ****             {
+ 100:Application/detect_task.c ****                 Detect_List[i].frequency = 1000.0f / (float)(Detect_List[i].New_Time - Detect_List[
+ 101:Application/detect_task.c ****             }
+ 102:Application/detect_task.c ****         }
+ 103:Application/detect_task.c ****     }
+ 104:Application/detect_task.c **** }
+ 105:Application/detect_task.c **** 
+ 106:Application/detect_task.c **** uint8_t is_TOE_Error(uint8_t toe)
+ 107:Application/detect_task.c **** {
+ 108:Application/detect_task.c ****     return (Detect_List[toe].Error_Exist == 1);
+ 109:Application/detect_task.c **** }
+ 110:Application/detect_task.c **** 
+ 111:Application/detect_task.c **** void Detect_Hook(uint8_t toe)
+ 112:Application/detect_task.c **** {
+ 113:Application/detect_task.c ****     Detect_List[toe].Last_Time = Detect_List[toe].New_Time; //更新上一次记录时间
+ 114:Application/detect_task.c ****     Detect_List[toe].New_Time = USER_GetTick();             //记录本次时间
+ 115:Application/detect_task.c **** 
+ 116:Application/detect_task.c ****     //进入此函数证明没有掉线
+ 117:Application/detect_task.c ****     if (Detect_List[toe].is_Lost)
+ 118:Application/detect_task.c ****     {
+ 119:Application/detect_task.c ****         Detect_List[toe].is_Lost = 0;
+ 120:Application/detect_task.c ****         Detect_List[toe].Work_Time = Detect_List[toe].New_Time;
+ 121:Application/detect_task.c ****     }
+ 122:Application/detect_task.c **** 
+ 123:Application/detect_task.c ****     if (Detect_List[toe].f_is_Data_Error != NULL)
+ 124:Application/detect_task.c ****     {
+ 125:Application/detect_task.c ****         if (Detect_List[toe].f_is_Data_Error())
+ 126:Application/detect_task.c ****         {
+ 127:Application/detect_task.c ****             Detect_List[toe].Error_Exist = 1;
+ 128:Application/detect_task.c ****             Detect_List[toe].is_Data_Error = 1;
+ 129:Application/detect_task.c **** 
+ 130:Application/detect_task.c ****             if (Detect_List[toe].f_Solve_Data_Error != NULL)
+ 131:Application/detect_task.c ****             {
+ 132:Application/detect_task.c ****                 Detect_List[toe].f_Solve_Data_Error();
+ 133:Application/detect_task.c ****             }
+ 134:Application/detect_task.c ****         }
+ 135:Application/detect_task.c ****         else
+ 136:Application/detect_task.c ****         {
+ 137:Application/detect_task.c ****             Detect_List[toe].is_Data_Error = 0;
+ 138:Application/detect_task.c ****         }
+ 139:Application/detect_task.c ****     }
+ 140:Application/detect_task.c ****     else
+ 141:Application/detect_task.c ****     {
+ 142:Application/detect_task.c ****         Detect_List[toe].is_Data_Error = 0;
+ 143:Application/detect_task.c ****     }
+ 144:Application/detect_task.c **** }
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 4
+
+
+ 145:Application/detect_task.c **** 
+ 146:Application/detect_task.c **** static void Detect_Init(uint32_t time)
+ 147:Application/detect_task.c **** {
+  29              		.loc 1 147 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 80
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 147 1 is_stmt 0 view .LVU1
+  34 0000 70B5     		push	{r4, r5, r6, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 16
+  37              		.cfi_offset 4, -16
+  38              		.cfi_offset 5, -12
+  39              		.cfi_offset 6, -8
+  40              		.cfi_offset 14, -4
+  41 0002 94B0     		sub	sp, sp, #80
+  42              	.LCFI1:
+  43              		.cfi_def_cfa_offset 96
+  44 0004 0546     		mov	r5, r0
+ 148:Application/detect_task.c ****     //设置离线时间，上线稳定工作时间，优先级 offlineTime onlinetime Priority
+ 149:Application/detect_task.c ****     uint16_t set_item[DETECT_LIST_LENGHT][3] =
+  45              		.loc 1 149 5 is_stmt 1 view .LVU2
+  46              		.loc 1 149 14 is_stmt 0 view .LVU3
+  47 0006 4E22     		movs	r2, #78
+  48 0008 2449     		ldr	r1, .L5
+  49 000a 6846     		mov	r0, sp
+  50              	.LVL1:
+  51              		.loc 1 149 14 view .LVU4
+  52 000c FFF7FEFF 		bl	memcpy
+  53              	.LVL2:
+ 150:Application/detect_task.c ****         {
+ 151:Application/detect_task.c ****             {30, 3, 14},     // yaw
+ 152:Application/detect_task.c ****             {30, 3, 13},     // pitch
+ 153:Application/detect_task.c ****             {5, 10, 11},     // trigger 1
+ 154:Application/detect_task.c ****             {5, 10, 11},     // trigger 2
+ 155:Application/detect_task.c ****             {80, 3, 12},     // RC device
+ 156:Application/detect_task.c ****             {70, 4, 10},     // autoaim device
+ 157:Application/detect_task.c ****             {1000, 1000, 9}, // refuree device
+ 158:Application/detect_task.c ****             {500, 500, 8},   // VTM device
+ 159:Application/detect_task.c ****             {50, 10, 15},
+ 160:Application/detect_task.c **** 						{5,10,11},
+ 161:Application/detect_task.c **** 						{5,10,11},
+ 162:Application/detect_task.c **** 						{5,10,11},
+ 163:Application/detect_task.c **** 						{5,10,11},
+ 164:Application/detect_task.c ****         };
+ 165:Application/detect_task.c **** 
+ 166:Application/detect_task.c ****     for (uint8_t i = 0; i < DETECT_LIST_LENGHT; i++)
+  54              		.loc 1 166 5 is_stmt 1 view .LVU5
+  55              	.LBB2:
+  56              		.loc 1 166 10 view .LVU6
+  57              		.loc 1 166 18 is_stmt 0 view .LVU7
+  58 0010 0022     		movs	r2, #0
+  59              		.loc 1 166 5 view .LVU8
+  60 0012 38E0     		b	.L2
+  61              	.LVL3:
+  62              	.L3:
+ 167:Application/detect_task.c ****     {
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 5
+
+
+ 168:Application/detect_task.c ****         Detect_List[i].Offline_Time = set_item[i][0];
+  63              		.loc 1 168 9 is_stmt 1 discriminator 3 view .LVU9
+  64              		.loc 1 168 50 is_stmt 0 discriminator 3 view .LVU10
+  65 0014 02EB420C 		add	ip, r2, r2, lsl #1
+  66 0018 14AB     		add	r3, sp, #80
+  67 001a 03EB4C0C 		add	ip, r3, ip, lsl #1
+  68 001e 3CF8506C 		ldrh	r6, [ip, #-80]
+  69              		.loc 1 168 37 discriminator 3 view .LVU11
+  70 0022 1F4C     		ldr	r4, .L5+4
+  71 0024 02EB820E 		add	lr, r2, r2, lsl #2
+  72 0028 04EBCE01 		add	r1, r4, lr, lsl #3
+  73 002c 088A     		ldrh	r0, [r1, #16]
+  74 002e 66F30B00 		bfi	r0, r6, #0, #12
+  75 0032 0882     		strh	r0, [r1, #16]	@ movhi
+ 169:Application/detect_task.c ****         Detect_List[i].Online_Time = set_item[i][1];
+  76              		.loc 1 169 9 is_stmt 1 discriminator 3 view .LVU12
+  77              		.loc 1 169 49 is_stmt 0 discriminator 3 view .LVU13
+  78 0034 3CF84E6C 		ldrh	r6, [ip, #-78]
+  79              		.loc 1 169 36 discriminator 3 view .LVU14
+  80 0038 488A     		ldrh	r0, [r1, #18]
+  81 003a 66F30B00 		bfi	r0, r6, #0, #12
+  82 003e 4882     		strh	r0, [r1, #18]	@ movhi
+ 170:Application/detect_task.c ****         Detect_List[i].Priority = set_item[i][2];
+  83              		.loc 1 170 9 is_stmt 1 discriminator 3 view .LVU15
+  84              		.loc 1 170 46 is_stmt 0 discriminator 3 view .LVU16
+  85 0040 3CF84CCC 		ldrh	ip, [ip, #-76]
+  86              		.loc 1 170 33 discriminator 3 view .LVU17
+  87 0044 087D     		ldrb	r0, [r1, #20]	@ zero_extendqisi2
+  88 0046 6CF30300 		bfi	r0, ip, #0, #4
+  89 004a 0875     		strb	r0, [r1, #20]
+ 171:Application/detect_task.c ****         Detect_List[i].f_is_Data_Error = NULL;
+  90              		.loc 1 171 9 is_stmt 1 discriminator 3 view .LVU18
+  91              		.loc 1 171 40 is_stmt 0 discriminator 3 view .LVU19
+  92 004c 0020     		movs	r0, #0
+  93 004e C861     		str	r0, [r1, #28]
+ 172:Application/detect_task.c ****         Detect_List[i].f_Solve_Lost = NULL;
+  94              		.loc 1 172 9 is_stmt 1 discriminator 3 view .LVU20
+  95              		.loc 1 172 37 is_stmt 0 discriminator 3 view .LVU21
+  96 0050 0862     		str	r0, [r1, #32]
+ 173:Application/detect_task.c ****         Detect_List[i].f_Solve_Data_Error = NULL;
+  97              		.loc 1 173 9 is_stmt 1 discriminator 3 view .LVU22
+  98              		.loc 1 173 43 is_stmt 0 discriminator 3 view .LVU23
+  99 0052 4862     		str	r0, [r1, #36]
+ 174:Application/detect_task.c **** 
+ 175:Application/detect_task.c ****         Detect_List[i].Enable = 1;
+ 100              		.loc 1 175 9 is_stmt 1 discriminator 3 view .LVU24
+ 101              		.loc 1 175 31 is_stmt 0 discriminator 3 view .LVU25
+ 102 0054 C87C     		ldrb	r0, [r1, #19]	@ zero_extendqisi2
+ 103 0056 40F01000 		orr	r0, r0, #16
+ 104 005a C874     		strb	r0, [r1, #19]
+ 176:Application/detect_task.c ****         Detect_List[i].Error_Exist = 1;
+ 105              		.loc 1 176 9 is_stmt 1 discriminator 3 view .LVU26
+ 106              		.loc 1 176 36 is_stmt 0 discriminator 3 view .LVU27
+ 107 005c 087D     		ldrb	r0, [r1, #20]	@ zero_extendqisi2
+ 108 005e 40F01000 		orr	r0, r0, #16
+ 109 0062 0875     		strb	r0, [r1, #20]
+ 177:Application/detect_task.c ****         Detect_List[i].is_Lost = 1;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 6
+
+
+ 110              		.loc 1 177 9 is_stmt 1 discriminator 3 view .LVU28
+ 111              		.loc 1 177 32 is_stmt 0 discriminator 3 view .LVU29
+ 112 0064 C0B2     		uxtb	r0, r0
+ 113 0066 40F02000 		orr	r0, r0, #32
+ 114 006a 0875     		strb	r0, [r1, #20]
+ 178:Application/detect_task.c ****         Detect_List[i].is_Data_Error = 1;
+ 115              		.loc 1 178 9 is_stmt 1 discriminator 3 view .LVU30
+ 116              		.loc 1 178 38 is_stmt 0 discriminator 3 view .LVU31
+ 117 006c C0B2     		uxtb	r0, r0
+ 118 006e 40F04000 		orr	r0, r0, #64
+ 119 0072 0875     		strb	r0, [r1, #20]
+ 179:Application/detect_task.c ****         Detect_List[i].frequency = 0.0f;
+ 120              		.loc 1 179 9 is_stmt 1 discriminator 3 view .LVU32
+ 121              		.loc 1 179 34 is_stmt 0 discriminator 3 view .LVU33
+ 122 0074 0023     		movs	r3, #0
+ 123 0076 8B61     		str	r3, [r1, #24]	@ float
+ 180:Application/detect_task.c ****         Detect_List[i].New_Time = time;
+ 124              		.loc 1 180 9 is_stmt 1 discriminator 3 view .LVU34
+ 125              		.loc 1 180 33 is_stmt 0 discriminator 3 view .LVU35
+ 126 0078 44F83E50 		str	r5, [r4, lr, lsl #3]
+ 181:Application/detect_task.c ****         Detect_List[i].Last_Time = time;
+ 127              		.loc 1 181 9 is_stmt 1 discriminator 3 view .LVU36
+ 128              		.loc 1 181 34 is_stmt 0 discriminator 3 view .LVU37
+ 129 007c 4D60     		str	r5, [r1, #4]
+ 182:Application/detect_task.c ****         Detect_List[i].Lost_Time = time;
+ 130              		.loc 1 182 9 is_stmt 1 discriminator 3 view .LVU38
+ 131              		.loc 1 182 34 is_stmt 0 discriminator 3 view .LVU39
+ 132 007e 8D60     		str	r5, [r1, #8]
+ 183:Application/detect_task.c ****         Detect_List[i].Work_Time = time;
+ 133              		.loc 1 183 9 is_stmt 1 discriminator 3 view .LVU40
+ 134              		.loc 1 183 34 is_stmt 0 discriminator 3 view .LVU41
+ 135 0080 CD60     		str	r5, [r1, #12]
+ 166:Application/detect_task.c ****     {
+ 136              		.loc 1 166 49 is_stmt 1 discriminator 3 view .LVU42
+ 166:Application/detect_task.c ****     {
+ 137              		.loc 1 166 50 is_stmt 0 discriminator 3 view .LVU43
+ 138 0082 0132     		adds	r2, r2, #1
+ 139              	.LVL4:
+ 166:Application/detect_task.c ****     {
+ 140              		.loc 1 166 50 discriminator 3 view .LVU44
+ 141 0084 D2B2     		uxtb	r2, r2
+ 142              	.LVL5:
+ 143              	.L2:
+ 166:Application/detect_task.c ****     {
+ 144              		.loc 1 166 25 is_stmt 1 discriminator 1 view .LVU45
+ 166:Application/detect_task.c ****     {
+ 145              		.loc 1 166 5 is_stmt 0 discriminator 1 view .LVU46
+ 146 0086 0C2A     		cmp	r2, #12
+ 147 0088 C4D9     		bls	.L3
+ 148              	.LBE2:
+ 184:Application/detect_task.c ****     }
+ 185:Application/detect_task.c ****     Detect_List[RC_TOE].f_is_Data_Error = RC_Data_is_Error;
+ 149              		.loc 1 185 5 is_stmt 1 view .LVU47
+ 150              		.loc 1 185 41 is_stmt 0 view .LVU48
+ 151 008a 054B     		ldr	r3, .L5+4
+ 152 008c 054A     		ldr	r2, .L5+8
+ 153              	.LVL6:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 7
+
+
+ 154              		.loc 1 185 41 view .LVU49
+ 155 008e C3F8BC20 		str	r2, [r3, #188]
+ 186:Application/detect_task.c ****     // Detect_List[RC_TOE].f_Solve_Lost = Solve_RC_Lost;
+ 187:Application/detect_task.c ****     Detect_List[RC_TOE].f_Solve_Data_Error = Solve_RC_Data_Error;
+ 156              		.loc 1 187 5 is_stmt 1 view .LVU50
+ 157              		.loc 1 187 44 is_stmt 0 view .LVU51
+ 158 0092 054A     		ldr	r2, .L5+12
+ 159 0094 C3F8C420 		str	r2, [r3, #196]
+ 188:Application/detect_task.c **** }
+ 160              		.loc 1 188 1 view .LVU52
+ 161 0098 14B0     		add	sp, sp, #80
+ 162              	.LCFI2:
+ 163              		.cfi_def_cfa_offset 16
+ 164              		@ sp needed
+ 165 009a 70BD     		pop	{r4, r5, r6, pc}
+ 166              	.LVL7:
+ 167              	.L6:
+ 168              		.loc 1 188 1 view .LVU53
+ 169              		.align	2
+ 170              	.L5:
+ 171 009c 00000000 		.word	.LANCHOR0
+ 172 00a0 00000000 		.word	.LANCHOR1
+ 173 00a4 00000000 		.word	RC_Data_is_Error
+ 174 00a8 00000000 		.word	Solve_RC_Data_Error
+ 175              		.cfi_endproc
+ 176              	.LFE175:
+ 178              		.section	.text.Detect_Task_Init,"ax",%progbits
+ 179              		.align	1
+ 180              		.global	Detect_Task_Init
+ 181              		.syntax unified
+ 182              		.thumb
+ 183              		.thumb_func
+ 185              	Detect_Task_Init:
+ 186              	.LFB171:
+  23:Application/detect_task.c ****     static uint32_t system_time;
+ 187              		.loc 1 23 1 is_stmt 1 view -0
+ 188              		.cfi_startproc
+ 189              		@ args = 0, pretend = 0, frame = 0
+ 190              		@ frame_needed = 0, uses_anonymous_args = 0
+ 191 0000 08B5     		push	{r3, lr}
+ 192              	.LCFI3:
+ 193              		.cfi_def_cfa_offset 8
+ 194              		.cfi_offset 3, -8
+ 195              		.cfi_offset 14, -4
+  24:Application/detect_task.c ****     system_time = USER_GetTick();
+ 196              		.loc 1 24 5 view .LVU55
+  25:Application/detect_task.c **** 
+ 197              		.loc 1 25 5 view .LVU56
+  25:Application/detect_task.c **** 
+ 198              		.loc 1 25 19 is_stmt 0 view .LVU57
+ 199 0002 FFF7FEFF 		bl	xTaskGetTickCount
+ 200              	.LVL8:
+  25:Application/detect_task.c **** 
+ 201              		.loc 1 25 17 view .LVU58
+ 202 0006 044B     		ldr	r3, .L9
+ 203 0008 1860     		str	r0, [r3]
+  27:Application/detect_task.c **** 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 8
+
+
+ 204              		.loc 1 27 5 is_stmt 1 view .LVU59
+ 205 000a FFF7FEFF 		bl	Detect_Init
+ 206              	.LVL9:
+  29:Application/detect_task.c **** }
+ 207              		.loc 1 29 5 view .LVU60
+ 208 000e 3C20     		movs	r0, #60
+ 209 0010 FFF7FEFF 		bl	vTaskDelay
+ 210              	.LVL10:
+  30:Application/detect_task.c **** 
+ 211              		.loc 1 30 1 is_stmt 0 view .LVU61
+ 212 0014 08BD     		pop	{r3, pc}
+ 213              	.L10:
+ 214 0016 00BF     		.align	2
+ 215              	.L9:
+ 216 0018 00000000 		.word	.LANCHOR2
+ 217              		.cfi_endproc
+ 218              	.LFE171:
+ 220              		.section	.text.Detect_Task,"ax",%progbits
+ 221              		.align	1
+ 222              		.global	Detect_Task
+ 223              		.syntax unified
+ 224              		.thumb
+ 225              		.thumb_func
+ 227              	Detect_Task:
+ 228              	.LFB172:
+  33:Application/detect_task.c ****     static uint32_t system_time;
+ 229              		.loc 1 33 1 is_stmt 1 view -0
+ 230              		.cfi_startproc
+ 231              		@ args = 0, pretend = 0, frame = 0
+ 232              		@ frame_needed = 0, uses_anonymous_args = 0
+ 233 0000 10B5     		push	{r4, lr}
+ 234              	.LCFI4:
+ 235              		.cfi_def_cfa_offset 8
+ 236              		.cfi_offset 4, -8
+ 237              		.cfi_offset 14, -4
+  34:Application/detect_task.c ****     static uint8_t error_num_display = 0;
+ 238              		.loc 1 34 5 view .LVU63
+  35:Application/detect_task.c ****     system_time = USER_GetTick();
+ 239              		.loc 1 35 5 view .LVU64
+  36:Application/detect_task.c **** 
+ 240              		.loc 1 36 5 view .LVU65
+  36:Application/detect_task.c **** 
+ 241              		.loc 1 36 19 is_stmt 0 view .LVU66
+ 242 0002 FFF7FEFF 		bl	xTaskGetTickCount
+ 243              	.LVL11:
+  36:Application/detect_task.c **** 
+ 244              		.loc 1 36 17 view .LVU67
+ 245 0006 664B     		ldr	r3, .L23
+ 246 0008 1860     		str	r0, [r3]
+  38:Application/detect_task.c ****     Detect_List[DETECT_LIST_LENGHT].is_Lost = 0;
+ 247              		.loc 1 38 5 is_stmt 1 view .LVU68
+  38:Application/detect_task.c ****     Detect_List[DETECT_LIST_LENGHT].is_Lost = 0;
+ 248              		.loc 1 38 23 is_stmt 0 view .LVU69
+ 249 000a 664B     		ldr	r3, .L23+4
+ 250 000c 0D22     		movs	r2, #13
+ 251 000e 1A70     		strb	r2, [r3]
+  39:Application/detect_task.c ****     Detect_List[DETECT_LIST_LENGHT].Error_Exist = 0;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 9
+
+
+ 252              		.loc 1 39 5 is_stmt 1 view .LVU70
+  39:Application/detect_task.c ****     Detect_List[DETECT_LIST_LENGHT].Error_Exist = 0;
+ 253              		.loc 1 39 45 is_stmt 0 view .LVU71
+ 254 0010 654B     		ldr	r3, .L23+8
+ 255 0012 93F81C22 		ldrb	r2, [r3, #540]	@ zero_extendqisi2
+ 256 0016 6FF34512 		bfc	r2, #5, #1
+ 257 001a 83F81C22 		strb	r2, [r3, #540]
+  40:Application/detect_task.c **** 
+ 258              		.loc 1 40 5 is_stmt 1 view .LVU72
+  40:Application/detect_task.c **** 
+ 259              		.loc 1 40 49 is_stmt 0 view .LVU73
+ 260 001e D2B2     		uxtb	r2, r2
+ 261 0020 6FF30412 		bfc	r2, #4, #1
+ 262 0024 83F81C22 		strb	r2, [r3, #540]
+  42:Application/detect_task.c ****     BoardState.Temperature = get_temprate();
+ 263              		.loc 1 42 5 is_stmt 1 view .LVU74
+  42:Application/detect_task.c ****     BoardState.Temperature = get_temprate();
+ 264              		.loc 1 42 26 is_stmt 0 view .LVU75
+ 265 0028 FFF7FEFF 		bl	get_battery_voltage
+ 266              	.LVL12:
+  42:Application/detect_task.c ****     BoardState.Temperature = get_temprate();
+ 267              		.loc 1 42 24 view .LVU76
+ 268 002c 5F4C     		ldr	r4, .L23+12
+ 269 002e 84ED000A 		vstr.32	s0, [r4]
+  43:Application/detect_task.c **** 
+ 270              		.loc 1 43 5 is_stmt 1 view .LVU77
+  43:Application/detect_task.c **** 
+ 271              		.loc 1 43 30 is_stmt 0 view .LVU78
+ 272 0032 FFF7FEFF 		bl	get_temprate
+ 273              	.LVL13:
+  43:Application/detect_task.c **** 
+ 274              		.loc 1 43 28 view .LVU79
+ 275 0036 84ED010A 		vstr.32	s0, [r4, #4]
+  45:Application/detect_task.c ****     {
+ 276              		.loc 1 45 5 is_stmt 1 view .LVU80
+ 277              	.LBB3:
+  45:Application/detect_task.c ****     {
+ 278              		.loc 1 45 10 view .LVU81
+ 279              	.LVL14:
+  45:Application/detect_task.c ****     {
+ 280              		.loc 1 45 14 is_stmt 0 view .LVU82
+ 281 003a 0024     		movs	r4, #0
+  45:Application/detect_task.c ****     {
+ 282              		.loc 1 45 5 view .LVU83
+ 283 003c 13E0     		b	.L12
+ 284              	.LVL15:
+ 285              	.L16:
+  69:Application/detect_task.c ****             Detect_List[DETECT_LIST_LENGHT].Error_Exist = 1;
+ 286              		.loc 1 69 13 is_stmt 1 view .LVU84
+  69:Application/detect_task.c ****             Detect_List[DETECT_LIST_LENGHT].Error_Exist = 1;
+ 287              		.loc 1 69 53 is_stmt 0 view .LVU85
+ 288 003e 5A4B     		ldr	r3, .L23+8
+ 289 0040 93F81C22 		ldrb	r2, [r3, #540]	@ zero_extendqisi2
+ 290 0044 42F02002 		orr	r2, r2, #32
+ 291 0048 83F81C22 		strb	r2, [r3, #540]
+  70:Application/detect_task.c **** 
+ 292              		.loc 1 70 13 is_stmt 1 view .LVU86
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 10
+
+
+  70:Application/detect_task.c **** 
+ 293              		.loc 1 70 57 is_stmt 0 view .LVU87
+ 294 004c D2B2     		uxtb	r2, r2
+ 295 004e 42F01002 		orr	r2, r2, #16
+ 296 0052 83F81C22 		strb	r2, [r3, #540]
+  73:Application/detect_task.c ****             {
+ 297              		.loc 1 73 13 is_stmt 1 view .LVU88
+  73:Application/detect_task.c ****             {
+ 298              		.loc 1 73 31 is_stmt 0 view .LVU89
+ 299 0056 04EB8402 		add	r2, r4, r4, lsl #2
+ 300 005a 03EBC203 		add	r3, r3, r2, lsl #3
+ 301 005e 1B6A     		ldr	r3, [r3, #32]
+  73:Application/detect_task.c ****             {
+ 302              		.loc 1 73 16 view .LVU90
+ 303 0060 03B1     		cbz	r3, .L13
+  75:Application/detect_task.c ****             }
+ 304              		.loc 1 75 17 is_stmt 1 view .LVU91
+ 305 0062 9847     		blx	r3
+ 306              	.LVL16:
+ 307              	.L13:
+  45:Application/detect_task.c ****     {
+ 308              		.loc 1 45 45 discriminator 2 view .LVU92
+  45:Application/detect_task.c ****     {
+ 309              		.loc 1 45 46 is_stmt 0 discriminator 2 view .LVU93
+ 310 0064 0134     		adds	r4, r4, #1
+ 311              	.LVL17:
+ 312              	.L12:
+  45:Application/detect_task.c ****     {
+ 313              		.loc 1 45 21 is_stmt 1 discriminator 1 view .LVU94
+  45:Application/detect_task.c ****     {
+ 314              		.loc 1 45 5 is_stmt 0 discriminator 1 view .LVU95
+ 315 0066 0C2C     		cmp	r4, #12
+ 316 0068 00F39880 		bgt	.L22
+  47:Application/detect_task.c ****         {
+ 317              		.loc 1 47 9 is_stmt 1 view .LVU96
+  47:Application/detect_task.c ****         {
+ 318              		.loc 1 47 27 is_stmt 0 view .LVU97
+ 319 006c 04EB8403 		add	r3, r4, r4, lsl #2
+ 320 0070 4D4A     		ldr	r2, .L23+8
+ 321 0072 02EBC303 		add	r3, r2, r3, lsl #3
+ 322 0076 DB7C     		ldrb	r3, [r3, #19]	@ zero_extendqisi2
+  47:Application/detect_task.c ****         {
+ 323              		.loc 1 47 12 view .LVU98
+ 324 0078 13F0100F 		tst	r3, #16
+ 325 007c F2D0     		beq	.L13
+  53:Application/detect_task.c ****         {
+ 326              		.loc 1 53 9 is_stmt 1 view .LVU99
+  53:Application/detect_task.c ****         {
+ 327              		.loc 1 53 25 is_stmt 0 view .LVU100
+ 328 007e 484B     		ldr	r3, .L23
+ 329 0080 1A68     		ldr	r2, [r3]
+  53:Application/detect_task.c ****         {
+ 330              		.loc 1 53 41 view .LVU101
+ 331 0082 494B     		ldr	r3, .L23+8
+ 332 0084 04EB8401 		add	r1, r4, r4, lsl #2
+ 333 0088 03EBC10C 		add	ip, r3, r1, lsl #3
+ 334 008c 53F83110 		ldr	r1, [r3, r1, lsl #3]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 11
+
+
+  53:Application/detect_task.c ****         {
+ 335              		.loc 1 53 25 view .LVU102
+ 336 0090 501A     		subs	r0, r2, r1
+  53:Application/detect_task.c ****         {
+ 337              		.loc 1 53 67 view .LVU103
+ 338 0092 BCF81030 		ldrh	r3, [ip, #16]
+ 339 0096 C3F30B03 		ubfx	r3, r3, #0, #12
+  53:Application/detect_task.c ****         {
+ 340              		.loc 1 53 12 view .LVU104
+ 341 009a 9842     		cmp	r0, r3
+ 342 009c 27D9     		bls	.L14
+  55:Application/detect_task.c ****             {
+ 343              		.loc 1 55 13 is_stmt 1 view .LVU105
+  55:Application/detect_task.c ****             {
+ 344              		.loc 1 55 31 is_stmt 0 view .LVU106
+ 345 009e 9CF81430 		ldrb	r3, [ip, #20]	@ zero_extendqisi2
+  55:Application/detect_task.c ****             {
+ 346              		.loc 1 55 16 view .LVU107
+ 347 00a2 13F0100F 		tst	r3, #16
+ 348 00a6 0CD1     		bne	.L15
+  58:Application/detect_task.c ****                 Detect_List[i].Error_Exist = 1;
+ 349              		.loc 1 58 17 is_stmt 1 view .LVU108
+  58:Application/detect_task.c ****                 Detect_List[i].Error_Exist = 1;
+ 350              		.loc 1 58 40 is_stmt 0 view .LVU109
+ 351 00a8 9CF81400 		ldrb	r0, [ip, #20]	@ zero_extendqisi2
+ 352 00ac 40F02000 		orr	r0, r0, #32
+ 353 00b0 8CF81400 		strb	r0, [ip, #20]
+  59:Application/detect_task.c ****                 Detect_List[i].Lost_Time = system_time;
+ 354              		.loc 1 59 17 is_stmt 1 view .LVU110
+  59:Application/detect_task.c ****                 Detect_List[i].Lost_Time = system_time;
+ 355              		.loc 1 59 44 is_stmt 0 view .LVU111
+ 356 00b4 C0B2     		uxtb	r0, r0
+ 357 00b6 40F01000 		orr	r0, r0, #16
+ 358 00ba 8CF81400 		strb	r0, [ip, #20]
+  60:Application/detect_task.c ****             }
+ 359              		.loc 1 60 17 is_stmt 1 view .LVU112
+  60:Application/detect_task.c ****             }
+ 360              		.loc 1 60 42 is_stmt 0 view .LVU113
+ 361 00be CCF80820 		str	r2, [ip, #8]
+ 362              	.L15:
+  64:Application/detect_task.c ****             {
+ 363              		.loc 1 64 13 is_stmt 1 view .LVU114
+  64:Application/detect_task.c ****             {
+ 364              		.loc 1 64 31 is_stmt 0 view .LVU115
+ 365 00c2 394B     		ldr	r3, .L23+8
+ 366 00c4 04EB8402 		add	r2, r4, r4, lsl #2
+ 367 00c8 03EBC202 		add	r2, r3, r2, lsl #3
+ 368 00cc 117D     		ldrb	r1, [r2, #20]	@ zero_extendqisi2
+ 369 00ce 01F00F01 		and	r1, r1, #15
+  64:Application/detect_task.c ****             {
+ 370              		.loc 1 64 73 view .LVU116
+ 371 00d2 344A     		ldr	r2, .L23+4
+ 372 00d4 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 373 00d6 02EB8202 		add	r2, r2, r2, lsl #2
+ 374 00da 03EBC203 		add	r3, r3, r2, lsl #3
+ 375 00de 1B7D     		ldrb	r3, [r3, #20]	@ zero_extendqisi2
+ 376 00e0 03F00F03 		and	r3, r3, #15
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 12
+
+
+  64:Application/detect_task.c ****             {
+ 377              		.loc 1 64 16 view .LVU117
+ 378 00e4 9942     		cmp	r1, r3
+ 379 00e6 AAD9     		bls	.L16
+  66:Application/detect_task.c ****             }
+ 380              		.loc 1 66 17 is_stmt 1 view .LVU118
+  66:Application/detect_task.c ****             }
+ 381              		.loc 1 66 35 is_stmt 0 view .LVU119
+ 382 00e8 2E4B     		ldr	r3, .L23+4
+ 383 00ea 1C70     		strb	r4, [r3]
+ 384 00ec A7E7     		b	.L16
+ 385              	.L14:
+  78:Application/detect_task.c ****         {
+ 386              		.loc 1 78 14 is_stmt 1 view .LVU120
+  78:Application/detect_task.c ****         {
+ 387              		.loc 1 78 46 is_stmt 0 view .LVU121
+ 388 00ee 04EB8403 		add	r3, r4, r4, lsl #2
+ 389 00f2 2D48     		ldr	r0, .L23+8
+ 390 00f4 00EBC303 		add	r3, r0, r3, lsl #3
+ 391 00f8 D868     		ldr	r0, [r3, #12]
+  78:Application/detect_task.c ****         {
+ 392              		.loc 1 78 30 view .LVU122
+ 393 00fa 121A     		subs	r2, r2, r0
+  78:Application/detect_task.c ****         {
+ 394              		.loc 1 78 73 view .LVU123
+ 395 00fc 5B8A     		ldrh	r3, [r3, #18]
+ 396 00fe C3F30B03 		ubfx	r3, r3, #0, #12
+  78:Application/detect_task.c ****         {
+ 397              		.loc 1 78 17 view .LVU124
+ 398 0102 9A42     		cmp	r2, r3
+ 399 0104 0FD2     		bcs	.L17
+  81:Application/detect_task.c ****             Detect_List[i].Error_Exist = 1;
+ 400              		.loc 1 81 13 is_stmt 1 view .LVU125
+  81:Application/detect_task.c ****             Detect_List[i].Error_Exist = 1;
+ 401              		.loc 1 81 36 is_stmt 0 view .LVU126
+ 402 0106 04EB8403 		add	r3, r4, r4, lsl #2
+ 403 010a 274A     		ldr	r2, .L23+8
+ 404 010c 02EBC303 		add	r3, r2, r3, lsl #3
+ 405 0110 03F11002 		add	r2, r3, #16
+ 406 0114 1B7D     		ldrb	r3, [r3, #20]	@ zero_extendqisi2
+ 407 0116 6FF34513 		bfc	r3, #5, #1
+ 408 011a 1371     		strb	r3, [r2, #4]
+  82:Application/detect_task.c ****         }
+ 409              		.loc 1 82 13 is_stmt 1 view .LVU127
+  82:Application/detect_task.c ****         }
+ 410              		.loc 1 82 40 is_stmt 0 view .LVU128
+ 411 011c DBB2     		uxtb	r3, r3
+ 412 011e 43F01003 		orr	r3, r3, #16
+ 413 0122 1371     		strb	r3, [r2, #4]
+ 414 0124 9EE7     		b	.L13
+ 415              	.L17:
+  86:Application/detect_task.c ****             //判断是否存在数据错误
+ 416              		.loc 1 86 13 is_stmt 1 view .LVU129
+  86:Application/detect_task.c ****             //判断是否存在数据错误
+ 417              		.loc 1 86 36 is_stmt 0 view .LVU130
+ 418 0126 04EB8403 		add	r3, r4, r4, lsl #2
+ 419 012a 1F4A     		ldr	r2, .L23+8
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 13
+
+
+ 420 012c 02EBC303 		add	r3, r2, r3, lsl #3
+ 421 0130 03F11002 		add	r2, r3, #16
+ 422 0134 1B7D     		ldrb	r3, [r3, #20]	@ zero_extendqisi2
+ 423 0136 6FF34513 		bfc	r3, #5, #1
+ 424 013a 1371     		strb	r3, [r2, #4]
+  88:Application/detect_task.c ****             {
+ 425              		.loc 1 88 13 is_stmt 1 view .LVU131
+  88:Application/detect_task.c ****             {
+ 426              		.loc 1 88 31 is_stmt 0 view .LVU132
+ 427 013c DBB2     		uxtb	r3, r3
+  88:Application/detect_task.c ****             {
+ 428              		.loc 1 88 16 view .LVU133
+ 429 013e 13F0400F 		tst	r3, #64
+ 430 0142 21D0     		beq	.L18
+  90:Application/detect_task.c ****             }
+ 431              		.loc 1 90 17 is_stmt 1 view .LVU134
+  90:Application/detect_task.c ****             }
+ 432              		.loc 1 90 44 is_stmt 0 view .LVU135
+ 433 0144 04EB8403 		add	r3, r4, r4, lsl #2
+ 434 0148 174A     		ldr	r2, .L23+8
+ 435 014a 02EBC303 		add	r3, r2, r3, lsl #3
+ 436 014e 1A7D     		ldrb	r2, [r3, #20]	@ zero_extendqisi2
+ 437 0150 42F01002 		orr	r2, r2, #16
+ 438 0154 1A75     		strb	r2, [r3, #20]
+ 439              	.L19:
+  98:Application/detect_task.c ****             {
+ 440              		.loc 1 98 13 is_stmt 1 view .LVU136
+  98:Application/detect_task.c ****             {
+ 441              		.loc 1 98 57 is_stmt 0 view .LVU137
+ 442 0156 04EB8403 		add	r3, r4, r4, lsl #2
+ 443 015a 134A     		ldr	r2, .L23+8
+ 444 015c 02EBC303 		add	r3, r2, r3, lsl #3
+ 445 0160 5B68     		ldr	r3, [r3, #4]
+  98:Application/detect_task.c ****             {
+ 446              		.loc 1 98 16 view .LVU138
+ 447 0162 9942     		cmp	r1, r3
+ 448 0164 7FF67EAF 		bls	.L13
+ 100:Application/detect_task.c ****             }
+ 449              		.loc 1 100 17 is_stmt 1 view .LVU139
+ 100:Application/detect_task.c ****             }
+ 450              		.loc 1 100 86 is_stmt 0 view .LVU140
+ 451 0168 C91A     		subs	r1, r1, r3
+ 100:Application/detect_task.c ****             }
+ 452              		.loc 1 100 54 view .LVU141
+ 453 016a 07EE901A 		vmov	s15, r1	@ int
+ 454 016e F8EE677A 		vcvt.f32.u32	s15, s15
+ 100:Application/detect_task.c ****             }
+ 455              		.loc 1 100 52 view .LVU142
+ 456 0172 DFED0F6A 		vldr.32	s13, .L23+16
+ 457 0176 86EEA77A 		vdiv.f32	s14, s13, s15
+ 100:Application/detect_task.c ****             }
+ 458              		.loc 1 100 42 view .LVU143
+ 459 017a 04EB8403 		add	r3, r4, r4, lsl #2
+ 460 017e 02EBC303 		add	r3, r2, r3, lsl #3
+ 461 0182 83ED067A 		vstr.32	s14, [r3, #24]
+ 462 0186 6DE7     		b	.L13
+ 463              	.L18:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 14
+
+
+  94:Application/detect_task.c ****             }
+ 464              		.loc 1 94 17 is_stmt 1 view .LVU144
+  94:Application/detect_task.c ****             }
+ 465              		.loc 1 94 44 is_stmt 0 view .LVU145
+ 466 0188 04EB8403 		add	r3, r4, r4, lsl #2
+ 467 018c 064A     		ldr	r2, .L23+8
+ 468 018e 02EBC303 		add	r3, r2, r3, lsl #3
+ 469 0192 1A7D     		ldrb	r2, [r3, #20]	@ zero_extendqisi2
+ 470 0194 6FF30412 		bfc	r2, #4, #1
+ 471 0198 1A75     		strb	r2, [r3, #20]
+ 472 019a DCE7     		b	.L19
+ 473              	.L22:
+  94:Application/detect_task.c ****             }
+ 474              		.loc 1 94 44 view .LVU146
+ 475              	.LBE3:
+ 104:Application/detect_task.c **** 
+ 476              		.loc 1 104 1 view .LVU147
+ 477 019c 10BD     		pop	{r4, pc}
+ 478              	.LVL18:
+ 479              	.L24:
+ 104:Application/detect_task.c **** 
+ 480              		.loc 1 104 1 view .LVU148
+ 481 019e 00BF     		.align	2
+ 482              	.L23:
+ 483 01a0 00000000 		.word	.LANCHOR3
+ 484 01a4 00000000 		.word	.LANCHOR4
+ 485 01a8 00000000 		.word	.LANCHOR1
+ 486 01ac 00000000 		.word	.LANCHOR5
+ 487 01b0 00007A44 		.word	1148846080
+ 488              		.cfi_endproc
+ 489              	.LFE172:
+ 491              		.section	.text.is_TOE_Error,"ax",%progbits
+ 492              		.align	1
+ 493              		.global	is_TOE_Error
+ 494              		.syntax unified
+ 495              		.thumb
+ 496              		.thumb_func
+ 498              	is_TOE_Error:
+ 499              	.LVL19:
+ 500              	.LFB173:
+ 107:Application/detect_task.c ****     return (Detect_List[toe].Error_Exist == 1);
+ 501              		.loc 1 107 1 is_stmt 1 view -0
+ 502              		.cfi_startproc
+ 503              		@ args = 0, pretend = 0, frame = 0
+ 504              		@ frame_needed = 0, uses_anonymous_args = 0
+ 505              		@ link register save eliminated.
+ 108:Application/detect_task.c **** }
+ 506              		.loc 1 108 5 view .LVU150
+ 108:Application/detect_task.c **** }
+ 507              		.loc 1 108 29 is_stmt 0 view .LVU151
+ 508 0000 00EB8000 		add	r0, r0, r0, lsl #2
+ 509              	.LVL20:
+ 108:Application/detect_task.c **** }
+ 510              		.loc 1 108 29 view .LVU152
+ 511 0004 034B     		ldr	r3, .L26
+ 512 0006 03EBC000 		add	r0, r3, r0, lsl #3
+ 513 000a 007D     		ldrb	r0, [r0, #20]	@ zero_extendqisi2
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 15
+
+
+ 109:Application/detect_task.c **** 
+ 514              		.loc 1 109 1 view .LVU153
+ 515 000c C0F30010 		ubfx	r0, r0, #4, #1
+ 516 0010 7047     		bx	lr
+ 517              	.L27:
+ 518 0012 00BF     		.align	2
+ 519              	.L26:
+ 520 0014 00000000 		.word	.LANCHOR1
+ 521              		.cfi_endproc
+ 522              	.LFE173:
+ 524              		.section	.text.Detect_Hook,"ax",%progbits
+ 525              		.align	1
+ 526              		.global	Detect_Hook
+ 527              		.syntax unified
+ 528              		.thumb
+ 529              		.thumb_func
+ 531              	Detect_Hook:
+ 532              	.LVL21:
+ 533              	.LFB174:
+ 112:Application/detect_task.c ****     Detect_List[toe].Last_Time = Detect_List[toe].New_Time; //更新上一次记录时间
+ 534              		.loc 1 112 1 is_stmt 1 view -0
+ 535              		.cfi_startproc
+ 536              		@ args = 0, pretend = 0, frame = 0
+ 537              		@ frame_needed = 0, uses_anonymous_args = 0
+ 112:Application/detect_task.c ****     Detect_List[toe].Last_Time = Detect_List[toe].New_Time; //更新上一次记录时间
+ 538              		.loc 1 112 1 is_stmt 0 view .LVU155
+ 539 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 540              	.LCFI5:
+ 541              		.cfi_def_cfa_offset 24
+ 542              		.cfi_offset 3, -24
+ 543              		.cfi_offset 4, -20
+ 544              		.cfi_offset 5, -16
+ 545              		.cfi_offset 6, -12
+ 546              		.cfi_offset 7, -8
+ 547              		.cfi_offset 14, -4
+ 548 0002 0446     		mov	r4, r0
+ 113:Application/detect_task.c ****     Detect_List[toe].New_Time = USER_GetTick();             //记录本次时间
+ 549              		.loc 1 113 5 is_stmt 1 view .LVU156
+ 113:Application/detect_task.c ****     Detect_List[toe].New_Time = USER_GetTick();             //记录本次时间
+ 550              		.loc 1 113 50 is_stmt 0 view .LVU157
+ 551 0004 234E     		ldr	r6, .L34
+ 552 0006 00EB8005 		add	r5, r0, r0, lsl #2
+ 553 000a EF00     		lsls	r7, r5, #3
+ 554 000c 06EBC505 		add	r5, r6, r5, lsl #3
+ 555 0010 F359     		ldr	r3, [r6, r7]
+ 113:Application/detect_task.c ****     Detect_List[toe].New_Time = USER_GetTick();             //记录本次时间
+ 556              		.loc 1 113 32 view .LVU158
+ 557 0012 6B60     		str	r3, [r5, #4]
+ 114:Application/detect_task.c **** 
+ 558              		.loc 1 114 5 is_stmt 1 view .LVU159
+ 114:Application/detect_task.c **** 
+ 559              		.loc 1 114 33 is_stmt 0 view .LVU160
+ 560 0014 FFF7FEFF 		bl	xTaskGetTickCount
+ 561              	.LVL22:
+ 114:Application/detect_task.c **** 
+ 562              		.loc 1 114 31 view .LVU161
+ 563 0018 F051     		str	r0, [r6, r7]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 16
+
+
+ 117:Application/detect_task.c ****     {
+ 564              		.loc 1 117 5 is_stmt 1 view .LVU162
+ 117:Application/detect_task.c ****     {
+ 565              		.loc 1 117 25 is_stmt 0 view .LVU163
+ 566 001a 2B7D     		ldrb	r3, [r5, #20]	@ zero_extendqisi2
+ 117:Application/detect_task.c ****     {
+ 567              		.loc 1 117 8 view .LVU164
+ 568 001c 13F0200F 		tst	r3, #32
+ 569 0020 04D0     		beq	.L29
+ 119:Application/detect_task.c ****         Detect_List[toe].Work_Time = Detect_List[toe].New_Time;
+ 570              		.loc 1 119 9 is_stmt 1 view .LVU165
+ 119:Application/detect_task.c ****         Detect_List[toe].Work_Time = Detect_List[toe].New_Time;
+ 571              		.loc 1 119 34 is_stmt 0 view .LVU166
+ 572 0022 2A7D     		ldrb	r2, [r5, #20]	@ zero_extendqisi2
+ 573 0024 6FF34512 		bfc	r2, #5, #1
+ 574 0028 2A75     		strb	r2, [r5, #20]
+ 120:Application/detect_task.c ****     }
+ 575              		.loc 1 120 9 is_stmt 1 view .LVU167
+ 120:Application/detect_task.c ****     }
+ 576              		.loc 1 120 36 is_stmt 0 view .LVU168
+ 577 002a E860     		str	r0, [r5, #12]
+ 578              	.L29:
+ 123:Application/detect_task.c ****     {
+ 579              		.loc 1 123 5 is_stmt 1 view .LVU169
+ 123:Application/detect_task.c ****     {
+ 580              		.loc 1 123 25 is_stmt 0 view .LVU170
+ 581 002c 04EB8403 		add	r3, r4, r4, lsl #2
+ 582 0030 184A     		ldr	r2, .L34
+ 583 0032 02EBC303 		add	r3, r2, r3, lsl #3
+ 584 0036 DB69     		ldr	r3, [r3, #28]
+ 123:Application/detect_task.c ****     {
+ 585              		.loc 1 123 8 view .LVU171
+ 586 0038 13B3     		cbz	r3, .L30
+ 125:Application/detect_task.c ****         {
+ 587              		.loc 1 125 9 is_stmt 1 view .LVU172
+ 125:Application/detect_task.c ****         {
+ 588              		.loc 1 125 13 is_stmt 0 view .LVU173
+ 589 003a 9847     		blx	r3
+ 590              	.LVL23:
+ 125:Application/detect_task.c ****         {
+ 591              		.loc 1 125 12 view .LVU174
+ 592 003c B0B1     		cbz	r0, .L31
+ 127:Application/detect_task.c ****             Detect_List[toe].is_Data_Error = 1;
+ 593              		.loc 1 127 13 is_stmt 1 view .LVU175
+ 127:Application/detect_task.c ****             Detect_List[toe].is_Data_Error = 1;
+ 594              		.loc 1 127 42 is_stmt 0 view .LVU176
+ 595 003e 154B     		ldr	r3, .L34
+ 596 0040 04EB8402 		add	r2, r4, r4, lsl #2
+ 597 0044 03EBC202 		add	r2, r3, r2, lsl #3
+ 598 0048 02F11001 		add	r1, r2, #16
+ 599 004c 127D     		ldrb	r2, [r2, #20]	@ zero_extendqisi2
+ 600 004e 42F01002 		orr	r2, r2, #16
+ 601 0052 0A71     		strb	r2, [r1, #4]
+ 128:Application/detect_task.c **** 
+ 602              		.loc 1 128 13 is_stmt 1 view .LVU177
+ 128:Application/detect_task.c **** 
+ 603              		.loc 1 128 44 is_stmt 0 view .LVU178
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 17
+
+
+ 604 0054 D2B2     		uxtb	r2, r2
+ 605 0056 42F04002 		orr	r2, r2, #64
+ 606 005a 0A71     		strb	r2, [r1, #4]
+ 130:Application/detect_task.c ****             {
+ 607              		.loc 1 130 13 is_stmt 1 view .LVU179
+ 130:Application/detect_task.c ****             {
+ 608              		.loc 1 130 33 is_stmt 0 view .LVU180
+ 609 005c 04EB8404 		add	r4, r4, r4, lsl #2
+ 610 0060 03EBC403 		add	r3, r3, r4, lsl #3
+ 611 0064 5B6A     		ldr	r3, [r3, #36]
+ 130:Application/detect_task.c ****             {
+ 612              		.loc 1 130 16 view .LVU181
+ 613 0066 53B1     		cbz	r3, .L28
+ 132:Application/detect_task.c ****             }
+ 614              		.loc 1 132 17 is_stmt 1 view .LVU182
+ 615 0068 9847     		blx	r3
+ 616              	.LVL24:
+ 617 006a 08E0     		b	.L28
+ 618              	.L31:
+ 137:Application/detect_task.c ****         }
+ 619              		.loc 1 137 13 view .LVU183
+ 137:Application/detect_task.c ****         }
+ 620              		.loc 1 137 44 is_stmt 0 view .LVU184
+ 621 006c 04EB8404 		add	r4, r4, r4, lsl #2
+ 622 0070 084B     		ldr	r3, .L34
+ 623 0072 03EBC404 		add	r4, r3, r4, lsl #3
+ 624 0076 237D     		ldrb	r3, [r4, #20]	@ zero_extendqisi2
+ 625 0078 6FF38613 		bfc	r3, #6, #1
+ 626 007c 2375     		strb	r3, [r4, #20]
+ 627              	.L28:
+ 144:Application/detect_task.c **** 
+ 628              		.loc 1 144 1 view .LVU185
+ 629 007e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 630              	.L30:
+ 142:Application/detect_task.c ****     }
+ 631              		.loc 1 142 9 is_stmt 1 view .LVU186
+ 142:Application/detect_task.c ****     }
+ 632              		.loc 1 142 40 is_stmt 0 view .LVU187
+ 633 0080 04EB8404 		add	r4, r4, r4, lsl #2
+ 634 0084 0348     		ldr	r0, .L34
+ 635 0086 00EBC404 		add	r4, r0, r4, lsl #3
+ 636 008a 237D     		ldrb	r3, [r4, #20]	@ zero_extendqisi2
+ 637 008c 6FF38613 		bfc	r3, #6, #1
+ 638 0090 2375     		strb	r3, [r4, #20]
+ 144:Application/detect_task.c **** 
+ 639              		.loc 1 144 1 view .LVU188
+ 640 0092 F4E7     		b	.L28
+ 641              	.L35:
+ 642              		.align	2
+ 643              	.L34:
+ 644 0094 00000000 		.word	.LANCHOR1
+ 645              		.cfi_endproc
+ 646              	.LFE174:
+ 648              		.global	BoardState
+ 649              		.global	Detect_List
+ 650              		.global	resetCount
+ 651              		.section	.rodata
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 18
+
+
+ 652              		.align	2
+ 653              		.set	.LANCHOR0,. + 0
+ 654              	.LC0:
+ 655 0000 1E00     		.short	30
+ 656 0002 0300     		.short	3
+ 657 0004 0E00     		.short	14
+ 658 0006 1E00     		.short	30
+ 659 0008 0300     		.short	3
+ 660 000a 0D00     		.short	13
+ 661 000c 0500     		.short	5
+ 662 000e 0A00     		.short	10
+ 663 0010 0B00     		.short	11
+ 664 0012 0500     		.short	5
+ 665 0014 0A00     		.short	10
+ 666 0016 0B00     		.short	11
+ 667 0018 5000     		.short	80
+ 668 001a 0300     		.short	3
+ 669 001c 0C00     		.short	12
+ 670 001e 4600     		.short	70
+ 671 0020 0400     		.short	4
+ 672 0022 0A00     		.short	10
+ 673 0024 E803     		.short	1000
+ 674 0026 E803     		.short	1000
+ 675 0028 0900     		.short	9
+ 676 002a F401     		.short	500
+ 677 002c F401     		.short	500
+ 678 002e 0800     		.short	8
+ 679 0030 3200     		.short	50
+ 680 0032 0A00     		.short	10
+ 681 0034 0F00     		.short	15
+ 682 0036 0500     		.short	5
+ 683 0038 0A00     		.short	10
+ 684 003a 0B00     		.short	11
+ 685 003c 0500     		.short	5
+ 686 003e 0A00     		.short	10
+ 687 0040 0B00     		.short	11
+ 688 0042 0500     		.short	5
+ 689 0044 0A00     		.short	10
+ 690 0046 0B00     		.short	11
+ 691 0048 0500     		.short	5
+ 692 004a 0A00     		.short	10
+ 693 004c 0B00     		.short	11
+ 694              		.section	.bss.BoardState,"aw",%nobits
+ 695              		.align	2
+ 696              		.set	.LANCHOR5,. + 0
+ 699              	BoardState:
+ 700 0000 00000000 		.space	8
+ 700      00000000 
+ 701              		.section	.bss.Detect_List,"aw",%nobits
+ 702              		.align	2
+ 703              		.set	.LANCHOR1,. + 0
+ 706              	Detect_List:
+ 707 0000 00000000 		.space	560
+ 707      00000000 
+ 707      00000000 
+ 707      00000000 
+ 707      00000000 
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 19
+
+
+ 708              		.section	.bss.error_num_display.0,"aw",%nobits
+ 709              		.set	.LANCHOR4,. + 0
+ 712              	error_num_display.0:
+ 713 0000 00       		.space	1
+ 714              		.section	.bss.resetCount,"aw",%nobits
+ 715              		.align	2
+ 718              	resetCount:
+ 719 0000 00000000 		.space	4
+ 720              		.section	.bss.system_time.1,"aw",%nobits
+ 721              		.align	2
+ 722              		.set	.LANCHOR3,. + 0
+ 725              	system_time.1:
+ 726 0000 00000000 		.space	4
+ 727              		.section	.bss.system_time.2,"aw",%nobits
+ 728              		.align	2
+ 729              		.set	.LANCHOR2,. + 0
+ 732              	system_time.2:
+ 733 0000 00000000 		.space	4
+ 734              		.text
+ 735              	.Letext0:
+ 736              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 737              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 738              		.file 4 "Application/detect_task.h"
+ 739              		.file 5 "Middlewares/Third_Party/FreeRTOS/Source/include/task.h"
+ 740              		.file 6 "Bsp/bsp_adc.h"
+ 741              		.file 7 "<built-in>"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s 			page 20
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 detect_task.c
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:20     .text.Detect_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:25     .text.Detect_Init:00000000 Detect_Init
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:171    .text.Detect_Init:0000009c $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:179    .text.Detect_Task_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:185    .text.Detect_Task_Init:00000000 Detect_Task_Init
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:216    .text.Detect_Task_Init:00000018 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:221    .text.Detect_Task:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:227    .text.Detect_Task:00000000 Detect_Task
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:483    .text.Detect_Task:000001a0 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:492    .text.is_TOE_Error:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:498    .text.is_TOE_Error:00000000 is_TOE_Error
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:520    .text.is_TOE_Error:00000014 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:525    .text.Detect_Hook:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:531    .text.Detect_Hook:00000000 Detect_Hook
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:644    .text.Detect_Hook:00000094 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:699    .bss.BoardState:00000000 BoardState
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:706    .bss.Detect_List:00000000 Detect_List
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:718    .bss.resetCount:00000000 resetCount
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:652    .rodata:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:695    .bss.BoardState:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:702    .bss.Detect_List:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:712    .bss.error_num_display.0:00000000 error_num_display.0
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:713    .bss.error_num_display.0:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:715    .bss.resetCount:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:721    .bss.system_time.1:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:725    .bss.system_time.1:00000000 system_time.1
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:728    .bss.system_time.2:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccWvNOUr.s:732    .bss.system_time.2:00000000 system_time.2
+
+UNDEFINED SYMBOLS
+memcpy
+RC_Data_is_Error
+Solve_RC_Data_Error
+xTaskGetTickCount
+vTaskDelay
+get_battery_voltage
+get_temprate

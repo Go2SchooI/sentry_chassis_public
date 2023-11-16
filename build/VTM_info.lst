@@ -1,0 +1,612 @@
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"VTM_info.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.VTM_Control_Init,"ax",%progbits
+  20              		.align	1
+  21              		.global	VTM_Control_Init
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	VTM_Control_Init:
+  27              	.LVL0:
+  28              	.LFB171:
+  29              		.file 1 "Application/VTM_info.c"
+   1:Application/VTM_info.c **** #include "VTM_info.h"
+   2:Application/VTM_info.c **** #include "judgement_info.h"
+   3:Application/VTM_info.c **** #include "bsp_usart_idle.h"
+   4:Application/VTM_info.c **** #include "includes.h"
+   5:Application/VTM_info.c **** #include "bsp_CAN.h"
+   6:Application/VTM_info.c **** 
+   7:Application/VTM_info.c **** #include "string.h"
+   8:Application/VTM_info.c **** 
+   9:Application/VTM_info.c **** VTM_Receive_t VTM_Receive;
+  10:Application/VTM_info.c **** 
+  11:Application/VTM_info.c **** UART_HandleTypeDef *VTM_USART;
+  12:Application/VTM_info.c **** 
+  13:Application/VTM_info.c **** static uint8_t *p_header, count;
+  14:Application/VTM_info.c **** static uint16_t data_length;
+  15:Application/VTM_info.c **** uint8_t VTM_Data_Buf[12];
+  16:Application/VTM_info.c **** uint8_t VTM_Update;
+  17:Application/VTM_info.c **** 
+  18:Application/VTM_info.c **** ext_robot_command_t robot_command;
+  19:Application/VTM_info.c **** 
+  20:Application/VTM_info.c **** void VTM_Control_Init(UART_HandleTypeDef *huart)
+  21:Application/VTM_info.c **** {
+  30              		.loc 1 21 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		.loc 1 21 1 is_stmt 0 view .LVU1
+  35 0000 08B5     		push	{r3, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 2
+
+
+  38              		.cfi_offset 3, -8
+  39              		.cfi_offset 14, -4
+  22:Application/VTM_info.c ****     VTM_USART = huart;
+  40              		.loc 1 22 5 is_stmt 1 view .LVU2
+  41              		.loc 1 22 15 is_stmt 0 view .LVU3
+  42 0002 034B     		ldr	r3, .L3
+  43 0004 1860     		str	r0, [r3]
+  23:Application/VTM_info.c ****     USART_IDLE_Init(huart, VTM_Receive.buf, 30);
+  44              		.loc 1 23 5 is_stmt 1 view .LVU4
+  45 0006 1E22     		movs	r2, #30
+  46 0008 0249     		ldr	r1, .L3+4
+  47 000a FFF7FEFF 		bl	USART_IDLE_Init
+  48              	.LVL1:
+  24:Application/VTM_info.c **** }
+  49              		.loc 1 24 1 is_stmt 0 view .LVU5
+  50 000e 08BD     		pop	{r3, pc}
+  51              	.L4:
+  52              		.align	2
+  53              	.L3:
+  54 0010 00000000 		.word	.LANCHOR0
+  55 0014 00000000 		.word	.LANCHOR1
+  56              		.cfi_endproc
+  57              	.LFE171:
+  59              		.section	.text.VTM_Data_Decode,"ax",%progbits
+  60              		.align	1
+  61              		.global	VTM_Data_Decode
+  62              		.syntax unified
+  63              		.thumb
+  64              		.thumb_func
+  66              	VTM_Data_Decode:
+  67              	.LFB174:
+  25:Application/VTM_info.c **** 
+  26:Application/VTM_info.c **** void unpack_VTM_FIFO_Handler(uint8_t *prxbuf)
+  27:Application/VTM_info.c **** {
+  28:Application/VTM_info.c ****     p_header = prxbuf; //�ҵ�֡ͷȻ����
+  29:Application/VTM_info.c ****     count = 0;
+  30:Application/VTM_info.c ****     while (count <= 30)
+  31:Application/VTM_info.c ****     {
+  32:Application/VTM_info.c ****         if (*p_header == Pictorial_SOF)
+  33:Application/VTM_info.c ****         {
+  34:Application/VTM_info.c ****             VTM_Info_Handler();
+  35:Application/VTM_info.c ****         }
+  36:Application/VTM_info.c ****         else
+  37:Application/VTM_info.c ****             p_header++;
+  38:Application/VTM_info.c ****         count = p_header - prxbuf;
+  39:Application/VTM_info.c ****     }
+  40:Application/VTM_info.c **** }
+  41:Application/VTM_info.c **** 
+  42:Application/VTM_info.c **** void VTM_Info_Handler(void)
+  43:Application/VTM_info.c **** {
+  44:Application/VTM_info.c ****     memcpy(&data_length, (p_header + 1), 2);
+  45:Application/VTM_info.c ****     if (data_length >= 30)
+  46:Application/VTM_info.c ****     {
+  47:Application/VTM_info.c ****         p_header++;
+  48:Application/VTM_info.c ****         return;
+  49:Application/VTM_info.c ****     }
+  50:Application/VTM_info.c ****     if ((Verify_CRC8_Check_Sum(p_header, 5) == 0) || (Verify_CRC16_Check_Sum(p_header, (9 + data_le
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 3
+
+
+  51:Application/VTM_info.c ****     {
+  52:Application/VTM_info.c ****         p_header++;
+  53:Application/VTM_info.c ****         return;
+  54:Application/VTM_info.c ****     }
+  55:Application/VTM_info.c **** 
+  56:Application/VTM_info.c ****     memcpy(VTM_Receive.header, (p_header - 1), (data_length + 9));
+  57:Application/VTM_info.c ****     VTM_Data_Decode();
+  58:Application/VTM_info.c ****     p_header = p_header + data_length + 1;
+  59:Application/VTM_info.c **** }
+  60:Application/VTM_info.c **** 
+  61:Application/VTM_info.c **** void VTM_Data_Decode(void)
+  62:Application/VTM_info.c **** {
+  68              		.loc 1 62 1 is_stmt 1 view -0
+  69              		.cfi_startproc
+  70              		@ args = 0, pretend = 0, frame = 0
+  71              		@ frame_needed = 0, uses_anonymous_args = 0
+  63:Application/VTM_info.c ****     switch (VTM_Receive.cmd)
+  72              		.loc 1 63 5 view .LVU7
+  73              		.loc 1 63 24 is_stmt 0 view .LVU8
+  74 0000 1A4B     		ldr	r3, .L12
+  75 0002 B3F84C30 		ldrh	r3, [r3, #76]
+  76              		.loc 1 63 5 view .LVU9
+  77 0006 B3F5417F 		cmp	r3, #772
+  78 000a 00D0     		beq	.L11
+  79 000c 7047     		bx	lr
+  80              	.L11:
+  62:Application/VTM_info.c ****     switch (VTM_Receive.cmd)
+  81              		.loc 1 62 1 view .LVU10
+  82 000e 10B5     		push	{r4, lr}
+  83              	.LCFI1:
+  84              		.cfi_def_cfa_offset 8
+  85              		.cfi_offset 4, -8
+  86              		.cfi_offset 14, -4
+  64:Application/VTM_info.c ****     {
+  65:Application/VTM_info.c ****     case ROBOT_COMMAND_CMD_ID:
+  66:Application/VTM_info.c ****     {
+  67:Application/VTM_info.c ****         Detect_Hook(VTM_TOE);
+  87              		.loc 1 67 9 is_stmt 1 view .LVU11
+  88 0010 0720     		movs	r0, #7
+  89 0012 FFF7FEFF 		bl	Detect_Hook
+  90              	.LVL2:
+  68:Application/VTM_info.c ****         memcpy(&robot_command, VTM_Receive.data, sizeof(ext_robot_command_t));
+  91              		.loc 1 68 9 view .LVU12
+  92 0016 154A     		ldr	r2, .L12
+  93 0018 154B     		ldr	r3, .L12+4
+  94 001a D2F84E00 		ldr	r0, [r2, #78]	@ unaligned
+  95 001e D2F85210 		ldr	r1, [r2, #82]	@ unaligned
+  96 0022 D2F85620 		ldr	r2, [r2, #86]	@ unaligned
+  97 0026 07C3     		stmia	r3!, {r0, r1, r2}
+  69:Application/VTM_info.c ****         if (is_TOE_Error(RC_TOE))
+  98              		.loc 1 69 9 view .LVU13
+  99              		.loc 1 69 13 is_stmt 0 view .LVU14
+ 100 0028 0420     		movs	r0, #4
+ 101 002a FFF7FEFF 		bl	is_TOE_Error
+ 102              	.LVL3:
+ 103              		.loc 1 69 12 view .LVU15
+ 104 002e D8B1     		cbz	r0, .L5
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 4
+
+
+  70:Application/VTM_info.c ****         {
+  71:Application/VTM_info.c ****             remote_control.switch_left = Switch_Middle;
+ 105              		.loc 1 71 13 is_stmt 1 view .LVU16
+ 106              		.loc 1 71 40 is_stmt 0 view .LVU17
+ 107 0030 104A     		ldr	r2, .L12+8
+ 108 0032 0323     		movs	r3, #3
+ 109 0034 1373     		strb	r3, [r2, #12]
+  72:Application/VTM_info.c ****             remote_control.switch_right = Switch_Middle;
+ 110              		.loc 1 72 13 is_stmt 1 view .LVU18
+ 111              		.loc 1 72 41 is_stmt 0 view .LVU19
+ 112 0036 5373     		strb	r3, [r2, #13]
+  73:Application/VTM_info.c ****             remote_control.mouse.x = robot_command.mouse_x;
+ 113              		.loc 1 73 13 is_stmt 1 view .LVU20
+ 114              		.loc 1 73 51 is_stmt 0 view .LVU21
+ 115 0038 0D4B     		ldr	r3, .L12+4
+ 116 003a B3F90010 		ldrsh	r1, [r3]
+ 117              		.loc 1 73 36 view .LVU22
+ 118 003e D181     		strh	r1, [r2, #14]	@ movhi
+  74:Application/VTM_info.c ****             remote_control.mouse.y = robot_command.mouse_y;
+ 119              		.loc 1 74 13 is_stmt 1 view .LVU23
+ 120              		.loc 1 74 51 is_stmt 0 view .LVU24
+ 121 0040 B3F90210 		ldrsh	r1, [r3, #2]
+ 122              		.loc 1 74 36 view .LVU25
+ 123 0044 1182     		strh	r1, [r2, #16]	@ movhi
+  75:Application/VTM_info.c ****             remote_control.mouse.z = robot_command.mouse_z;
+ 124              		.loc 1 75 13 is_stmt 1 view .LVU26
+ 125              		.loc 1 75 51 is_stmt 0 view .LVU27
+ 126 0046 B3F90410 		ldrsh	r1, [r3, #4]
+ 127              		.loc 1 75 36 view .LVU28
+ 128 004a 5182     		strh	r1, [r2, #18]	@ movhi
+  76:Application/VTM_info.c ****             remote_control.mouse.press_right = robot_command.right_button_down;
+ 129              		.loc 1 76 13 is_stmt 1 view .LVU29
+ 130              		.loc 1 76 61 is_stmt 0 view .LVU30
+ 131 004c D979     		ldrb	r1, [r3, #7]	@ zero_extendqisi2
+ 132              		.loc 1 76 46 view .LVU31
+ 133 004e 5175     		strb	r1, [r2, #21]
+  77:Application/VTM_info.c ****             remote_control.mouse.press_left = robot_command.left_button_down;
+ 134              		.loc 1 77 13 is_stmt 1 view .LVU32
+ 135              		.loc 1 77 60 is_stmt 0 view .LVU33
+ 136 0050 9979     		ldrb	r1, [r3, #6]	@ zero_extendqisi2
+ 137              		.loc 1 77 45 view .LVU34
+ 138 0052 1175     		strb	r1, [r2, #20]
+  78:Application/VTM_info.c ****             remote_control.key_code = robot_command.keyboard_value;
+ 139              		.loc 1 78 13 is_stmt 1 view .LVU35
+ 140              		.loc 1 78 52 is_stmt 0 view .LVU36
+ 141 0054 1989     		ldrh	r1, [r3, #8]
+ 142              		.loc 1 78 37 view .LVU37
+ 143 0056 D182     		strh	r1, [r2, #22]	@ movhi
+  79:Application/VTM_info.c **** 
+  80:Application/VTM_info.c ****             memcpy(VTM_Data_Buf, &robot_command, 12);
+ 144              		.loc 1 80 13 is_stmt 1 view .LVU38
+ 145 0058 074C     		ldr	r4, .L12+12
+ 146 005a 93E80700 		ldm	r3, {r0, r1, r2}
+ 147 005e 84E80700 		stm	r4, {r0, r1, r2}
+  81:Application/VTM_info.c ****             VTM_Update = 1;
+ 148              		.loc 1 81 13 view .LVU39
+ 149              		.loc 1 81 24 is_stmt 0 view .LVU40
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 5
+
+
+ 150 0062 064B     		ldr	r3, .L12+16
+ 151 0064 0122     		movs	r2, #1
+ 152 0066 1A70     		strb	r2, [r3]
+ 153              	.L5:
+  82:Application/VTM_info.c ****         }
+  83:Application/VTM_info.c ****     }
+  84:Application/VTM_info.c ****     break;
+  85:Application/VTM_info.c ****     }
+  86:Application/VTM_info.c **** }
+ 154              		.loc 1 86 1 view .LVU41
+ 155 0068 10BD     		pop	{r4, pc}
+ 156              	.L13:
+ 157 006a 00BF     		.align	2
+ 158              	.L12:
+ 159 006c 00000000 		.word	.LANCHOR1
+ 160 0070 00000000 		.word	.LANCHOR2
+ 161 0074 00000000 		.word	remote_control
+ 162 0078 00000000 		.word	.LANCHOR3
+ 163 007c 00000000 		.word	.LANCHOR4
+ 164              		.cfi_endproc
+ 165              	.LFE174:
+ 167              		.section	.text.VTM_Info_Handler,"ax",%progbits
+ 168              		.align	1
+ 169              		.global	VTM_Info_Handler
+ 170              		.syntax unified
+ 171              		.thumb
+ 172              		.thumb_func
+ 174              	VTM_Info_Handler:
+ 175              	.LFB173:
+  43:Application/VTM_info.c ****     memcpy(&data_length, (p_header + 1), 2);
+ 176              		.loc 1 43 1 is_stmt 1 view -0
+ 177              		.cfi_startproc
+ 178              		@ args = 0, pretend = 0, frame = 0
+ 179              		@ frame_needed = 0, uses_anonymous_args = 0
+ 180 0000 38B5     		push	{r3, r4, r5, lr}
+ 181              	.LCFI2:
+ 182              		.cfi_def_cfa_offset 16
+ 183              		.cfi_offset 3, -16
+ 184              		.cfi_offset 4, -12
+ 185              		.cfi_offset 5, -8
+ 186              		.cfi_offset 14, -4
+  44:Application/VTM_info.c ****     if (data_length >= 30)
+ 187              		.loc 1 44 5 view .LVU43
+ 188 0002 174B     		ldr	r3, .L21
+ 189 0004 1868     		ldr	r0, [r3]
+ 190 0006 B0F80130 		ldrh	r3, [r0, #1]	@ unaligned
+ 191 000a 164A     		ldr	r2, .L21+4
+ 192 000c 1380     		strh	r3, [r2]	@ movhi
+  45:Application/VTM_info.c ****     {
+ 193              		.loc 1 45 5 view .LVU44
+  45:Application/VTM_info.c ****     {
+ 194              		.loc 1 45 8 is_stmt 0 view .LVU45
+ 195 000e 1D2B     		cmp	r3, #29
+ 196 0010 03D9     		bls	.L15
+  47:Application/VTM_info.c ****         return;
+ 197              		.loc 1 47 9 is_stmt 1 view .LVU46
+  47:Application/VTM_info.c ****         return;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 6
+
+
+ 198              		.loc 1 47 17 is_stmt 0 view .LVU47
+ 199 0012 0130     		adds	r0, r0, #1
+ 200 0014 124B     		ldr	r3, .L21
+ 201 0016 1860     		str	r0, [r3]
+  48:Application/VTM_info.c ****     }
+ 202              		.loc 1 48 9 is_stmt 1 view .LVU48
+ 203              	.L14:
+  59:Application/VTM_info.c **** 
+ 204              		.loc 1 59 1 is_stmt 0 view .LVU49
+ 205 0018 38BD     		pop	{r3, r4, r5, pc}
+ 206              	.L15:
+  50:Application/VTM_info.c ****     {
+ 207              		.loc 1 50 5 is_stmt 1 view .LVU50
+  50:Application/VTM_info.c ****     {
+ 208              		.loc 1 50 10 is_stmt 0 view .LVU51
+ 209 001a 0521     		movs	r1, #5
+ 210 001c FFF7FEFF 		bl	Verify_CRC8_Check_Sum
+ 211              	.LVL4:
+  50:Application/VTM_info.c ****     {
+ 212              		.loc 1 50 8 view .LVU52
+ 213 0020 20B9     		cbnz	r0, .L20
+ 214              	.L17:
+  52:Application/VTM_info.c ****         return;
+ 215              		.loc 1 52 9 is_stmt 1 view .LVU53
+  52:Application/VTM_info.c ****         return;
+ 216              		.loc 1 52 17 is_stmt 0 view .LVU54
+ 217 0022 0F4A     		ldr	r2, .L21
+ 218 0024 1368     		ldr	r3, [r2]
+ 219 0026 0133     		adds	r3, r3, #1
+ 220 0028 1360     		str	r3, [r2]
+  53:Application/VTM_info.c ****     }
+ 221              		.loc 1 53 9 is_stmt 1 view .LVU55
+ 222 002a F5E7     		b	.L14
+ 223              	.L20:
+  50:Application/VTM_info.c ****     {
+ 224              		.loc 1 50 91 is_stmt 0 discriminator 1 view .LVU56
+ 225 002c 0D4B     		ldr	r3, .L21+4
+ 226 002e 1988     		ldrh	r1, [r3]
+  50:Application/VTM_info.c ****     {
+ 227              		.loc 1 50 55 discriminator 1 view .LVU57
+ 228 0030 0931     		adds	r1, r1, #9
+ 229 0032 0B4B     		ldr	r3, .L21
+ 230 0034 1868     		ldr	r0, [r3]
+ 231 0036 FFF7FEFF 		bl	Verify_CRC16_Check_Sum
+ 232              	.LVL5:
+  50:Application/VTM_info.c ****     {
+ 233              		.loc 1 50 51 discriminator 1 view .LVU58
+ 234 003a 0028     		cmp	r0, #0
+ 235 003c F1D0     		beq	.L17
+  56:Application/VTM_info.c ****     VTM_Data_Decode();
+ 236              		.loc 1 56 5 is_stmt 1 view .LVU59
+ 237 003e 084C     		ldr	r4, .L21
+ 238 0040 2168     		ldr	r1, [r4]
+  56:Application/VTM_info.c ****     VTM_Data_Decode();
+ 239              		.loc 1 56 61 is_stmt 0 view .LVU60
+ 240 0042 084D     		ldr	r5, .L21+4
+ 241 0044 2A88     		ldrh	r2, [r5]
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 7
+
+
+  56:Application/VTM_info.c ****     VTM_Data_Decode();
+ 242              		.loc 1 56 5 view .LVU61
+ 243 0046 0932     		adds	r2, r2, #9
+ 244 0048 0139     		subs	r1, r1, #1
+ 245 004a 0748     		ldr	r0, .L21+8
+ 246 004c FFF7FEFF 		bl	memcpy
+ 247              	.LVL6:
+  57:Application/VTM_info.c ****     p_header = p_header + data_length + 1;
+ 248              		.loc 1 57 5 is_stmt 1 view .LVU62
+ 249 0050 FFF7FEFF 		bl	VTM_Data_Decode
+ 250              	.LVL7:
+  58:Application/VTM_info.c **** }
+ 251              		.loc 1 58 5 view .LVU63
+  58:Application/VTM_info.c **** }
+ 252              		.loc 1 58 39 is_stmt 0 view .LVU64
+ 253 0054 2B88     		ldrh	r3, [r5]
+ 254 0056 5A1C     		adds	r2, r3, #1
+ 255 0058 2368     		ldr	r3, [r4]
+ 256 005a 1344     		add	r3, r3, r2
+  58:Application/VTM_info.c **** }
+ 257              		.loc 1 58 14 view .LVU65
+ 258 005c 2360     		str	r3, [r4]
+ 259 005e DBE7     		b	.L14
+ 260              	.L22:
+ 261              		.align	2
+ 262              	.L21:
+ 263 0060 00000000 		.word	.LANCHOR5
+ 264 0064 00000000 		.word	.LANCHOR6
+ 265 0068 46000000 		.word	.LANCHOR1+70
+ 266              		.cfi_endproc
+ 267              	.LFE173:
+ 269              		.section	.text.unpack_VTM_FIFO_Handler,"ax",%progbits
+ 270              		.align	1
+ 271              		.global	unpack_VTM_FIFO_Handler
+ 272              		.syntax unified
+ 273              		.thumb
+ 274              		.thumb_func
+ 276              	unpack_VTM_FIFO_Handler:
+ 277              	.LVL8:
+ 278              	.LFB172:
+  27:Application/VTM_info.c ****     p_header = prxbuf; //�ҵ�֡ͷȻ����
+ 279              		.loc 1 27 1 is_stmt 1 view -0
+ 280              		.cfi_startproc
+ 281              		@ args = 0, pretend = 0, frame = 0
+ 282              		@ frame_needed = 0, uses_anonymous_args = 0
+  27:Application/VTM_info.c ****     p_header = prxbuf; //�ҵ�֡ͷȻ����
+ 283              		.loc 1 27 1 is_stmt 0 view .LVU67
+ 284 0000 10B5     		push	{r4, lr}
+ 285              	.LCFI3:
+ 286              		.cfi_def_cfa_offset 8
+ 287              		.cfi_offset 4, -8
+ 288              		.cfi_offset 14, -4
+ 289 0002 0446     		mov	r4, r0
+  28:Application/VTM_info.c ****     count = 0;
+ 290              		.loc 1 28 5 is_stmt 1 view .LVU68
+  28:Application/VTM_info.c ****     count = 0;
+ 291              		.loc 1 28 14 is_stmt 0 view .LVU69
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 8
+
+
+ 292 0004 0D4B     		ldr	r3, .L31
+ 293 0006 1860     		str	r0, [r3]
+  29:Application/VTM_info.c ****     while (count <= 30)
+ 294              		.loc 1 29 5 is_stmt 1 view .LVU70
+  29:Application/VTM_info.c ****     while (count <= 30)
+ 295              		.loc 1 29 11 is_stmt 0 view .LVU71
+ 296 0008 0D4B     		ldr	r3, .L31+4
+ 297 000a 0022     		movs	r2, #0
+ 298 000c 1A70     		strb	r2, [r3]
+  30:Application/VTM_info.c ****     {
+ 299              		.loc 1 30 5 is_stmt 1 view .LVU72
+  30:Application/VTM_info.c ****     {
+ 300              		.loc 1 30 11 is_stmt 0 view .LVU73
+ 301 000e 06E0     		b	.L24
+ 302              	.LVL9:
+ 303              	.L30:
+  34:Application/VTM_info.c ****         }
+ 304              		.loc 1 34 13 is_stmt 1 view .LVU74
+ 305 0010 FFF7FEFF 		bl	VTM_Info_Handler
+ 306              	.LVL10:
+ 307              	.L26:
+  38:Application/VTM_info.c ****     }
+ 308              		.loc 1 38 9 view .LVU75
+  38:Application/VTM_info.c ****     }
+ 309              		.loc 1 38 26 is_stmt 0 view .LVU76
+ 310 0014 094B     		ldr	r3, .L31
+ 311 0016 1B68     		ldr	r3, [r3]
+ 312 0018 1B1B     		subs	r3, r3, r4
+  38:Application/VTM_info.c ****     }
+ 313              		.loc 1 38 15 view .LVU77
+ 314 001a 094A     		ldr	r2, .L31+4
+ 315 001c 1370     		strb	r3, [r2]
+ 316              	.L24:
+  30:Application/VTM_info.c ****     {
+ 317              		.loc 1 30 11 is_stmt 1 view .LVU78
+  30:Application/VTM_info.c ****     {
+ 318              		.loc 1 30 18 is_stmt 0 view .LVU79
+ 319 001e 084B     		ldr	r3, .L31+4
+ 320 0020 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  30:Application/VTM_info.c ****     {
+ 321              		.loc 1 30 11 view .LVU80
+ 322 0022 1E2B     		cmp	r3, #30
+ 323 0024 08D8     		bhi	.L29
+  32:Application/VTM_info.c ****         {
+ 324              		.loc 1 32 9 is_stmt 1 view .LVU81
+  32:Application/VTM_info.c ****         {
+ 325              		.loc 1 32 13 is_stmt 0 view .LVU82
+ 326 0026 054B     		ldr	r3, .L31
+ 327 0028 1B68     		ldr	r3, [r3]
+ 328 002a 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+  32:Application/VTM_info.c ****         {
+ 329              		.loc 1 32 12 view .LVU83
+ 330 002c A52A     		cmp	r2, #165
+ 331 002e EFD0     		beq	.L30
+  37:Application/VTM_info.c ****         count = p_header - prxbuf;
+ 332              		.loc 1 37 13 is_stmt 1 view .LVU84
+  37:Application/VTM_info.c ****         count = p_header - prxbuf;
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 9
+
+
+ 333              		.loc 1 37 21 is_stmt 0 view .LVU85
+ 334 0030 0133     		adds	r3, r3, #1
+ 335 0032 024A     		ldr	r2, .L31
+ 336 0034 1360     		str	r3, [r2]
+ 337 0036 EDE7     		b	.L26
+ 338              	.L29:
+  40:Application/VTM_info.c **** 
+ 339              		.loc 1 40 1 view .LVU86
+ 340 0038 10BD     		pop	{r4, pc}
+ 341              	.LVL11:
+ 342              	.L32:
+  40:Application/VTM_info.c **** 
+ 343              		.loc 1 40 1 view .LVU87
+ 344 003a 00BF     		.align	2
+ 345              	.L31:
+ 346 003c 00000000 		.word	.LANCHOR5
+ 347 0040 00000000 		.word	.LANCHOR7
+ 348              		.cfi_endproc
+ 349              	.LFE172:
+ 351              		.global	robot_command
+ 352              		.global	VTM_Update
+ 353              		.global	VTM_Data_Buf
+ 354              		.global	VTM_USART
+ 355              		.global	VTM_Receive
+ 356              		.section	.bss.VTM_Data_Buf,"aw",%nobits
+ 357              		.align	2
+ 358              		.set	.LANCHOR3,. + 0
+ 361              	VTM_Data_Buf:
+ 362 0000 00000000 		.space	12
+ 362      00000000 
+ 362      00000000 
+ 363              		.section	.bss.VTM_Receive,"aw",%nobits
+ 364              		.align	2
+ 365              		.set	.LANCHOR1,. + 0
+ 368              	VTM_Receive:
+ 369 0000 00000000 		.space	110
+ 369      00000000 
+ 369      00000000 
+ 369      00000000 
+ 369      00000000 
+ 370              		.section	.bss.VTM_USART,"aw",%nobits
+ 371              		.align	2
+ 372              		.set	.LANCHOR0,. + 0
+ 375              	VTM_USART:
+ 376 0000 00000000 		.space	4
+ 377              		.section	.bss.VTM_Update,"aw",%nobits
+ 378              		.set	.LANCHOR4,. + 0
+ 381              	VTM_Update:
+ 382 0000 00       		.space	1
+ 383              		.section	.bss.count,"aw",%nobits
+ 384              		.set	.LANCHOR7,. + 0
+ 387              	count:
+ 388 0000 00       		.space	1
+ 389              		.section	.bss.data_length,"aw",%nobits
+ 390              		.align	1
+ 391              		.set	.LANCHOR6,. + 0
+ 394              	data_length:
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 10
+
+
+ 395 0000 0000     		.space	2
+ 396              		.section	.bss.p_header,"aw",%nobits
+ 397              		.align	2
+ 398              		.set	.LANCHOR5,. + 0
+ 401              	p_header:
+ 402 0000 00000000 		.space	4
+ 403              		.section	.bss.robot_command,"aw",%nobits
+ 404              		.align	2
+ 405              		.set	.LANCHOR2,. + 0
+ 408              	robot_command:
+ 409 0000 00000000 		.space	12
+ 409      00000000 
+ 409      00000000 
+ 410              		.text
+ 411              	.Letext0:
+ 412              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 413              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 414              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h"
+ 415              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 416              		.file 6 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h"
+ 417              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h"
+ 418              		.file 8 "Application/VTM_info.h"
+ 419              		.file 9 "Application/remote_control.h"
+ 420              		.file 10 "Application/detect_task.h"
+ 421              		.file 11 "Application/judgement_info.h"
+ 422              		.file 12 "Bsp/bsp_usart_idle.h"
+ 423              		.file 13 "<built-in>"
+ARM GAS  C:\Users\86152\AppData\Local\Temp\ccNwomyn.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 VTM_info.c
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:20     .text.VTM_Control_Init:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:26     .text.VTM_Control_Init:00000000 VTM_Control_Init
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:54     .text.VTM_Control_Init:00000010 $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:60     .text.VTM_Data_Decode:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:66     .text.VTM_Data_Decode:00000000 VTM_Data_Decode
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:159    .text.VTM_Data_Decode:0000006c $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:168    .text.VTM_Info_Handler:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:174    .text.VTM_Info_Handler:00000000 VTM_Info_Handler
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:263    .text.VTM_Info_Handler:00000060 $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:270    .text.unpack_VTM_FIFO_Handler:00000000 $t
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:276    .text.unpack_VTM_FIFO_Handler:00000000 unpack_VTM_FIFO_Handler
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:346    .text.unpack_VTM_FIFO_Handler:0000003c $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:408    .bss.robot_command:00000000 robot_command
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:381    .bss.VTM_Update:00000000 VTM_Update
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:361    .bss.VTM_Data_Buf:00000000 VTM_Data_Buf
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:375    .bss.VTM_USART:00000000 VTM_USART
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:368    .bss.VTM_Receive:00000000 VTM_Receive
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:357    .bss.VTM_Data_Buf:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:364    .bss.VTM_Receive:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:371    .bss.VTM_USART:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:382    .bss.VTM_Update:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:387    .bss.count:00000000 count
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:388    .bss.count:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:390    .bss.data_length:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:394    .bss.data_length:00000000 data_length
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:397    .bss.p_header:00000000 $d
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:401    .bss.p_header:00000000 p_header
+C:\Users\86152\AppData\Local\Temp\ccNwomyn.s:404    .bss.robot_command:00000000 $d
+
+UNDEFINED SYMBOLS
+USART_IDLE_Init
+Detect_Hook
+is_TOE_Error
+remote_control
+Verify_CRC8_Check_Sum
+Verify_CRC16_Check_Sum
+memcpy
